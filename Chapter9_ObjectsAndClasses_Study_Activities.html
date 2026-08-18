@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSP31A · Chapter 9 Study Activities — Objects and Classes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --user-primary:#1a4480;
+    --user-accent:#c8102e;
+    --user-background:#ffffff;
+    --primary-dark:#0f2c54;
+    --primary-tint:#eaf0f8;
+    --accent-tint:#fbe9ec;
+    --ink:#12203a;
+    --muted:#52627a;
+    --border:#d7e0ea;
+    --success:#1e7d4a;
+    --success-tint:#e6f4ec;
+    --warn-tint:#fff4e0;
+    --warn:#a35b00;
+    --font-body:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+    --radius:14px;
+    --shadow:0 2px 10px rgba(15,44,84,0.08);
+    --shadow-lg:0 12px 32px rgba(15,44,84,0.16);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    background:var(--user-background);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-weight:800; margin:0 0 .4em; line-height:1.25;}
+  p{margin:0 0 .8em;}
+  code, .mono{font-family:var(--font-mono);}
+  button{font-family:inherit; cursor:pointer;}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+  /* ---------- Header / Tabs ---------- */
+  header.app-header{
+    position:sticky; top:0; z-index:50;
+    background:var(--user-primary);
+    color:#fff;
+    box-shadow:var(--shadow-lg);
+  }
+  .header-inner{
+    max-width:1100px; margin:0 auto; padding:14px 20px 0;
+  }
+  .kicker{
+    font-size:12px; letter-spacing:.14em; font-weight:700; text-transform:uppercase;
+    color:#bcd0ee; margin-bottom:2px;
+  }
+  .app-header h1{
+    font-size:22px; margin:0 0 12px; color:#fff;
+  }
+  nav.tabbar{
+    display:flex; gap:4px; overflow-x:auto; scrollbar-width:none;
+    border-bottom:1px solid rgba(255,255,255,0.18);
+  }
+  nav.tabbar::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    background:transparent; border:none; color:#cfe0f5;
+    padding:11px 18px; font-size:14.5px; font-weight:600;
+    border-bottom:3px solid transparent; white-space:nowrap;
+    transition:all .15s ease;
+  }
+  .tab-btn .tab-emoji{margin-right:6px;}
+  .tab-btn:hover{color:#fff; background:rgba(255,255,255,0.08);}
+  .tab-btn[aria-selected="true"]{
+    color:#fff; border-bottom-color:var(--user-accent);
+  }
+
+  main{max-width:1100px; margin:0 auto; padding:28px 20px 80px;}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  .intro-lead{
+    font-size:16px; color:var(--muted); max-width:760px;
+  }
+
+  /* ---------- Badges ---------- */
+  .badge{
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.03em;
+    padding:3px 9px; border-radius:999px; text-transform:uppercase;
+  }
+  .badge-remember{background:#e7edf8; color:#2a4c85;}
+  .badge-understand{background:#e2f2ec; color:#1e7d4a;}
+  .badge-apply{background:#fff1de; color:#a35b00;}
+  .badge-analyze{background:#f7e6ea; color:#a01238;}
+  .badge-evaluate{background:#efe4f7; color:#6a2fa3;}
+  .badge-create{background:#e0f2f7; color:#0d6d84;}
+
+  /* ---------- Accordion (Learn tab) ---------- */
+  .section-card{
+    border:1px solid var(--border); border-radius:var(--radius);
+    margin-bottom:14px; overflow:hidden; background:#fff;
+  }
+  .section-head{
+    width:100%; display:flex; align-items:center; gap:12px;
+    background:var(--primary-tint); border:none; padding:16px 18px;
+    text-align:left; font-size:16px; font-weight:700; color:var(--user-primary);
+  }
+  .section-head .num{
+    display:flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:8px; background:var(--user-primary);
+    color:#fff; font-size:13px; flex-shrink:0;
+  }
+  .section-head .chev{margin-left:auto; transition:transform .2s ease; font-size:14px; color:var(--muted);}
+  .section-head[aria-expanded="true"] .chev{transform:rotate(180deg);}
+  .section-body{padding:0 20px; max-height:0; overflow:hidden; transition:max-height .3s ease, padding .3s ease;}
+  .section-body.open{padding:18px 20px 24px; max-height:4000px;}
+
+  ul.clean{margin:0 0 14px; padding-left:20px;}
+  ul.clean li{margin-bottom:7px;}
+  ul.clean li::marker{color:var(--user-accent);}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:680px){.two-col{grid-template-columns:1fr;}}
+
+  .mini-card{
+    background:var(--primary-tint); border-radius:12px; padding:14px 16px;
+  }
+  .mini-card h4{color:var(--user-primary); font-size:14.5px; margin-bottom:6px;}
+
+  table.data-table{
+    width:100%; border-collapse:collapse; margin:10px 0 16px; font-size:14px;
+  }
+  table.data-table th{
+    background:var(--user-primary); color:#fff; text-align:left;
+    padding:9px 12px; font-size:12.5px; letter-spacing:.02em;
+  }
+  table.data-table td{
+    padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top;
+  }
+  table.data-table tr:nth-child(even) td{background:#f7fafc;}
+
+  /* callouts */
+  .callout{
+    border-radius:12px; padding:14px 16px; margin:14px 0; border:1px solid transparent;
+  }
+  .callout-title{font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .callout.misconception{background:var(--accent-tint); border-color:#f3c3cc;}
+  .callout.misconception .callout-title{color:var(--user-accent);}
+  .callout.worked{background:var(--primary-tint); border-color:#c7d7ec;}
+  .callout.worked .callout-title{color:var(--user-primary);}
+  .callout.apply{background:var(--warn-tint); border-color:#f0d9a8;}
+  .callout.apply .callout-title{color:var(--warn);}
+  .callout.real-world{background:var(--success-tint); border-color:#bfe3cd;}
+  .callout.real-world .callout-title{color:var(--success);}
+
+  .reasoning-step{
+    display:flex; gap:10px; padding:8px 0; border-top:1px dashed #c7d7ec;
+  }
+  .reasoning-step:first-of-type{border-top:none;}
+  .reasoning-step .step-tag{
+    flex-shrink:0; font-size:11px; font-weight:800; color:#fff; background:var(--user-primary);
+    border-radius:6px; padding:3px 8px; height:fit-content; text-transform:uppercase;
+  }
+
+  textarea.answer-box{
+    width:100%; min-height:70px; border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px; font-family:var(--font-body); font-size:14px; resize:vertical;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--user-primary); color:#fff; border:none; border-radius:9px;
+    padding:9px 16px; font-size:13.5px; font-weight:600; transition:filter .15s ease;
+  }
+  .btn:hover{filter:brightness(1.1);}
+  .btn.secondary{background:#fff; color:var(--user-primary); border:1.5px solid var(--user-primary);}
+  .btn.accent{background:var(--user-accent);}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .reveal-box{
+    display:none; margin-top:10px; background:#fff; border:1px dashed #c7d7ec; border-radius:10px; padding:12px 14px; font-size:14px;
+  }
+  .reveal-box.shown{display:block;}
+
+  /* ---------- Mini self-check ---------- */
+  .self-check{
+    margin-top:18px; border:1.5px solid var(--user-primary); border-radius:12px; padding:16px 18px;
+    background:#fbfdff;
+  }
+  .self-check-title{
+    font-weight:800; font-size:14px; color:var(--user-primary);
+    display:flex; align-items:center; gap:8px; margin-bottom:10px;
+  }
+  .sc-question{margin-bottom:14px;}
+  .sc-question p.q-text{font-weight:600; font-size:14.5px; margin-bottom:8px;}
+  .sc-options{display:flex; flex-direction:column; gap:7px;}
+  .sc-opt{
+    text-align:left; border:1.5px solid var(--border); background:#fff; border-radius:9px;
+    padding:9px 12px; font-size:14px; color:var(--ink); transition:all .12s ease;
+  }
+  .sc-opt:hover{border-color:var(--user-primary);}
+  .sc-opt.correct{background:var(--success-tint); border-color:var(--success); color:#155c37; font-weight:600;}
+  .sc-opt.incorrect{background:var(--accent-tint); border-color:var(--user-accent); color:#8f0c22; font-weight:600;}
+  .sc-opt[disabled]{cursor:default;}
+  .sc-feedback{font-size:13.5px; margin-top:8px; padding:8px 10px; border-radius:8px; display:none;}
+  .sc-feedback.shown{display:block;}
+  .sc-feedback.right{background:var(--success-tint); color:#155c37;}
+  .sc-feedback.wrong{background:var(--accent-tint); color:#8f0c22;}
+
+  /* ---------- Flashcards ---------- */
+  .fc-toolbar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:18px;
+  }
+  .fc-toolbar select{
+    padding:8px 12px; border-radius:9px; border:1.5px solid var(--border); font-size:13.5px; font-family:inherit;
+    background:#fff;
+  }
+  .fc-progress{
+    margin-left:auto; font-size:13px; color:var(--muted); display:flex; gap:14px;
+  }
+  .fc-progress b{color:var(--ink);}
+  .fc-stage{
+    max-width:560px; margin:0 auto;
+  }
+  .fc-counter{text-align:center; font-size:13px; color:var(--muted); margin-bottom:10px;}
+  .flashcard{
+    perspective:1400px; height:260px; cursor:pointer; margin-bottom:18px;
+  }
+  .flashcard-inner{
+    position:relative; width:100%; height:100%; transition:transform .5s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+  .fc-face{
+    position:absolute; inset:0; backface-visibility:hidden;
+    border-radius:16px; padding:26px; display:flex; flex-direction:column;
+    box-shadow:var(--shadow-lg); border:1px solid var(--border);
+  }
+  .fc-front{background:var(--user-primary); color:#fff; justify-content:center; align-items:center; text-align:center; gap:14px;}
+  .fc-front .fc-term{font-size:22px; font-weight:800;}
+  .fc-back{background:#fff; transform:rotateY(180deg); justify-content:center;}
+  .fc-back p{font-size:15.5px; color:var(--ink); margin:0;}
+  .fc-tag-row{position:absolute; top:14px; left:16px; right:16px; display:flex; justify-content:space-between;}
+  .fc-cat{font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:#cfe0f5; font-weight:700;}
+  .fc-back .fc-cat{color:var(--muted);}
+  .fc-hint{font-size:12px; color:#cfe0f5; margin-top:auto;}
+  .fc-back .fc-hint{color:var(--muted); margin-top:14px;}
+
+  .fc-controls{
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;
+  }
+  .fc-nav{display:flex; justify-content:space-between; margin-top:16px;}
+
+  /* ---------- Quiz ---------- */
+  .quiz-intro{
+    background:var(--primary-tint); border-radius:14px; padding:22px; text-align:center;
+  }
+  .quiz-wrap{max-width:640px; margin:0 auto;}
+  .quiz-progress-bar{
+    height:8px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:18px;
+  }
+  .quiz-progress-fill{height:100%; background:var(--user-accent); width:0%; transition:width .3s ease;}
+  .quiz-card{
+    border:1px solid var(--border); border-radius:16px; padding:22px; box-shadow:var(--shadow);
+  }
+  .quiz-meta{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+  .quiz-qnum{font-size:13px; color:var(--muted); font-weight:600;}
+  .quiz-qtext{font-size:17px; font-weight:700; margin-bottom:16px;}
+  .quiz-options{display:flex; flex-direction:column; gap:9px;}
+  .quiz-opt{
+    text-align:left; border:1.5px solid var(--border); background:#fff; border-radius:10px;
+    padding:11px 14px; font-size:14.5px; transition:all .12s ease;
+  }
+  .quiz-opt:hover:not([disabled]){border-color:var(--user-primary); background:var(--primary-tint);}
+  .quiz-opt.correct{background:var(--success-tint); border-color:var(--success); font-weight:700; color:#155c37;}
+  .quiz-opt.incorrect{background:var(--accent-tint); border-color:var(--user-accent); font-weight:700; color:#8f0c22;}
+  .quiz-explain{
+    margin-top:14px; padding:12px 14px; border-radius:10px; background:#f7fafc; font-size:13.5px; display:none;
+  }
+  .quiz-explain.shown{display:block;}
+  .quiz-footer{display:flex; justify-content:flex-end; margin-top:16px;}
+  .quiz-results{text-align:center; padding:30px 10px;}
+  .quiz-score{font-size:46px; font-weight:800; color:var(--user-primary);}
+  .tier-breakdown{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin:22px 0;
+  }
+  .tier-chip{
+    border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center;
+  }
+  .tier-chip .tier-score{font-size:20px; font-weight:800; color:var(--user-primary);}
+  .tier-chip .tier-label{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+
+  /* ---------- Matching ---------- */
+  .match-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;}
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:26px;}
+  @media (max-width:680px){.match-grid{grid-template-columns:1fr;}}
+  .match-col-title{font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:8px;}
+  .match-item{
+    display:block; width:100%; text-align:left; border:1.5px solid var(--border); background:#fff;
+    border-radius:10px; padding:11px 14px; margin-bottom:9px; font-size:14px; transition:all .12s ease;
+  }
+  .match-item:hover:not(.matched){border-color:var(--user-primary);}
+  .match-item.selected{border-color:var(--user-primary); background:var(--primary-tint); box-shadow:0 0 0 3px rgba(26,68,128,0.12);}
+  .match-item.matched{background:var(--success-tint); border-color:var(--success); color:#155c37; cursor:default; opacity:.85;}
+  .match-item.shake{animation:shake .4s ease;}
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(3px);}
+    30%,50%,70%{transform:translateX(-5px);} 40%,60%{transform:translateX(5px);}
+  }
+  .match-status{text-align:center; margin-top:18px; font-size:14px; color:var(--muted);}
+  .match-complete{
+    text-align:center; padding:24px; background:var(--success-tint); border-radius:14px; color:#155c37; font-weight:700;
+    display:none;
+  }
+  .match-complete.shown{display:block;}
+
+  footer.app-footer{
+    text-align:center; padding:24px 20px 40px; color:var(--muted); font-size:12.5px;
+  }
+  @media (max-width:600px){
+    .flashcard{height:300px;}
+    .app-header h1{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="kicker">C++ Programming · Chapter 9 Study Activities</div>
+    <h1>Objects and Classes</h1>
+    <nav class="tabbar" role="tablist" aria-label="Study activity sections">
+      <button class="tab-btn" role="tab" data-tab="learn" aria-selected="true"><span class="tab-emoji">📘</span>Learn</button>
+      <button class="tab-btn" role="tab" data-tab="flashcards" aria-selected="false"><span class="tab-emoji">🗂️</span>Flashcards</button>
+      <button class="tab-btn" role="tab" data-tab="quiz" aria-selected="false"><span class="tab-emoji">✅</span>Quiz</button>
+      <button class="tab-btn" role="tab" data-tab="matching" aria-selected="false"><span class="tab-emoji">🔗</span>Matching</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================================================ LEARN PANEL ============================================================ -->
+  <section class="panel active" id="panel-learn" role="tabpanel" aria-labelledby="tab-learn">
+    <p class="intro-lead">Six sections walk through how C++ classes and objects work — from core vocabulary through constructors, object behavior, code organization, encapsulation, and class design. Each section ends with a quick self-check. Then head to <strong>Flashcards</strong>, the <strong>Quiz</strong>, or the <strong>Matching</strong> activity to practice.</p>
+
+    <!-- SECTION 1 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="true" data-target="sec1"><span class="num">1</span> Objects &amp; Classes: Core Concepts <span class="badge badge-remember" style="margin-left:8px;">Remember</span><span class="chev">▾</span></button>
+      <div class="section-body open" id="sec1">
+        <p>Object-oriented programming (OOP) means programming using <strong>objects</strong>. An object represents an entity in the real world that can be distinctly identified — a student, a desk, a circle, a button, even a loan.</p>
+        <div class="two-col">
+          <div class="mini-card">
+            <h4>🧩 Object</h4>
+            <ul class="clean">
+              <li>Has a unique identity, <strong>state</strong>, and <strong>behavior</strong></li>
+              <li><strong>State</strong> = a set of data fields (properties) with their current values</li>
+              <li><strong>Behavior</strong> = a set of functions (methods) the object can perform</li>
+            </ul>
+          </div>
+          <div class="mini-card">
+            <h4>🏗️ Class</h4>
+            <ul class="clean">
+              <li>A construct that defines objects of the <em>same type</em></li>
+              <li>Uses variables to define data fields</li>
+              <li>Uses functions to define behaviors</li>
+              <li>Provides <strong>constructors</strong> — special functions used to construct objects</li>
+            </ul>
+          </div>
+        </div>
+        <p style="font-size:13.5px; color:var(--muted);"><em>Think of a class as a blueprint, and each object as one house built from that blueprint — every house (object) has its own address and paint color (state), but they're all built the same way (behavior).</em></p>
+
+        <div class="self-check" data-section="sec1">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. Which best describes the "state" of an object?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">The set of functions the object can perform</button>
+              <button class="sc-opt" data-idx="1">The object's data fields and their current values</button>
+              <button class="sc-opt" data-idx="2">The class the object was built from</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">2. Which best describes a class?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">One specific object with a fixed state</button>
+              <button class="sc-opt" data-idx="1">A function that returns a value</button>
+              <button class="sc-opt" data-idx="2">A construct that defines objects of the same type</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec2"><span class="num">2</span> Constructors &amp; Creating Objects <span class="badge badge-understand" style="margin-left:8px;">Understand</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec2">
+        <ul class="clean">
+          <li>A <strong>constructor</strong> has exactly the same name as the class, has <strong>no return type</strong> — not even <code>void</code> — and initializes a new object</li>
+          <li>A <strong>no-arg constructor</strong> takes no parameters, e.g. <code>Circle()</code></li>
+          <li>If a class declares <em>no</em> constructors at all, C++ implicitly provides a <strong>default constructor</strong> — a no-arg constructor with an empty body</li>
+          <li>Constructors can be <strong>overloaded</strong> — multiple constructors with the same name but different parameter lists</li>
+        </ul>
+
+        <div class="callout worked">
+          <div class="callout-title">🧩 Worked Example — A Simple Circle Class</div>
+          <p style="margin-bottom:10px;">Here's the reasoning for creating and using a <code>Circle</code> object:</p>
+          <div class="reasoning-step"><span class="step-tag">Ask</span><span>What data does every Circle need? → A <strong>radius</strong>, so the class declares <code>double radius;</code> as a data field.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Ask</span><span>How do I create a Circle with a default radius? → Call the no-arg constructor: <code>Circle circle1;</code></span></div>
+          <div class="reasoning-step"><span class="step-tag">Ask</span><span>How do I create a Circle with radius 5.5? → Call the constructor with arguments: <code>Circle circle2(5.5);</code></span></div>
+          <div class="reasoning-step"><span class="step-tag">Ask</span><span>How do I read or use the radius afterward? → The <strong>object member access operator</strong> (the dot): <code>circle2.radius</code> references the data field; <code>circle2.getArea()</code> invokes a function.</span></div>
+        </div>
+
+        <div class="callout apply">
+          <div class="callout-title">✍️ Your Turn — Apply It</div>
+          <p style="margin-bottom:8px;">A <code>Rectangle</code> class has two data fields, <code>width</code> and <code>height</code>. Write the declaration that creates an object named <code>rect1</code> using the no-arg constructor, and a second declaration that creates <code>rect2</code> with width 4.0 and height 2.5. Then reveal a model answer.</p>
+          <textarea class="answer-box" placeholder="rect1: ...&#10;rect2: ..."></textarea>
+          <div style="margin-top:10px;"><button class="btn secondary reveal-btn" data-reveal="reveal-rect">Show Model Answer</button></div>
+          <div class="reveal-box" id="reveal-rect">
+            <code>Rectangle rect1;</code> — uses the no-arg constructor.<br>
+            <code>Rectangle rect2(4.0, 2.5);</code> — uses a constructor with arguments, matching the order (width, then height).
+          </div>
+        </div>
+
+        <div class="self-check" data-section="sec2">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. What is a constructor's return type?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0"><code>void</code></button>
+              <button class="sc-opt" data-idx="1">Constructors have no return type at all</button>
+              <button class="sc-opt" data-idx="2">The same type as the class's first data field</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. A class has no constructors declared anywhere. What happens if you write <code>Circle c1;</code>?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">C++ implicitly provides a no-arg default constructor</button>
+              <button class="sc-opt" data-idx="1">The code fails to compile no matter what</button>
+              <button class="sc-opt" data-idx="2">C++ picks a random existing function to run instead</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec3"><span class="num">3</span> Working with Objects <span class="badge badge-understand" style="margin-left:8px;">Understand</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec3">
+        <div class="two-col">
+          <div class="mini-card">
+            <h4>Memberwise Copy</h4>
+            <p style="margin:0; font-size:14px;">The assignment operator <code>=</code> copies each data field from one object to another. <code>circle2 = circle1;</code> copies the radius — afterward they're still two separate objects, just with matching values at that moment.</p>
+          </div>
+          <div class="mini-card">
+            <h4>Constant Object Name</h4>
+            <p style="margin:0; font-size:14px;">Once declared, an object name always refers to that same object — it can't be reassigned to represent a different one. The object's <em>contents</em> can change; its <em>identity</em> cannot.</p>
+          </div>
+        </div>
+        <div class="two-col" style="margin-top:16px;">
+          <div class="mini-card">
+            <h4>Anonymous Objects</h4>
+            <p style="margin:0; font-size:14px;">An object created and used only once doesn't need a name: <code>Circle()</code> or <code>Circle(5.5)</code> creates an anonymous object on the spot.</p>
+          </div>
+          <div class="mini-card">
+            <h4>Class Is a Type</h4>
+            <p style="margin:0; font-size:14px;">Just like <code>int length;</code> declares an <code>int</code> variable, <code>Circle c1;</code> declares a variable of type <code>Circle</code>. A class is a custom data type.</p>
+          </div>
+        </div>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"After <code>circle2 = circle1;</code>, the two objects stay linked — changing circle1 later will also change circle2."</strong> Not true. The assignment performs a one-time <em>memberwise copy</em>: each of circle1's data field values is copied into circle2 at that moment. After the copy, circle1 and circle2 are completely independent objects. Changing circle1's radius afterward has no effect on circle2.</p>
+        </div>
+
+        <div class="self-check" data-section="sec3">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. After <code>circle2 = circle1;</code>, what happens if you later change <code>circle1.radius</code>?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">circle2's radius updates automatically too</button>
+              <button class="sc-opt" data-idx="1">circle2 is unaffected — they became independent at the moment of copying</button>
+              <button class="sc-opt" data-idx="2">The program fails to compile</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. Which of these creates an anonymous Circle object with radius 5.5?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0"><code>Circle(5.5)</code></button>
+              <button class="sc-opt" data-idx="1"><code>Circle circle1(5.5);</code></button>
+              <button class="sc-opt" data-idx="2"><code>circle1.radius = 5.5;</code></button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec4"><span class="num">4</span> Organizing Code: Header &amp; Implementation Files <span class="badge badge-understand" style="margin-left:8px;">Understand</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec4">
+        <p>C++ lets you separate a class's <strong>definition</strong> from its <strong>implementation</strong>:</p>
+        <ul class="clean">
+          <li>The <strong>class declaration</strong> (<code>.h</code> file) lists the data fields, constructor prototypes, and function prototypes — the contract</li>
+          <li>The <strong>class implementation</strong> (<code>.cpp</code> file) implements the constructors and functions — how the contract is fulfilled</li>
+          <li>Both files share the <em>same base name</em>, just different extensions — e.g. <code>Circle.h</code> and <code>Circle.cpp</code></li>
+        </ul>
+
+        <h4 style="color:var(--user-primary); font-size:14.5px;">Preventing Multiple Inclusions</h4>
+        <p>If a header file gets <code>#include</code>d more than once in the same compilation (a common accident when headers include each other), the compiler sees duplicate declarations and fails. The fix is an <strong>inclusion guard</strong>:</p>
+        <div class="mini-card" style="font-family:var(--font-mono); font-size:13px; white-space:pre-wrap;">#ifndef CIRCLE_H
+#define CIRCLE_H
+class Circle {
+  public:
+    double radius;
+    Circle();
+    Circle(double);
+    double getArea();
+};
+#endif</div>
+
+        <h4 style="color:var(--user-primary); font-size:14.5px; margin-top:16px;">Inline Functions</h4>
+        <p>When a function is implemented directly <em>inside</em> the class declaration, it automatically becomes an <strong>inline function</strong>. A function only <em>prototyped</em> in the class (and implemented separately in the .cpp file) is a regular function — unless you explicitly mark it <code>inline</code> there too.</p>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"The header and implementation files can be named anything, as long as both get included somewhere."</strong> By convention they should share the <em>same base name</em> — only the extension differs (<code>Circle.h</code> / <code>Circle.cpp</code>). This isn't just style: it's what lets any programmer instantly find the implementation that matches a given declaration, and it's the pairing most build tools and IDEs expect.</p>
+        </div>
+
+        <div class="self-check" data-section="sec4">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">1. What is the main purpose of an inclusion guard like <code>#ifndef CIRCLE_H</code>?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">It makes the program run faster at runtime</button>
+              <button class="sc-opt" data-idx="1">It automatically documents the class for other programmers</button>
+              <button class="sc-opt" data-idx="2">It prevents the same header file from being included more than once</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">2. A function is written entirely inside the class declaration's braces. What does that make it?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">A constructor, automatically</button>
+              <button class="sc-opt" data-idx="1">An inline function, automatically</button>
+              <button class="sc-opt" data-idx="2">A syntax error in C++</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec5"><span class="num">5</span> Encapsulation: Protecting Data with Getters &amp; Setters <span class="badge badge-analyze" style="margin-left:8px;">Analyze</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec5">
+        <p>A public data field like <code>circle1.radius</code> can be modified directly from anywhere — including <code>circle1.radius = -5;</code>, which makes no physical sense. This is risky for two reasons: the data can be tampered with, and the class becomes hard to maintain, because every program that used the field directly (a "client") breaks if you ever need to change how that data is stored.</p>
+
+        <div class="two-col">
+          <div class="mini-card">
+            <h4>Accessor (Getter)</h4>
+            <p style="margin:0; font-size:14px; font-family:var(--font-mono);">returnType getPropertyName()</p>
+            <p style="margin:6px 0 0; font-size:13.5px; color:var(--muted);">For a bool, convention uses <code>isPropertyName()</code> instead of <code>getPropertyName()</code>.</p>
+          </div>
+          <div class="mini-card">
+            <h4>Mutator (Setter)</h4>
+            <p style="margin:0; font-size:14px; font-family:var(--font-mono);">void setPropertyName(dataType value)</p>
+            <p style="margin:6px 0 0; font-size:13.5px; color:var(--muted);">Can validate the incoming value before storing it — e.g. rejecting a negative radius.</p>
+          </div>
+        </div>
+
+        <h4 style="color:var(--user-primary); font-size:14.5px; margin-top:16px;">The Scope of Variables</h4>
+        <p>Data fields act like class-wide variables — accessible to every constructor and function in the class, in any declaration order. Local variables, declared inside a function, are only visible within that function. If a local variable shares its name with a data field, <strong>the local variable takes precedence</strong> and temporarily hides the data field inside that function.</p>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"Making data fields private just adds extra typing — getters and setters don't really change anything."</strong> They change quite a lot. Private fields with validated setters let the class <em>enforce its own rules</em> (like "radius can't be negative") in exactly one place, and let the internal representation change later without breaking any client code that only ever called <code>getRadius()</code>/<code>setRadius()</code>. Public fields give up both of those guarantees.</p>
+        </div>
+
+        <div class="callout real-world">
+          <div class="callout-title">🌍 Real-World Application — A Bank Account Class</div>
+          <p>Imagine a <code>BankAccount</code> class with a <code>balance</code> data field. If <code>balance</code> is <strong>public</strong>, any code anywhere in a large banking application could write <code>account.balance = -500;</code> — an overdraft with no record of how it happened, and no way to stop it.</p>
+          <p style="margin-bottom:8px;">If <code>balance</code> is <strong>private</strong> with a <code>deposit(amount)</code> and a <code>withdraw(amount)</code> function instead of a raw setter, the class can enforce real business rules — e.g. rejecting a withdrawal that would leave the balance negative — no matter which part of the application calls it. This is exactly why real financial software encapsulates its data.</p>
+        </div>
+
+        <div class="self-check" data-section="sec5">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. Why is a validated setter better than a public data field for something like an account balance?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">It makes the program run faster</button>
+              <button class="sc-opt" data-idx="1">It lets the class enforce rules (like never allowing a negative balance) in one place</button>
+              <button class="sc-opt" data-idx="2">It's required by the C++ compiler for every class</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. A function has a local variable named <code>x</code>, and the class also has a data field named <code>x</code>. Inside that function, which one is used?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">The local variable — it takes precedence and hides the data field</button>
+              <button class="sc-opt" data-idx="1">The data field — data fields always win</button>
+              <button class="sc-opt" data-idx="2">Neither — this causes a compiler error</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec6"><span class="num">6</span> Class Abstraction &amp; Design <span class="badge badge-evaluate" style="margin-left:8px;">Evaluate / Create</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec6">
+        <p><strong>Class abstraction</strong> means separating a class's implementation from the use of the class. The creator of the class provides a description of what the class does and how to use it; the user of the class doesn't need to know how it's implemented internally. The implementation detail is encapsulated and hidden from the user.</p>
+
+        <div class="callout real-world">
+          <div class="callout-title">🌍 Case Study — The Loan Class</div>
+          <p>A <code>Loan</code> class might expose functions like <code>getMonthlyPayment()</code> and <code>getTotalPayment()</code>. A programmer using this class in a banking app doesn't need to know the interest formula used internally — they just call the functions and trust the results. If the bank later changes how interest is calculated, the <code>Loan</code> class can be updated internally without changing a single line in any program that uses it, <em>as long as the public functions keep the same names and behavior</em>.</p>
+        </div>
+
+        <p style="margin-bottom:8px; font-weight:600;">Your turn (design/create): sketch a class for a real-world entity of your choice — for example, a <code>Student</code>, a <code>Car</code>, or a <code>Ticket</code>. List: (1) two or three <em>private</em> data fields, (2) a constructor, (3) the getter/setter names for each private field, and (4) one additional behavior function beyond simple getters/setters.</p>
+        <textarea class="answer-box" placeholder="Class name: ...&#10;Private data fields: ...&#10;Constructor: ...&#10;Getters/Setters: ...&#10;Other behavior: ..."></textarea>
+        <div style="margin-top:10px;"><button class="btn secondary reveal-btn" data-reveal="reveal-design">Show a Sample Answer</button></div>
+        <div class="reveal-box" id="reveal-design">
+          <strong>Class:</strong> <code>Student</code><br>
+          <strong>Private fields:</strong> <code>string name</code>, <code>double gpa</code><br>
+          <strong>Constructor:</strong> <code>Student(string name, double gpa)</code><br>
+          <strong>Getters/Setters:</strong> <code>getName()</code>, <code>getGpa()</code>, <code>setGpa(double)</code> — with <code>setGpa</code> rejecting any value outside 0.0–4.0<br>
+          <strong>Other behavior:</strong> <code>bool isHonorRoll()</code> — returns true if <code>gpa >= 3.5</code><br>
+          <em>Many valid answers exist \u2014 the key is that private data is only ever changed through validated functions.</em>
+        </div>
+
+        <div class="self-check" data-section="sec6">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">1. What is the core idea behind class abstraction?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Every class must have exactly one function</button>
+              <button class="sc-opt" data-idx="1">Classes should never have private data fields</button>
+              <button class="sc-opt" data-idx="2">Users of a class only need to know what it does, not how it's implemented internally</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">2. A bank changes how the Loan class calculates interest internally, but keeps the same function names and behavior. What happens to programs that already use the Loan class?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">They all need to be rewritten immediately</button>
+              <button class="sc-opt" data-idx="1">They keep working without any changes, thanks to abstraction</button>
+              <button class="sc-opt" data-idx="2">They will crash the next time they run</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ FLASHCARDS PANEL ============================================================ -->
+  <section class="panel" id="panel-flashcards" role="tabpanel" aria-labelledby="tab-flashcards">
+    <p class="intro-lead">24 terms from Chapter 9, ordered from foundational recall to applied and analytical thinking. Click a card to flip it, then mark whether you knew it.</p>
+
+    <div class="fc-toolbar">
+      <select id="fc-category-filter" aria-label="Filter flashcards by category">
+        <option value="all">All Categories</option>
+      </select>
+      <button class="btn secondary" id="fc-shuffle">🔀 Shuffle</button>
+      <button class="btn secondary" id="fc-reset">↺ Reset Progress</button>
+      <div class="fc-progress">
+        <span>Known: <b id="fc-known-count">0</b></span>
+        <span>Reviewing: <b id="fc-review-count">0</b></span>
+        <span>Total: <b id="fc-total-count">0</b></span>
+      </div>
+    </div>
+
+    <div class="fc-stage">
+      <div class="fc-counter"><span id="fc-position">1</span> / <span id="fc-total">24</span></div>
+      <div class="flashcard" id="flashcard" tabindex="0" role="button" aria-label="Flashcard, click to flip">
+        <div class="flashcard-inner">
+          <div class="fc-face fc-front">
+            <div class="fc-tag-row"><span class="fc-cat" id="fc-cat-front"></span><span class="badge" id="fc-level-front"></span></div>
+            <div class="fc-term" id="fc-term"></div>
+            <div class="fc-hint">Click to reveal the answer</div>
+          </div>
+          <div class="fc-face fc-back">
+            <div class="fc-tag-row"><span class="fc-cat" id="fc-cat-back"></span><span class="badge" id="fc-level-back"></span></div>
+            <p id="fc-definition"></p>
+            <div class="fc-hint">Click to flip back</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fc-controls">
+        <button class="btn secondary" id="fc-mark-review">🔁 Still Learning</button>
+        <button class="btn" id="fc-mark-known">✔️ Got It</button>
+      </div>
+      <div class="fc-nav">
+        <button class="btn secondary" id="fc-prev">← Previous</button>
+        <button class="btn secondary" id="fc-next">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ QUIZ PANEL ============================================================ -->
+  <section class="panel" id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz">
+    <div class="quiz-wrap">
+      <div class="quiz-intro" id="quiz-intro">
+        <h3 style="color:var(--user-primary);">Chapter 9 Comprehension Quiz</h3>
+        <p style="color:var(--muted); max-width:460px; margin:0 auto 16px;">14 questions, scaffolded from basic recall up through analysis and evaluation. You'll get feedback and an explanation after every answer.</p>
+        <button class="btn accent" id="quiz-start">Start Quiz</button>
+      </div>
+
+      <div id="quiz-active" style="display:none;">
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div>
+        <div class="quiz-card">
+          <div class="quiz-meta">
+            <span class="quiz-qnum" id="quiz-qnum">Question 1 of 14</span>
+            <span class="badge" id="quiz-level-badge"></span>
+          </div>
+          <div class="quiz-qtext" id="quiz-qtext"></div>
+          <div class="quiz-options" id="quiz-options"></div>
+          <div class="quiz-explain" id="quiz-explain"></div>
+          <div class="quiz-footer">
+            <button class="btn" id="quiz-next" disabled>Next Question →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="quiz-results" style="display:none;">
+        <div class="quiz-results">
+          <div style="font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700;">Your Score</div>
+          <div class="quiz-score" id="quiz-final-score">0 / 12</div>
+          <div class="tier-breakdown" id="tier-breakdown"></div>
+          <button class="btn accent" id="quiz-retry">Retry Quiz</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ MATCHING PANEL ============================================================ -->
+  <section class="panel" id="panel-matching" role="tabpanel" aria-labelledby="tab-matching">
+    <p class="intro-lead">Click a term on the left, then click its matching definition on the right. Matched pairs lock in green.</p>
+
+    <div class="match-toolbar">
+      <select id="match-set-select" aria-label="Choose matching set">
+        <option value="0">Set A — Object-Oriented Vocabulary</option>
+        <option value="1">Set B — Encapsulation &amp; File Organization</option>
+      </select>
+      <button class="btn secondary" id="match-reset">↺ Reset</button>
+    </div>
+
+    <div class="match-grid">
+      <div>
+        <div class="match-col-title">Terms</div>
+        <div id="match-terms"></div>
+      </div>
+      <div>
+        <div class="match-col-title">Definitions</div>
+        <div id="match-defs"></div>
+      </div>
+    </div>
+    <div class="match-status" id="match-status">0 of 6 matched</div>
+    <div class="match-complete" id="match-complete">🎉 Great work — all pairs matched correctly!</div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  C++ Programming · Chapter 9 — Objects and Classes &nbsp;|&nbsp; San Joaquin Delta College, Department of Computer Science &nbsp;|&nbsp; Content adapted from Y. Daniel Liang, Chapter 9: Objects and Classes
+</footer>
+<script>
+/* ============================================================ DATA ============================================================ */
+
+const flashcardsData = [
+  {cat:"Core Concepts", level:"Remember", term:"Object", def:"An entity in the real world that can be distinctly identified. Has a unique identity, a state, and behavior."},
+  {cat:"Core Concepts", level:"Remember", term:"Class", def:"A construct that defines objects of the same type. Uses variables for data fields and functions for behaviors."},
+  {cat:"Core Concepts", level:"Remember", term:"State (of an object)", def:"The set of data fields (properties) of an object, along with their current values."},
+  {cat:"Core Concepts", level:"Remember", term:"Behavior (of an object)", def:"The set of functions (methods) that define what an object can do."},
+  {cat:"Constructors", level:"Remember", term:"Constructor", def:"A special function with exactly the class's name, no return type (not even void), used to initialize a new object."},
+  {cat:"Constructors", level:"Remember", term:"No-Arg Constructor", def:"A constructor that takes no parameters, e.g. Circle()."},
+  {cat:"Constructors", level:"Understand", term:"Default Constructor", def:"A no-arg constructor with an empty body, implicitly provided by C++ only when a class declares no constructors of its own."},
+  {cat:"Constructors", level:"Understand", term:"Overloaded Constructors", def:"Multiple constructors in the same class sharing the class's name but differing in their parameter lists (signatures)."},
+  {cat:"Objects", level:"Remember", term:"Object Member Access Operator ( . )", def:"Used after an object's name to reference a data field (objectName.field) or invoke a function (objectName.function())."},
+  {cat:"Objects", level:"Apply", term:"Create circle2 with radius 5.5", def:"Circle circle2(5.5); \u2014 calls the constructor that takes a radius argument."},
+  {cat:"Objects", level:"Understand", term:"Memberwise Copy", def:"What the assignment operator (=) does between two objects of the same class: each data field is copied from one object to the other, one field at a time."},
+  {cat:"Objects", level:"Understand", term:"Constant Object Name", def:"Once declared, an object name always refers to the same object \u2014 it cannot later be reassigned to represent a different object, even though the object's contents can change."},
+  {cat:"Objects", level:"Understand", term:"Anonymous Object", def:"An object created and used only once, without being given a name \u2014 e.g. Circle(5.5) used directly in an expression."},
+  {cat:"Objects", level:"Understand", term:"Class Is a Type", def:"A class name can be used to declare variables the same way a primitive type can \u2014 e.g. Circle c1; declares a variable of type Circle."},
+  {cat:"File Organization", level:"Understand", term:"Class Declaration (.h file)", def:"Lists the data fields, constructor prototypes, and function prototypes for a class \u2014 the contract of what the class offers."},
+  {cat:"File Organization", level:"Understand", term:"Class Implementation (.cpp file)", def:"Contains the actual code for a class's constructors and functions \u2014 how the contract is fulfilled."},
+  {cat:"File Organization", level:"Understand", term:"Inclusion Guard", def:"The #ifndef / #define / #endif pattern that prevents a header file from being included \u2014 and its contents redeclared \u2014 more than once."},
+  {cat:"File Organization", level:"Understand", term:"Inline Function", def:"A function implemented directly inside the class declaration, which automatically becomes inline \u2014 as opposed to a function only prototyped there and implemented separately."},
+  {cat:"Encapsulation", level:"Remember", term:"Accessor (Getter)", def:"A function with the signature returnType getPropertyName() that returns a private data field's value (isPropertyName() for a bool)."},
+  {cat:"Encapsulation", level:"Remember", term:"Mutator (Setter)", def:"A function with the signature void setPropertyName(dataType value) that changes a private data field's value, often after validating it."},
+  {cat:"Encapsulation", level:"Analyze", term:"Why not make data fields public?", def:"Public fields can be modified directly by any client code with no validation, and they tightly couple client programs to the class's internal representation \u2014 making the class fragile and hard to maintain."},
+  {cat:"Encapsulation", level:"Understand", term:"Local Variable Shadowing", def:"If a local variable inside a function has the same name as a data field, the local variable takes precedence and temporarily hides the data field within that function."},
+  {cat:"Class Design", level:"Understand", term:"Class Abstraction", def:"Separating a class's implementation from its use \u2014 the user only needs to know what the class does, not how it does it internally."},
+  {cat:"Class Design", level:"Analyze", term:"Analyze: Loan class changes its interest formula internally but keeps the same function names \u2014 what happens to existing client programs?", def:"Nothing breaks \u2014 client programs keep working unchanged, because abstraction hid the implementation detail behind a stable set of public functions."}
+];
+
+const quizData = [
+  {level:"Remember", q:"Which best defines an object in object-oriented programming?", opts:["A function that returns a value","An entity with a unique identity, state, and behavior","A type of loop used to repeat code","A file that stores program output"], correct:1, explain:"An object represents a real-world entity that can be distinctly identified, with its own state (data) and behavior (functions)."},
+  {level:"Remember", q:"What defines the \u201cstate\u201d of an object?", opts:["Its data fields and their current values","The number of functions it has","The name of its class","The order it was created in"], correct:0, explain:"State is the set of data fields (properties) an object has, along with their current values."},
+  {level:"Remember", q:"What is a class in C++?", opts:["A single object with fixed data","A construct that defines objects of the same type","A built-in C++ keyword for loops","A file extension"], correct:1, explain:"A class is a blueprint \u2014 it defines the data fields and functions shared by every object created from it."},
+  {level:"Understand", q:"Which statement about constructors is true?", opts:["A constructor can have any name unrelated to the class","A constructor's return type must be void","A constructor has exactly the same name as its class and no return type at all","A class can have at most one constructor"], correct:2, explain:"Constructors share the class's exact name, have no return type (not even void), and can be overloaded."},
+  {level:"Understand", q:"A class declares zero constructors. What happens when you write ClassName obj;?", opts:["A compiler error, always","C++ implicitly supplies a no-arg default constructor with an empty body","The object is created with random garbage data and no constructor runs","You must add a constructor before the program will even parse"], correct:1, explain:"When no constructors are declared, C++ automatically provides a no-arg default constructor."},
+  {level:"Apply", q:"Which line correctly creates a Circle object named circle2 with radius 5.5?", opts:["Circle circle2 = 5.5;","circle2 Circle(5.5);","Circle circle2(5.5);","new Circle circle2(5.5);"], correct:2, explain:"The syntax ClassName objectName(arguments); invokes the matching constructor \u2014 here, the one that takes a radius."},
+  {level:"Apply", q:"Given Circle circle1(5.5);, which expression correctly reads its radius using the object member access operator?", opts:["circle1->radius","circle1.radius","circle1[radius]","radius.circle1"], correct:1, explain:"The dot operator (.) accesses a data field or invokes a function on an object in C++."},
+  {level:"Understand", q:"What does circle2 = circle1; actually do?", opts:["Makes circle2 and circle1 permanently the same object","Performs a memberwise copy of circle1's data fields into circle2, one time", "Deletes circle1 and renames it circle2","Calls circle1's constructor a second time"], correct:1, explain:"The assignment operator performs a one-time memberwise copy \u2014 afterward the two objects remain independent."},
+  {level:"Understand", q:"Why is an object name sometimes called \u201cconstant\u201d even though its contents can change?", opts:["Because C++ forbids modifying any of its data fields","Because the name always refers to the same object \u2014 it can never be reassigned to a different object", "Because constant objects use less memory","Because it must be declared with the keyword const"], correct:1, explain:"An object name's identity is fixed once declared, even though the object's internal data can be modified."},
+  {level:"Understand", q:"What is the main purpose of an inclusion guard (#ifndef / #define / #endif)?", opts:["To speed up program execution at runtime","To prevent a header file's contents from being declared more than once if included multiple times","To automatically generate documentation","To mark a function as inline"], correct:1, explain:"Inclusion guards stop duplicate declarations that would otherwise cause a compile error when a header is included more than once."},
+  {level:"Understand", q:"A function is implemented with its full body directly inside a class's declaration. What does this make it?", opts:["A constructor, automatically, regardless of its name","An inline function, automatically","Invalid C++ syntax","A private function only, regardless of its access label"], correct:1, explain:"Implementing a function's body inside the class declaration automatically makes it an inline function."},
+  {level:"Analyze", q:"A function has a local variable named radius, and the class also has a data field named radius. Inside that function, which value does the code use?", opts:["The data field \u2014 data fields always take precedence","The local variable \u2014 it takes precedence and hides the data field within that function","Both are combined into one value","The program fails to compile due to the name conflict"], correct:1, explain:"A local variable with the same name as a data field shadows (hides) that data field for the scope of the function."},
+  {level:"Analyze", q:"Why is direct access like circle1.radius = -5; considered bad practice, even though it compiles fine?", opts:["It runs slower than using a setter function","It bypasses any validation, allows an invalid state (a negative radius), and tightly couples client code to the class's internal representation","C++ actually forbids this at compile time","It only affects the anonymous object, not circle1"], correct:1, explain:"Public fields let any code set invalid values with no checks, and make the class fragile to maintain if its internal representation ever needs to change."},
+  {level:"Evaluate", q:"A BankAccount class could expose a public double balance field, or a private balance with deposit()/withdraw() functions that reject invalid amounts. Which design better reflects good encapsulation, and why?", opts:["The public field \u2014 it's simpler and requires less code to access","The private field with validated functions \u2014 it lets the class enforce its own rules everywhere it's used, and hides internal representation from client code","Both are equally good since they store the same value","Neither \u2014 balance should never be stored in the class at all"], correct:1, explain:"Encapsulating balance behind validated functions ensures every use of the class respects the same rules (e.g., no negative balance) and lets the internal implementation change safely later."}
+];
+
+const matchingSets = [
+  {
+    name:"Object-Oriented Vocabulary",
+    pairs:[
+      {term:"Object", def:"An entity with a unique identity, state, and behavior"},
+      {term:"Class", def:"A construct that defines objects of the same type"},
+      {term:"Constructor", def:"A special function, named after the class, used to initialize objects"},
+      {term:"Data Field", def:"A variable that holds part of an object's state"},
+      {term:"Function (Method)", def:"Defines part of an object's behavior"},
+      {term:"Object Member Access Operator (.)", def:"Used to access a data field or invoke a function on an object"}
+    ]
+  },
+  {
+    name:"Encapsulation & File Organization",
+    pairs:[
+      {term:"Accessor (Getter)", def:"A function that returns a private data field's value"},
+      {term:"Mutator (Setter)", def:"A function that changes a private data field's value, often with validation"},
+      {term:"Header File (.h)", def:"Contains the class declaration \u2014 data fields and function prototypes"},
+      {term:"Implementation File (.cpp)", def:"Contains the actual code for constructors and functions"},
+      {term:"Inclusion Guard", def:"Prevents a header file from being included more than once"},
+      {term:"Inline Function", def:"A function implemented directly inside the class declaration"}
+    ]
+  }
+];
+
+const levelBadgeClass = {
+  "Remember":"badge-remember", "Understand":"badge-understand", "Apply":"badge-apply",
+  "Analyze":"badge-analyze", "Evaluate":"badge-evaluate", "Create":"badge-create"
+};
+
+/* ============================================================ TABS ============================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.setAttribute('aria-selected','false'));
+    btn.setAttribute('aria-selected','true');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================================================ ACCORDION ============================================================ */
+document.querySelectorAll('.section-head').forEach(head=>{
+  head.addEventListener('click', ()=>{
+    const body = document.getElementById(head.dataset.target);
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    head.setAttribute('aria-expanded', String(!isOpen));
+  });
+});
+
+/* ============================================================ REVEAL BUTTONS (worked example / case study) ============================================================ */
+document.querySelectorAll('.reveal-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const box = document.getElementById(btn.dataset.reveal);
+    box.classList.toggle('shown');
+    btn.textContent = box.classList.contains('shown') ? 'Hide Model Answer' : btn.textContent.replace('Hide','Show');
+  });
+});
+
+/* ============================================================ MINI SELF-CHECKS ============================================================ */
+document.querySelectorAll('.sc-question').forEach(q=>{
+  const correctIdx = parseInt(q.dataset.correct, 10);
+  const feedback = q.querySelector('.sc-feedback');
+  q.querySelectorAll('.sc-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      const idx = parseInt(opt.dataset.idx, 10);
+      q.querySelectorAll('.sc-opt').forEach(o=>o.disabled = true);
+      if(idx === correctIdx){
+        opt.classList.add('correct');
+        feedback.textContent = '\u2713 Correct \u2014 nice work.';
+        feedback.className = 'sc-feedback shown right';
+      } else {
+        opt.classList.add('incorrect');
+        q.querySelector('[data-idx="'+correctIdx+'"]').classList.add('correct');
+        feedback.textContent = '\u2717 Not quite \u2014 review the highlighted answer above.';
+        feedback.className = 'sc-feedback shown wrong';
+      }
+    });
+  });
+});
+
+/* ============================================================ FLASHCARDS ============================================================ */
+let fcDeck = flashcardsData.map((c,i)=>({...c, id:i, status:'new'}));
+let fcFiltered = [...fcDeck];
+let fcIndex = 0;
+
+function fcPopulateCategories(){
+  const sel = document.getElementById('fc-category-filter');
+  const cats = [...new Set(flashcardsData.map(c=>c.cat))];
+  cats.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function fcRender(){
+  const card = fcFiltered[fcIndex];
+  const el = document.getElementById('flashcard');
+  el.classList.remove('flipped');
+  if(!card){
+    document.getElementById('fc-term').textContent = 'No cards in this category.';
+    document.getElementById('fc-definition').textContent = '';
+    return;
+  }
+  document.getElementById('fc-term').textContent = card.term;
+  document.getElementById('fc-definition').textContent = card.def;
+  document.getElementById('fc-cat-front').textContent = card.cat;
+  document.getElementById('fc-cat-back').textContent = card.cat;
+  const badgeFront = document.getElementById('fc-level-front');
+  const badgeBack = document.getElementById('fc-level-back');
+  badgeFront.textContent = card.level; badgeFront.className = 'badge ' + levelBadgeClass[card.level];
+  badgeBack.textContent = card.level; badgeBack.className = 'badge ' + levelBadgeClass[card.level];
+  document.getElementById('fc-position').textContent = fcIndex + 1;
+  document.getElementById('fc-total').textContent = fcFiltered.length;
+  fcUpdateProgress();
+}
+
+function fcUpdateProgress(){
+  const known = fcDeck.filter(c=>c.status==='known').length;
+  const review = fcDeck.filter(c=>c.status==='review').length;
+  document.getElementById('fc-known-count').textContent = known;
+  document.getElementById('fc-review-count').textContent = review;
+  document.getElementById('fc-total-count').textContent = fcDeck.length;
+}
+
+document.getElementById('flashcard').addEventListener('click', ()=>{
+  document.getElementById('flashcard').classList.toggle('flipped');
+});
+document.getElementById('flashcard').addEventListener('keypress', (e)=>{
+  if(e.key === 'Enter' || e.key === ' '){ document.getElementById('flashcard').classList.toggle('flipped'); }
+});
+
+document.getElementById('fc-next').addEventListener('click', ()=>{
+  if(fcFiltered.length===0) return;
+  fcIndex = (fcIndex + 1) % fcFiltered.length;
+  fcRender();
+});
+document.getElementById('fc-prev').addEventListener('click', ()=>{
+  if(fcFiltered.length===0) return;
+  fcIndex = (fcIndex - 1 + fcFiltered.length) % fcFiltered.length;
+  fcRender();
+});
+document.getElementById('fc-mark-known').addEventListener('click', ()=>{
+  if(!fcFiltered[fcIndex]) return;
+  fcDeck.find(c=>c.id===fcFiltered[fcIndex].id).status = 'known';
+  fcUpdateProgress();
+});
+document.getElementById('fc-mark-review').addEventListener('click', ()=>{
+  if(!fcFiltered[fcIndex]) return;
+  fcDeck.find(c=>c.id===fcFiltered[fcIndex].id).status = 'review';
+  fcUpdateProgress();
+});
+document.getElementById('fc-shuffle').addEventListener('click', ()=>{
+  for(let i = fcFiltered.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [fcFiltered[i], fcFiltered[j]] = [fcFiltered[j], fcFiltered[i]];
+  }
+  fcIndex = 0;
+  fcRender();
+});
+document.getElementById('fc-reset').addEventListener('click', ()=>{
+  fcDeck.forEach(c=>c.status='new');
+  fcUpdateProgress();
+});
+document.getElementById('fc-category-filter').addEventListener('change', (e)=>{
+  const val = e.target.value;
+  fcFiltered = val==='all' ? [...fcDeck] : fcDeck.filter(c=>c.cat===val);
+  fcIndex = 0;
+  fcRender();
+});
+
+fcPopulateCategories();
+fcRender();
+
+/* ============================================================ QUIZ ============================================================ */
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let quizTierResults = {};
+
+function quizStart(){
+  quizIndex = 0; quizScore = 0; quizAnswered = false;
+  quizTierResults = {};
+  document.getElementById('quiz-intro').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  quizRenderQuestion();
+}
+
+function quizRenderQuestion(){
+  quizAnswered = false;
+  const q = quizData[quizIndex];
+  document.getElementById('quiz-qnum').textContent = 'Question ' + (quizIndex+1) + ' of ' + quizData.length;
+  const badge = document.getElementById('quiz-level-badge');
+  badge.textContent = q.level; badge.className = 'badge ' + levelBadgeClass[q.level];
+  document.getElementById('quiz-qtext').textContent = q.q;
+  document.getElementById('quiz-progress-fill').style.width = (quizIndex/quizData.length*100) + '%';
+
+  const optsWrap = document.getElementById('quiz-options');
+  optsWrap.innerHTML = '';
+  q.opts.forEach((optText, idx)=>{
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = optText;
+    b.addEventListener('click', ()=>quizAnswer(idx));
+    optsWrap.appendChild(b);
+  });
+  document.getElementById('quiz-explain').classList.remove('shown');
+  document.getElementById('quiz-next').disabled = true;
+}
+
+function quizAnswer(idx){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  const q = quizData[quizIndex];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach((o,i)=>{
+    o.disabled = true;
+    if(i === q.correct) o.classList.add('correct');
+    else if(i === idx) o.classList.add('incorrect');
+  });
+  quizTierResults[q.level] = quizTierResults[q.level] || {correct:0, total:0};
+  quizTierResults[q.level].total++;
+  if(idx === q.correct){
+    quizScore++;
+    quizTierResults[q.level].correct++;
+  }
+  const explainBox = document.getElementById('quiz-explain');
+  explainBox.innerHTML = (idx===q.correct ? '<strong>\u2713 Correct.</strong> ' : '<strong>\u2717 Not quite.</strong> ') + q.explain;
+  explainBox.classList.add('shown');
+  document.getElementById('quiz-next').disabled = false;
+}
+
+document.getElementById('quiz-next').addEventListener('click', ()=>{
+  quizIndex++;
+  if(quizIndex >= quizData.length){
+    quizShowResults();
+  } else {
+    quizRenderQuestion();
+  }
+});
+
+function quizShowResults(){
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'block';
+  document.getElementById('quiz-final-score').textContent = quizScore + ' / ' + quizData.length;
+  const tierWrap = document.getElementById('tier-breakdown');
+  tierWrap.innerHTML = '';
+  Object.keys(quizTierResults).forEach(level=>{
+    const r = quizTierResults[level];
+    const chip = document.createElement('div');
+    chip.className = 'tier-chip';
+    chip.innerHTML = '<div class="tier-score">'+r.correct+'/'+r.total+'</div><div class="tier-label">'+level+'</div>';
+    tierWrap.appendChild(chip);
+  });
+}
+
+document.getElementById('quiz-start').addEventListener('click', quizStart);
+document.getElementById('quiz-retry').addEventListener('click', ()=>{
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-intro').style.display = 'block';
+});
+
+/* ============================================================ MATCHING ============================================================ */
+let matchCurrentSet = 0;
+let matchSelectedTerm = null;
+let matchSelectedDef = null;
+let matchMatchedCount = 0;
+let matchTermOrder = [];
+let matchDefOrder = [];
+
+function matchInit(setIdx){
+  matchCurrentSet = setIdx;
+  matchSelectedTerm = null; matchSelectedDef = null; matchMatchedCount = 0;
+  document.getElementById('match-complete').classList.remove('shown');
+  const pairs = matchingSets[setIdx].pairs;
+
+  matchTermOrder = pairs.map((p,i)=>i);
+  matchDefOrder = pairs.map((p,i)=>i);
+  shuffleArr(matchTermOrder);
+  shuffleArr(matchDefOrder);
+
+  const termsWrap = document.getElementById('match-terms');
+  const defsWrap = document.getElementById('match-defs');
+  termsWrap.innerHTML = '';
+  defsWrap.innerHTML = '';
+
+  matchTermOrder.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-item';
+    b.textContent = pairs[i].term;
+    b.dataset.pairIdx = i;
+    b.addEventListener('click', ()=>matchSelectTerm(b, i));
+    termsWrap.appendChild(b);
+  });
+  matchDefOrder.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-item';
+    b.textContent = pairs[i].def;
+    b.dataset.pairIdx = i;
+    b.addEventListener('click', ()=>matchSelectDef(b, i));
+    defsWrap.appendChild(b);
+  });
+  matchUpdateStatus();
+}
+
+function shuffleArr(arr){
+  for(let i=arr.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+}
+
+function matchSelectTerm(el, pairIdx){
+  if(el.classList.contains('matched')) return;
+  document.querySelectorAll('#match-terms .match-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  matchSelectedTerm = {el, pairIdx};
+  matchTryPair();
+}
+function matchSelectDef(el, pairIdx){
+  if(el.classList.contains('matched')) return;
+  document.querySelectorAll('#match-defs .match-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  matchSelectedDef = {el, pairIdx};
+  matchTryPair();
+}
+
+function matchTryPair(){
+  if(!matchSelectedTerm || !matchSelectedDef) return;
+  if(matchSelectedTerm.pairIdx === matchSelectedDef.pairIdx){
+    matchSelectedTerm.el.classList.remove('selected');
+    matchSelectedDef.el.classList.remove('selected');
+    matchSelectedTerm.el.classList.add('matched');
+    matchSelectedDef.el.classList.add('matched');
+    matchMatchedCount++;
+    matchUpdateStatus();
+    if(matchMatchedCount === matchingSets[matchCurrentSet].pairs.length){
+      document.getElementById('match-complete').classList.add('shown');
+    }
+  } else {
+    matchSelectedTerm.el.classList.add('shake');
+    matchSelectedDef.el.classList.add('shake');
+    setTimeout(()=>{
+      matchSelectedTerm.el.classList.remove('selected','shake');
+      matchSelectedDef.el.classList.remove('selected','shake');
+    }, 420);
+  }
+  matchSelectedTerm = null; matchSelectedDef = null;
+}
+
+function matchUpdateStatus(){
+  document.getElementById('match-status').textContent = matchMatchedCount + ' of ' + matchingSets[matchCurrentSet].pairs.length + ' matched';
+}
+
+document.getElementById('match-set-select').addEventListener('change', (e)=>{
+  matchInit(parseInt(e.target.value,10));
+});
+document.getElementById('match-reset').addEventListener('click', ()=>{
+  matchInit(matchCurrentSet);
+});
+
+matchInit(0);
+</script>
+</body>
+</html>
