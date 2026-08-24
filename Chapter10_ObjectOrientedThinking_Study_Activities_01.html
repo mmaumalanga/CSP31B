@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ Programming · Chapter 10 Study Activities — Object-Oriented Thinking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --user-primary:#1a4480;
+    --user-accent:#c8102e;
+    --user-background:#ffffff;
+    --primary-dark:#0f2c54;
+    --primary-tint:#eaf0f8;
+    --accent-tint:#fbe9ec;
+    --ink:#12203a;
+    --muted:#52627a;
+    --border:#d7e0ea;
+    --success:#1e7d4a;
+    --success-tint:#e6f4ec;
+    --warn-tint:#fff4e0;
+    --warn:#a35b00;
+    --font-body:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+    --radius:14px;
+    --shadow:0 2px 10px rgba(15,44,84,0.08);
+    --shadow-lg:0 12px 32px rgba(15,44,84,0.16);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    background:var(--user-background);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-weight:800; margin:0 0 .4em; line-height:1.25;}
+  p{margin:0 0 .8em;}
+  code, .mono{font-family:var(--font-mono);}
+  button{font-family:inherit; cursor:pointer;}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+  /* ---------- Header / Tabs ---------- */
+  header.app-header{
+    position:sticky; top:0; z-index:50;
+    background:var(--user-primary);
+    color:#fff;
+    box-shadow:var(--shadow-lg);
+  }
+  .header-inner{
+    max-width:1100px; margin:0 auto; padding:14px 20px 0;
+  }
+  .kicker{
+    font-size:12px; letter-spacing:.14em; font-weight:700; text-transform:uppercase;
+    color:#bcd0ee; margin-bottom:2px;
+  }
+  .app-header h1{
+    font-size:22px; margin:0 0 12px; color:#fff;
+  }
+  nav.tabbar{
+    display:flex; gap:4px; overflow-x:auto; scrollbar-width:none;
+    border-bottom:1px solid rgba(255,255,255,0.18);
+  }
+  nav.tabbar::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    background:transparent; border:none; color:#cfe0f5;
+    padding:11px 18px; font-size:14.5px; font-weight:600;
+    border-bottom:3px solid transparent; white-space:nowrap;
+    transition:all .15s ease;
+  }
+  .tab-btn .tab-emoji{margin-right:6px;}
+  .tab-btn:hover{color:#fff; background:rgba(255,255,255,0.08);}
+  .tab-btn[aria-selected="true"]{
+    color:#fff; border-bottom-color:var(--user-accent);
+  }
+
+  main{max-width:1100px; margin:0 auto; padding:28px 20px 80px;}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  .intro-lead{
+    font-size:16px; color:var(--muted); max-width:760px;
+  }
+
+  /* ---------- Badges ---------- */
+  .badge{
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.03em;
+    padding:3px 9px; border-radius:999px; text-transform:uppercase;
+  }
+  .badge-remember{background:#e7edf8; color:#2a4c85;}
+  .badge-understand{background:#e2f2ec; color:#1e7d4a;}
+  .badge-apply{background:#fff1de; color:#a35b00;}
+  .badge-analyze{background:#f7e6ea; color:#a01238;}
+  .badge-evaluate{background:#efe4f7; color:#6a2fa3;}
+  .badge-create{background:#e0f2f7; color:#0d6d84;}
+
+  /* ---------- Accordion (Learn tab) ---------- */
+  .section-card{
+    border:1px solid var(--border); border-radius:var(--radius);
+    margin-bottom:14px; overflow:hidden; background:#fff;
+  }
+  .section-head{
+    width:100%; display:flex; align-items:center; gap:12px;
+    background:var(--primary-tint); border:none; padding:16px 18px;
+    text-align:left; font-size:16px; font-weight:700; color:var(--user-primary);
+  }
+  .section-head .num{
+    display:flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:8px; background:var(--user-primary);
+    color:#fff; font-size:13px; flex-shrink:0;
+  }
+  .section-head .chev{margin-left:auto; transition:transform .2s ease; font-size:14px; color:var(--muted);}
+  .section-head[aria-expanded="true"] .chev{transform:rotate(180deg);}
+  .section-body{padding:0 20px; max-height:0; overflow:hidden; transition:max-height .3s ease, padding .3s ease;}
+  .section-body.open{padding:18px 20px 24px; max-height:4000px;}
+
+  ul.clean{margin:0 0 14px; padding-left:20px;}
+  ul.clean li{margin-bottom:7px;}
+  ul.clean li::marker{color:var(--user-accent);}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:680px){.two-col{grid-template-columns:1fr;}}
+
+  .mini-card{
+    background:var(--primary-tint); border-radius:12px; padding:14px 16px;
+  }
+  .mini-card h4{color:var(--user-primary); font-size:14.5px; margin-bottom:6px;}
+
+  table.data-table{
+    width:100%; border-collapse:collapse; margin:10px 0 16px; font-size:14px;
+  }
+  table.data-table th{
+    background:var(--user-primary); color:#fff; text-align:left;
+    padding:9px 12px; font-size:12.5px; letter-spacing:.02em;
+  }
+  table.data-table td{
+    padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top;
+  }
+  table.data-table tr:nth-child(even) td{background:#f7fafc;}
+
+  /* callouts */
+  .callout{
+    border-radius:12px; padding:14px 16px; margin:14px 0; border:1px solid transparent;
+  }
+  .callout-title{font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .callout.misconception{background:var(--accent-tint); border-color:#f3c3cc;}
+  .callout.misconception .callout-title{color:var(--user-accent);}
+  .callout.worked{background:var(--primary-tint); border-color:#c7d7ec;}
+  .callout.worked .callout-title{color:var(--user-primary);}
+  .callout.apply{background:var(--warn-tint); border-color:#f0d9a8;}
+  .callout.apply .callout-title{color:var(--warn);}
+  .callout.real-world{background:var(--success-tint); border-color:#bfe3cd;}
+  .callout.real-world .callout-title{color:var(--success);}
+
+  .reasoning-step{
+    display:flex; gap:10px; padding:8px 0; border-top:1px dashed #c7d7ec;
+  }
+  .reasoning-step:first-of-type{border-top:none;}
+  .reasoning-step .step-tag{
+    flex-shrink:0; font-size:11px; font-weight:800; color:#fff; background:var(--user-primary);
+    border-radius:6px; padding:3px 8px; height:fit-content; text-transform:uppercase;
+  }
+
+  textarea.answer-box{
+    width:100%; min-height:70px; border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px; font-family:var(--font-body); font-size:14px; resize:vertical;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--user-primary); color:#fff; border:none; border-radius:9px;
+    padding:9px 16px; font-size:13.5px; font-weight:600; transition:filter .15s ease;
+  }
+  .btn:hover{filter:brightness(1.1);}
+  .btn.secondary{background:#fff; color:var(--user-primary); border:1.5px solid var(--user-primary);}
+  .btn.accent{background:var(--user-accent);}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .reveal-box{
+    display:none; margin-top:10px; background:#fff; border:1px dashed #c7d7ec; border-radius:10px; padding:12px 14px; font-size:14px;
+  }
+  .reveal-box.shown{display:block;}
+
+  /* ---------- Mini self-check ---------- */
+  .self-check{
+    margin-top:18px; border:1.5px solid var(--user-primary); border-radius:12px; padding:16px 18px;
+    background:#fbfdff;
+  }
+  .self-check-title{
+    font-weight:800; font-size:14px; color:var(--user-primary);
+    display:flex; align-items:center; gap:8px; margin-bottom:10px;
+  }
+  .sc-question{margin-bottom:14px;}
+  .sc-question p.q-text{font-weight:600; font-size:14.5px; margin-bottom:8px;}
+  .sc-options{display:flex; flex-direction:column; gap:7px;}
+  .sc-opt{
+    text-align:left; border:1.5px solid var(--border); background:#fff; border-radius:9px;
+    padding:9px 12px; font-size:14px; color:var(--ink); transition:all .12s ease;
+  }
+  .sc-opt:hover{border-color:var(--user-primary);}
+  .sc-opt.correct{background:var(--success-tint); border-color:var(--success); color:#155c37; font-weight:600;}
+  .sc-opt.incorrect{background:var(--accent-tint); border-color:var(--user-accent); color:#8f0c22; font-weight:600;}
+  .sc-opt[disabled]{cursor:default;}
+  .sc-feedback{font-size:13.5px; margin-top:8px; padding:8px 10px; border-radius:8px; display:none;}
+  .sc-feedback.shown{display:block;}
+  .sc-feedback.right{background:var(--success-tint); color:#155c37;}
+  .sc-feedback.wrong{background:var(--accent-tint); color:#8f0c22;}
+
+  /* ---------- Flashcards ---------- */
+  .fc-toolbar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:18px;
+  }
+  .fc-toolbar select{
+    padding:8px 12px; border-radius:9px; border:1.5px solid var(--border); font-size:13.5px; font-family:inherit;
+    background:#fff;
+  }
+  .fc-progress{
+    margin-left:auto; font-size:13px; color:var(--muted); display:flex; gap:14px;
+  }
+  .fc-progress b{color:var(--ink);}
+  .fc-stage{
+    max-width:560px; margin:0 auto;
+  }
+  .fc-counter{text-align:center; font-size:13px; color:var(--muted); margin-bottom:10px;}
+  .flashcard{
+    perspective:1400px; height:260px; cursor:pointer; margin-bottom:18px;
+  }
+  .flashcard-inner{
+    position:relative; width:100%; height:100%; transition:transform .5s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+  .fc-face{
+    position:absolute; inset:0; backface-visibility:hidden;
+    border-radius:16px; padding:26px; display:flex; flex-direction:column;
+    box-shadow:var(--shadow-lg); border:1px solid var(--border);
+  }
+  .fc-front{background:var(--user-primary); color:#fff; justify-content:center; align-items:center; text-align:center; gap:14px;}
+  .fc-front .fc-term{font-size:22px; font-weight:800;}
+  .fc-back{background:#fff; transform:rotateY(180deg); justify-content:center;}
+  .fc-back p{font-size:15.5px; color:var(--ink); margin:0;}
+  .fc-tag-row{position:absolute; top:14px; left:16px; right:16px; display:flex; justify-content:space-between;}
+  .fc-cat{font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:#cfe0f5; font-weight:700;}
+  .fc-back .fc-cat{color:var(--muted);}
+  .fc-hint{font-size:12px; color:#cfe0f5; margin-top:auto;}
+  .fc-back .fc-hint{color:var(--muted); margin-top:14px;}
+
+  .fc-controls{
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;
+  }
+  .fc-nav{display:flex; justify-content:space-between; margin-top:16px;}
+
+  /* ---------- Quiz ---------- */
+  .quiz-intro{
+    background:var(--primary-tint); border-radius:14px; padding:22px; text-align:center;
+  }
+  .quiz-wrap{max-width:640px; margin:0 auto;}
+  .quiz-progress-bar{
+    height:8px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:18px;
+  }
+  .quiz-progress-fill{height:100%; background:var(--user-accent); width:0%; transition:width .3s ease;}
+  .quiz-card{
+    border:1px solid var(--border); border-radius:16px; padding:22px; box-shadow:var(--shadow);
+  }
+  .quiz-meta{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+  .quiz-qnum{font-size:13px; color:var(--muted); font-weight:600;}
+  .quiz-qtext{font-size:17px; font-weight:700; margin-bottom:16px;}
+  .quiz-options{display:flex; flex-direction:column; gap:9px;}
+  .quiz-opt{
+    text-align:left; border:1.5px solid var(--border); background:#fff; border-radius:10px;
+    padding:11px 14px; font-size:14.5px; transition:all .12s ease;
+  }
+  .quiz-opt:hover:not([disabled]){border-color:var(--user-primary); background:var(--primary-tint);}
+  .quiz-opt.correct{background:var(--success-tint); border-color:var(--success); font-weight:700; color:#155c37;}
+  .quiz-opt.incorrect{background:var(--accent-tint); border-color:var(--user-accent); font-weight:700; color:#8f0c22;}
+  .quiz-explain{
+    margin-top:14px; padding:12px 14px; border-radius:10px; background:#f7fafc; font-size:13.5px; display:none;
+  }
+  .quiz-explain.shown{display:block;}
+  .quiz-footer{display:flex; justify-content:flex-end; margin-top:16px;}
+  .quiz-results{text-align:center; padding:30px 10px;}
+  .quiz-score{font-size:46px; font-weight:800; color:var(--user-primary);}
+  .tier-breakdown{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin:22px 0;
+  }
+  .tier-chip{
+    border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center;
+  }
+  .tier-chip .tier-score{font-size:20px; font-weight:800; color:var(--user-primary);}
+  .tier-chip .tier-label{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+
+  /* ---------- Matching ---------- */
+  .match-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;}
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:26px;}
+  @media (max-width:680px){.match-grid{grid-template-columns:1fr;}}
+  .match-col-title{font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:8px;}
+  .match-item{
+    display:block; width:100%; text-align:left; border:1.5px solid var(--border); background:#fff;
+    border-radius:10px; padding:11px 14px; margin-bottom:9px; font-size:14px; transition:all .12s ease;
+  }
+  .match-item:hover:not(.matched){border-color:var(--user-primary);}
+  .match-item.selected{border-color:var(--user-primary); background:var(--primary-tint); box-shadow:0 0 0 3px rgba(26,68,128,0.12);}
+  .match-item.matched{background:var(--success-tint); border-color:var(--success); color:#155c37; cursor:default; opacity:.85;}
+  .match-item.shake{animation:shake .4s ease;}
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(3px);}
+    30%,50%,70%{transform:translateX(-5px);} 40%,60%{transform:translateX(5px);}
+  }
+  .match-status{text-align:center; margin-top:18px; font-size:14px; color:var(--muted);}
+  .match-complete{
+    text-align:center; padding:24px; background:var(--success-tint); border-radius:14px; color:#155c37; font-weight:700;
+    display:none;
+  }
+  .match-complete.shown{display:block;}
+
+  footer.app-footer{
+    text-align:center; padding:24px 20px 40px; color:var(--muted); font-size:12.5px;
+  }
+  @media (max-width:600px){
+    .flashcard{height:300px;}
+    .app-header h1{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="kicker">C++ Programming · Chapter 10 Study Activities</div>
+    <h1>Object-Oriented Thinking</h1>
+    <nav class="tabbar" role="tablist" aria-label="Study activity sections">
+      <button class="tab-btn" role="tab" data-tab="learn" aria-selected="true"><span class="tab-emoji">📘</span>Learn</button>
+      <button class="tab-btn" role="tab" data-tab="flashcards" aria-selected="false"><span class="tab-emoji">🗂️</span>Flashcards</button>
+      <button class="tab-btn" role="tab" data-tab="quiz" aria-selected="false"><span class="tab-emoji">✅</span>Quiz</button>
+      <button class="tab-btn" role="tab" data-tab="matching" aria-selected="false"><span class="tab-emoji">🔗</span>Matching</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================================================ LEARN PANEL ============================================================ -->
+  <section class="panel active" id="panel-learn" role="tabpanel" aria-labelledby="tab-learn">
+    <p class="intro-lead">Six sections build from passing objects to functions up through class design and constructor initializer lists. Each section ends with a quick self-check. Then head to <strong>Flashcards</strong>, the <strong>Quiz</strong>, or the <strong>Matching</strong> activity to practice.</p>
+
+    <!-- SECTION 1 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="true" data-target="sec1"><span class="num">1</span> Passing Objects: By Value vs. By Reference <span class="badge badge-understand" style="margin-left:8px;">Understand</span><span class="chev">▾</span></button>
+      <div class="section-body open" id="sec1">
+        <p>Just like primitive types, C++ objects are passed <strong>by value</strong> by default \u2014 a copy of the object is made for the function's parameter. Adding <code>&amp;</code> to the parameter switches to <strong>pass by reference</strong>, which passes the original object's memory location instead of a copy.</p>
+
+        <div class="callout worked">
+          <div class="callout-title">🧩 Worked Example \u2014 Same Function, Two Passing Mechanisms</div>
+          <p style="margin-bottom:10px;">Both versions start the same way: <code>Circle c1;</code> (radius = 1), then call a function that sets the radius to 12.1.</p>
+          <div class="reasoning-step"><span class="step-tag">By Value</span><span><code>void printByValue(Circle c1)</code> \u2014 c1 inside the function is a <em>copy</em>. Setting its radius to 12.1 only changes the copy. Output: inside the function, radius is 12.1 \u2014 but back in main(), <code>c1.print()</code> still shows <strong>radius is 1</strong>.</span></div>
+          <div class="reasoning-step"><span class="step-tag">By Reference</span><span><code>void printByReference(Circle &amp;c1)</code> \u2014 c1 inside the function <em>is</em> the original object. Setting its radius to 12.1 changes the real thing. Output: back in main(), <code>c1.print()</code> now shows <strong>radius is 12.1</strong>.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Takeaway</span><span>The only difference in the code is one <code>&amp;</code> symbol in the parameter \u2014 but it completely changes whether the caller's object is affected.</span></div>
+        </div>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"Objects are always passed by reference in C++ since they're complex data types."</strong> Not true. Unless a parameter is explicitly declared with <code>&amp;</code>, C++ objects are passed <strong>by value</strong> \u2014 exactly like an <code>int</code> or <code>double</code>. A full copy of the object (all its data fields) is made for the function. This differs from some other languages, so it's worth checking carefully in C++.</p>
+        </div>
+
+        <div class="self-check" data-section="sec1">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. A function has the parameter <code>Circle c1</code> (no &amp;). If it changes c1's radius, what happens to the original object in main()?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">The original object's radius also changes</button>
+              <button class="sc-opt" data-idx="1">The original object is unaffected \u2014 only the copy changed</button>
+              <button class="sc-opt" data-idx="2">The program fails to compile</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">2. Which parameter declaration passes an object by reference?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0"><code>Circle c1</code></button>
+              <button class="sc-opt" data-idx="1"><code>Circle *c1</code> (without further dereferencing shown)</button>
+              <button class="sc-opt" data-idx="2"><code>Circle &amp;c1</code></button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec2"><span class="num">2</span> Arrays of Objects &amp; Static Variables <span class="badge badge-understand" style="margin-left:8px;">Understand</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec2">
+        <p>An array can hold objects just like it holds primitives: <code>Circle circleArray[3] = {Circle(3), Circle(4), Circle(5)};</code> creates three Circle objects in one array, ready to loop over (e.g., to sum up a total area).</p>
+
+        <h4 style="color:var(--user-primary); font-size:14.5px;">Static (Class) Variables</h4>
+        <p>A <strong>static variable</strong> belongs to the <em>class itself</em>, not to any one object. There is only ever one copy, shared by every instance.</p>
+
+        <div class="callout worked">
+          <div class="callout-title">🧩 Worked Example \u2014 Counting Circle Objects</div>
+          <div class="reasoning-step"><span class="step-tag">Declare</span><span>Inside the class: <code>static int numberOfObjects;</code> and <code>static int getNumberOfObjects();</code></span></div>
+          <div class="reasoning-step"><span class="step-tag">Define</span><span>Outside the class, in the .cpp file: <code>int Circle::numberOfObjects = 0;</code> \u2014 this is where the single shared copy actually lives.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Update</span><span>Every constructor includes <code>numberOfObjects++;</code> \u2014 so each time <em>any</em> Circle is constructed, the one shared counter goes up by one.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Access</span><span>Because it belongs to the class, you can call <code>Circle::getNumberOfObjects()</code> directly \u2014 no object required.</span></div>
+        </div>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"Each object has its own copy of a static variable, just like it does for instance variables."</strong> The opposite is true. Instance variables (like <code>radius</code>) get a fresh copy per object. Static variables get exactly <strong>one</strong> copy, shared by the entire class \u2014 that's precisely what makes them useful for things like counting how many objects have been created.</p>
+        </div>
+
+        <div class="self-check" data-section="sec2">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. Three Circle objects are created. How many copies of <code>numberOfObjects</code> exist in memory?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Three \u2014 one per object</button>
+              <button class="sc-opt" data-idx="1">One \u2014 shared by all Circle objects</button>
+              <button class="sc-opt" data-idx="2">Zero, until an object calls a function</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. Which correctly calls a static function without creating an object first?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0"><code>Circle::getNumberOfObjects()</code></button>
+              <button class="sc-opt" data-idx="1"><code>getNumberOfObjects.Circle()</code></button>
+              <button class="sc-opt" data-idx="2">Static functions always require an object first</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec3"><span class="num">3</span> Constant Functions &amp; the Shift to OOP <span class="badge badge-apply" style="margin-left:8px;">Apply</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec3">
+        <p>Placing <code>const</code> at the end of a member function's header \u2014 e.g. <code>double getArea() const;</code> \u2014 tells the compiler this function is not allowed to modify any of the object's data fields. It's a promise the compiler enforces for you.</p>
+
+        <div class="callout real-world">
+          <div class="callout-title">🌍 Real-World Application \u2014 Evolving a Body Mass Index (BMI) Program</div>
+          <p>BMI is calculated as <span class="math">weightInKilograms / heightInMeters²</span>, classified as: under 18.5 = Underweight, 18.5\u201325.0 = Normal, 25.0\u201330.0 = Overweight, 30.0+ = Obese. The same program evolves across three solutions:</p>
+          <div class="reasoning-step"><span class="step-tag">Solution 1</span><span>All the code lives inside <code>main()</code>. It works once, but none of it can be reused for a second person without copy-pasting.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Solution 2</span><span>Break the logic into functions (the <strong>procedural paradigm</strong>). Now the BMI calculation is reusable \u2014 but weight, height, name, and age are passed around as separate, uncoupled parameters with no guarantee they belong together.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Solution 3</span><span>Create a <code>BMI</code> class (the <strong>object-oriented paradigm</strong>). Now weight, height, name, and age are bundled into one object, along with the functions that operate on them \u2014 reusable <em>and</em> naturally coupled.</span></div>
+        </div>
+
+        <p>This is the core difference between the two paradigms: <strong>procedural</strong> code keeps data and functions separate; <strong>object-oriented</strong> code ties them together in an object, which tends to be easier to reuse and maintain.</p>
+
+        <div class="self-check" data-section="sec3">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. A person weighs 70 kg and is 1.75 m tall. Their BMI is 70 / 1.75² ≈ 22.9. How is that classified?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Underweight</button>
+              <button class="sc-opt" data-idx="1">Normal</button>
+              <button class="sc-opt" data-idx="2">Overweight</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">2. What is the main advantage Solution 3 (the BMI class) has over Solution 2 (functions alone)?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">It runs faster on the CPU</button>
+              <button class="sc-opt" data-idx="1">It uses fewer lines of code overall</button>
+              <button class="sc-opt" data-idx="2">It couples weight, height, name, and age together in one reusable object</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec4"><span class="num">4</span> Designing Good Classes: Five Guidelines <span class="badge badge-analyze" style="margin-left:8px;">Analyze</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec4">
+        <table class="data-table">
+          <tr><th>Guideline</th><th>What it means</th></tr>
+          <tr><td><strong>Cohesion</strong></td><td>A class should describe a single entity, or a tightly related set of operations \u2014 split an overloaded class into several if needed</td></tr>
+          <tr><td><strong>Consistency</strong></td><td>Follow standard naming conventions and style consistently throughout the class</td></tr>
+          <tr><td><strong>Encapsulation</strong></td><td>Keep data fields private; expose them only through get/set functions where appropriate</td></tr>
+          <tr><td><strong>Clarity</strong></td><td>Design functions so they work correctly regardless of the order the user calls them in</td></tr>
+          <tr><td><strong>Completeness</strong></td><td>Support the range of ways different users might reasonably want to use the class</td></tr>
+        </table>
+
+        <div class="two-col">
+          <div class="mini-card">
+            <h4>Clarity in Action \u2014 the Loan Class</h4>
+            <p style="margin:0; font-size:14px;">A <code>Loan</code> class has <code>setLoanAmount()</code>, <code>setNumberOfYears()</code>, and <code>setAnnualInterestRate()</code>. A well-designed class lets a user call these in <em>any</em> order or combination \u2014 the class shouldn't silently break if <code>setNumberOfYears()</code> happens to be called before <code>setLoanAmount()</code>.</p>
+          </div>
+          <div class="mini-card">
+            <h4>Completeness in Action \u2014 the string Class</h4>
+            <p style="margin:0; font-size:14px;">C++'s built-in <code>string</code> class has more than 20 member functions \u2014 far more than any single program needs \u2014 because it's designed to serve a huge range of different applications, not just one.</p>
+          </div>
+        </div>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"As long as a class compiles and produces the right output, its design doesn't really matter."</strong> A class can work correctly today and still be a poor design \u2014 hard to reuse, easy to misuse, or painful to extend later. Guidelines like cohesion and encapsulation aren't about correctness; they're about keeping a class maintainable and reusable as a program (and the people working on it) grows.</p>
+        </div>
+
+        <div class="self-check" data-section="sec4">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">1. A class has grown to handle student records, billing, and email notifications all at once. Which guideline is being violated?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Completeness</button>
+              <button class="sc-opt" data-idx="1">Clarity</button>
+              <button class="sc-opt" data-idx="2">Cohesion</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">2. A class exposes all of its data fields as public, with no get/set functions. Which guideline does this violate?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Consistency</button>
+              <button class="sc-opt" data-idx="1">Encapsulation</button>
+              <button class="sc-opt" data-idx="2">Completeness</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec5"><span class="num">5</span> Class Relationships: Composition <span class="badge badge-analyze" style="margin-left:8px;">Analyze</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec5">
+        <p><strong>Composition</strong> is a "has-a" relationship: one class contains another as a data field, instead of duplicating that class's logic.</p>
+
+        <div class="callout worked">
+          <div class="callout-title">🧩 Worked Example \u2014 Designing a Cylinder Class</div>
+          <p style="margin-bottom:10px;">A Cylinder needs a circular base and a height, and should be able to compute its surface area and volume.</p>
+          <div class="reasoning-step"><span class="step-tag">First draft</span><span>A naive UML might give Cylinder its own <code>radius</code> field and re-implement circle-area math from scratch \u2014 duplicating logic the Circle class already has.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Better design</span><span>Instead, give Cylinder a data field <code>base : Circle</code> plus <code>height : double</code>. Cylinder now reuses Circle's existing <code>getArea()</code> for its top and bottom, rather than reinventing it.</span></div>
+          <div class="reasoning-step"><span class="step-tag">Result</span><span>Surface area = <span class="math">2 \u00d7 (Circle's area) + (circumference \u00d7 height)</span>. Cylinder "has a" Circle \u2014 that's the composition relationship.</span></div>
+        </div>
+
+        <div class="callout apply">
+          <div class="callout-title">✍️ Your Turn \u2014 Apply It</div>
+          <p style="margin-bottom:8px;">A <code>Car</code> class needs to track its <code>Engine</code> (with its own horsepower and fuel type). Sketch the composition relationship: what data field would Car have, and of what type? Then reveal a model answer.</p>
+          <textarea class="answer-box" placeholder="Car has a data field: ..."></textarea>
+          <div style="margin-top:10px;"><button class="btn secondary reveal-btn" data-reveal="reveal-car">Show Model Answer</button></div>
+          <div class="reveal-box" id="reveal-car">
+            <code>Car</code> would have a data field like <code>engine : Engine</code> \u2014 the Car class "has a" Engine object, the same way Cylinder "has a" Circle. Car can then call the Engine object's own functions instead of duplicating engine logic inside Car itself.
+          </div>
+        </div>
+
+        <div class="self-check" data-section="sec5">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. What relationship does composition describe?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">An "is-a" relationship, like a Circle being a Shape</button>
+              <button class="sc-opt" data-idx="1">A "has-a" relationship, like a Cylinder having a Circle base</button>
+              <button class="sc-opt" data-idx="2">A relationship between two functions in the same class</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. Why give Cylinder a Circle data field instead of re-implementing circle-area logic inside Cylinder?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">It reuses working, already-tested code instead of duplicating it</button>
+              <button class="sc-opt" data-idx="1">C++ requires every class to reuse at least one other class</button>
+              <button class="sc-opt" data-idx="2">It makes the Cylinder class run faster at runtime</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec6"><span class="num">6</span> Constructor Initializer Lists &amp; the StackOfInteger Class <span class="badge badge-evaluate" style="margin-left:8px;">Apply / Create</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec6">
+        <p>Object data fields are <em>not</em> automatically initialized the way local variables sometimes are. Two ways to set an object data field's starting value in a constructor:</p>
+        <table class="data-table">
+          <tr><th>Style</th><th>Example</th></tr>
+          <tr><td>Constructor initializer</td><td class="math">Circle::Circle() : radius(1) { }</td></tr>
+          <tr><td>Assignment in the body</td><td class="math">Circle::Circle() { radius = 1; }</td></tr>
+        </table>
+        <p>Both work the same for simple cases \u2014 <strong>but</strong> an initializer list is <em>required</em> when a data field's own class has no no-arg constructor, since there'd be no way to construct that field before the body even runs.</p>
+
+        <div class="callout real-world">
+          <div class="callout-title">🌍 Real-World Application \u2014 The StackOfIntegers Class</div>
+          <p>A <strong>stack</strong> stores items last-in, first-out (LIFO). Compilers use exactly this structure to manage function calls: when a function is called, its parameters and local variables are <em>pushed</em> onto a stack; when it returns, that space is <em>popped</em> off. If function A calls function B, B's data sits on top of A's until B finishes \u2014 which is why the most recently called function always finishes first.</p>
+        </div>
+
+        <div class="callout apply">
+          <div class="callout-title">✍️ Your Turn \u2014 Design It (Create)</div>
+          <p style="margin-bottom:8px;">Design the public interface for a <code>StackOfIntegers</code> class. List the function signatures you'd need to push a value, pop a value, peek at the top without removing it, and check whether the stack is empty. Then reveal a model answer.</p>
+          <textarea class="answer-box" placeholder="void push(...)&#10;int pop()&#10;..."></textarea>
+          <div style="margin-top:10px;"><button class="btn secondary reveal-btn" data-reveal="reveal-stack">Show Model Answer</button></div>
+          <div class="reveal-box" id="reveal-stack">
+            <code>void push(int value);</code> \u2014 adds a value to the top<br>
+            <code>int pop();</code> \u2014 removes and returns the top value<br>
+            <code>int peek() const;</code> \u2014 returns the top value without removing it<br>
+            <code>bool isEmpty() const;</code> \u2014 reports whether the stack has anything in it<br>
+            <em>peek() and isEmpty() are natural candidates for const, since neither should modify the stack's contents.</em>
+          </div>
+        </div>
+
+        <div class="self-check" data-section="sec6">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. When is a constructor initializer list required, rather than just optional?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Whenever a class has more than one constructor</button>
+              <button class="sc-opt" data-idx="1">When an object data field's class has no no-arg constructor</button>
+              <button class="sc-opt" data-idx="2">Never \u2014 assignment in the body always works instead</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">2. Values 10, then 20, then 30 are pushed onto a stack. What comes out first when you pop?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">10</button>
+              <button class="sc-opt" data-idx="1">20</button>
+              <button class="sc-opt" data-idx="2">30</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ FLASHCARDS PANEL ============================================================ -->
+  <section class="panel" id="panel-flashcards" role="tabpanel" aria-labelledby="tab-flashcards">
+    <p class="intro-lead">23 terms from Chapter 10, ordered from foundational recall to applied and analytical thinking. Click a card to flip it, then mark whether you knew it.</p>
+
+    <div class="fc-toolbar">
+      <select id="fc-category-filter" aria-label="Filter flashcards by category">
+        <option value="all">All Categories</option>
+      </select>
+      <button class="btn secondary" id="fc-shuffle">🔀 Shuffle</button>
+      <button class="btn secondary" id="fc-reset">↺ Reset Progress</button>
+      <div class="fc-progress">
+        <span>Known: <b id="fc-known-count">0</b></span>
+        <span>Reviewing: <b id="fc-review-count">0</b></span>
+        <span>Total: <b id="fc-total-count">0</b></span>
+      </div>
+    </div>
+
+    <div class="fc-stage">
+      <div class="fc-counter"><span id="fc-position">1</span> / <span id="fc-total">23</span></div>
+      <div class="flashcard" id="flashcard" tabindex="0" role="button" aria-label="Flashcard, click to flip">
+        <div class="flashcard-inner">
+          <div class="fc-face fc-front">
+            <div class="fc-tag-row"><span class="fc-cat" id="fc-cat-front"></span><span class="badge" id="fc-level-front"></span></div>
+            <div class="fc-term" id="fc-term"></div>
+            <div class="fc-hint">Click to reveal the answer</div>
+          </div>
+          <div class="fc-face fc-back">
+            <div class="fc-tag-row"><span class="fc-cat" id="fc-cat-back"></span><span class="badge" id="fc-level-back"></span></div>
+            <p id="fc-definition"></p>
+            <div class="fc-hint">Click to flip back</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fc-controls">
+        <button class="btn secondary" id="fc-mark-review">🔁 Still Learning</button>
+        <button class="btn" id="fc-mark-known">✔️ Got It</button>
+      </div>
+      <div class="fc-nav">
+        <button class="btn secondary" id="fc-prev">← Previous</button>
+        <button class="btn secondary" id="fc-next">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ QUIZ PANEL ============================================================ -->
+  <section class="panel" id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz">
+    <div class="quiz-wrap">
+      <div class="quiz-intro" id="quiz-intro">
+        <h3 style="color:var(--user-primary);">Chapter 10 Comprehension Quiz</h3>
+        <p style="color:var(--muted); max-width:460px; margin:0 auto 16px;">14 questions, scaffolded from basic recall up through analysis and evaluation. You'll get feedback and an explanation after every answer.</p>
+        <button class="btn accent" id="quiz-start">Start Quiz</button>
+      </div>
+
+      <div id="quiz-active" style="display:none;">
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div>
+        <div class="quiz-card">
+          <div class="quiz-meta">
+            <span class="quiz-qnum" id="quiz-qnum">Question 1 of 14</span>
+            <span class="badge" id="quiz-level-badge"></span>
+          </div>
+          <div class="quiz-qtext" id="quiz-qtext"></div>
+          <div class="quiz-options" id="quiz-options"></div>
+          <div class="quiz-explain" id="quiz-explain"></div>
+          <div class="quiz-footer">
+            <button class="btn" id="quiz-next" disabled>Next Question →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="quiz-results" style="display:none;">
+        <div class="quiz-results">
+          <div style="font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700;">Your Score</div>
+          <div class="quiz-score" id="quiz-final-score">0 / 12</div>
+          <div class="tier-breakdown" id="tier-breakdown"></div>
+          <button class="btn accent" id="quiz-retry">Retry Quiz</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ MATCHING PANEL ============================================================ -->
+  <section class="panel" id="panel-matching" role="tabpanel" aria-labelledby="tab-matching">
+    <p class="intro-lead">Click a term on the left, then click its matching definition on the right. Matched pairs lock in green.</p>
+
+    <div class="match-toolbar">
+      <select id="match-set-select" aria-label="Choose matching set">
+        <option value="0">Set A — Object Passing &amp; Storage</option>
+        <option value="1">Set B — Class Design &amp; Relationships</option>
+      </select>
+      <button class="btn secondary" id="match-reset">↺ Reset</button>
+    </div>
+
+    <div class="match-grid">
+      <div>
+        <div class="match-col-title">Terms</div>
+        <div id="match-terms"></div>
+      </div>
+      <div>
+        <div class="match-col-title">Definitions</div>
+        <div id="match-defs"></div>
+      </div>
+    </div>
+    <div class="match-status" id="match-status">0 of 6 matched</div>
+    <div class="match-complete" id="match-complete">🎉 Great work — all pairs matched correctly!</div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  C++ Programming · Chapter 10 — Object-Oriented Thinking &nbsp;|&nbsp; San Joaquin Delta College, Department of Computer Science &nbsp;|&nbsp; Content adapted from Y. Daniel Liang, Chapter 10: Object-Oriented Thinking
+</footer>
+<script>
+/* ============================================================ DATA ============================================================ */
+
+const flashcardsData = [
+  {cat:"Passing Objects", level:"Remember", term:"Pass by Value", def:"The default in C++ \u2014 a copy of the object is passed to the function's parameter. Changes inside the function do not affect the original object."},
+  {cat:"Passing Objects", level:"Remember", term:"Pass by Reference", def:"Declared with &, e.g. Circle &c1 \u2014 the original object's memory location is passed, so changes inside the function DO affect the original."},
+  {cat:"Passing Objects", level:"Apply", term:"Predict: printByValue(Circle c1) sets c1's radius to 12.1. What does main() see afterward?", def:"main()'s Circle is unaffected \u2014 it still shows the original radius, since only a copy was modified."},
+  {cat:"Passing Objects", level:"Apply", term:"Predict: printByReference(Circle &c1) sets c1's radius to 12.1. What does main() see afterward?", def:"main()'s Circle now shows radius 12.1 \u2014 the reference parameter modified the original object directly."},
+  {cat:"Arrays & Static", level:"Remember", term:"Array of Objects", def:"An array that stores multiple objects of the same class, e.g. Circle circleArray[3] = {Circle(3), Circle(4), Circle(5)};"},
+  {cat:"Arrays & Static", level:"Remember", term:"Static (Class) Variable", def:"A variable that belongs to the class itself rather than any one object \u2014 only one shared copy exists, no matter how many objects are created."},
+  {cat:"Arrays & Static", level:"Understand", term:"Static vs. Instance Variable", def:"Instance variables (like radius) get a fresh copy per object. Static variables (like numberOfObjects) get exactly one copy, shared across the whole class."},
+  {cat:"Arrays & Static", level:"Apply", term:"How do you call a static function without creating an object first?", def:"Using the class name and the scope operator: ClassName::staticFunctionName() \u2014 e.g. Circle::getNumberOfObjects()."},
+  {cat:"Const & Paradigms", level:"Remember", term:"Constant Member Function", def:"A function with const placed at the end of its header, e.g. double getArea() const; \u2014 tells the compiler it must not modify any data fields."},
+  {cat:"Const & Paradigms", level:"Understand", term:"Why mark a function const?", def:"It lets the compiler catch accidental modification of an object's data \u2014 the compiler will flag an error if a const function tries to change a field."},
+  {cat:"Const & Paradigms", level:"Remember", term:"Procedural Paradigm", def:"Programs organized around functions, with data and functions kept separate from each other."},
+  {cat:"Const & Paradigms", level:"Remember", term:"Object-Oriented Paradigm", def:"Programs organized around objects, where data and the functions that operate on it are bundled together."},
+  {cat:"Const & Paradigms", level:"Analyze", term:"Analyze: Why is an OOP BMI class more maintainable than a procedural version with separate weight/height/name/age parameters?", def:"The OOP version couples all of a person's related data into one object, so it can't accidentally be passed around out of sync \u2014 the procedural version relies on the programmer keeping four separate parameters consistently paired."},
+  {cat:"Class Design", level:"Understand", term:"Cohesion (design guideline)", def:"A class should describe a single entity or a tightly related set of operations \u2014 split it into multiple classes if it's doing too much."},
+  {cat:"Class Design", level:"Understand", term:"Encapsulation (design guideline)", def:"Keep data fields private; expose them only through get/set functions where the class intends them to be readable or updatable."},
+  {cat:"Class Design", level:"Understand", term:"Clarity (design guideline)", def:"Design functions so a user can call them in any order or combination without breaking the class \u2014 e.g. a Loan class's setters can be called in any order."},
+  {cat:"Class Design", level:"Understand", term:"Completeness (design guideline)", def:"Provide enough functions and properties to serve a wide variety of applications \u2014 e.g. the string class has 20+ member functions."},
+  {cat:"Relationships", level:"Understand", term:"Composition (\"has-a\")", def:"One class contains another as a data field \u2014 e.g. a Cylinder \"has a\" Circle base, instead of duplicating circle-area logic."},
+  {cat:"Relationships", level:"Apply", term:"Apply: Why give Cylinder a Circle data field instead of rewriting circle-area math inside Cylinder?", def:"It reuses Circle's already-written, already-tested getArea() logic rather than duplicating and re-testing the same math a second time."},
+  {cat:"Constructors & Stacks", level:"Understand", term:"Constructor Initializer List", def:"Syntax like Circle::Circle() : radius(1) { } \u2014 sets a data field's value before the constructor body runs. Required when a field's class has no no-arg constructor."},
+  {cat:"Constructors & Stacks", level:"Analyze", term:"Analyze: when is a constructor initializer list required rather than just optional?", def:"When an object data field belongs to a class that has no no-arg constructor \u2014 there'd be no way to default-construct that field before the constructor body runs."},
+  {cat:"Constructors & Stacks", level:"Remember", term:"Stack (LIFO)", def:"A data structure that holds items last-in, first-out \u2014 the most recently added item is always the first one removed."},
+  {cat:"Constructors & Stacks", level:"Analyze", term:"Analyze: how does a compiler use a stack when functions call other functions?", def:"Each function's parameters and local variables are pushed onto the stack when it's called; when a function calls another, the new function's data goes on top. When a function finishes, its space is popped off \u2014 so the most recently called function always finishes (and is removed) first."}
+];
+
+const quizData = [
+  {level:"Remember", q:"By default, how are objects passed to functions in C++?", opts:["By reference, always","By value \u2014 a copy is made, unless & is used","By pointer, always","Objects cannot be passed to functions"], correct:1, explain:"Like primitive types, C++ objects are passed by value by default. A reference parameter (&) is required to pass by reference instead."},
+  {level:"Understand", q:"A Circle c1 (radius 1) is passed to void printByValue(Circle c1), which sets the parameter's radius to 12.1. After the function returns, what does c1.print() show in main()?", opts:["radius is 12.1","radius is 1","radius is 0","A compiler error occurs"], correct:1, explain:"Pass by value copies the object; changes to the copy inside the function never reach the original c1 in main()."},
+  {level:"Understand", q:"Same scenario, but the function is now void printByReference(Circle &c1). What does c1.print() show in main() afterward?", opts:["radius is 1","radius is 0","radius is 12.1","A compiler error occurs"], correct:2, explain:"The & makes c1 a reference to the original object, so setting its radius inside the function changes the real object in main()."},
+  {level:"Apply", q:"Which correctly declares an array of three Circle objects with radii 3, 4, and 5?", opts:["Circle circleArray = {3, 4, 5};", "Circle circleArray[3] = {Circle(3), Circle(4), Circle(5)};", "Circle[3] circleArray = (3, 4, 5);", "array<Circle> circleArray(3, 4, 5);"], correct:1, explain:"Each element is constructed individually with the class's constructor, inside an array literal sized to match."},
+  {level:"Remember", q:"Which best defines a static (class) variable?", opts:["A variable that gets a fresh copy for every object created", "A variable that belongs to the class itself, with a single copy shared by all objects", "A variable that can only be used inside a constructor", "A variable that must be declared inside main()"], correct:1, explain:"Static variables belong to the class as a whole \u2014 there is exactly one shared copy, no matter how many objects exist."},
+  {level:"Understand", q:"How do you call a static function like getNumberOfObjects() without first creating an object?", opts:["circle.getNumberOfObjects()", "Circle::getNumberOfObjects()", "new Circle.getNumberOfObjects()", "It cannot be called without an object"], correct:1, explain:"The class-name-and-scope-operator syntax (ClassName::function()) invokes a static function directly, since it doesn't belong to any one object."},
+  {level:"Analyze", q:"A Circle class has instance variable radius and static variable numberOfObjects. After creating 5 Circle objects, how many separate copies of each variable exist in memory?", opts:["5 copies of radius, 5 copies of numberOfObjects", "5 copies of radius, 1 copy of numberOfObjects", "1 copy of radius, 5 copies of numberOfObjects", "1 copy of each, shared by all 5 objects"], correct:1, explain:"Instance variables get one copy per object (5 radii). Static variables get exactly one shared copy total, regardless of object count."},
+  {level:"Remember", q:"Where does the const keyword go to declare a constant member function?", opts:["Before the return type", "Immediately before the function name", "At the end of the function header, after the parameter list", "Inside the function body only"], correct:2, explain:"A constant member function is declared as returnType functionName(parameters) const; \u2014 the const goes at the end of the header."},
+  {level:"Apply", q:"A person weighs 68 kg and is 1.60 m tall. Using bmi = weight / height², their BMI is approximately 26.6. How is that classified (Underweight <18.5, Normal 18.5\u201325.0, Overweight 25.0\u201330.0, Obese 30.0+)?", opts:["Underweight", "Normal", "Overweight", "Obese"], correct:2, explain:"68 / 1.60² = 68 / 2.56 ≈ 26.6, which falls in the 25.0\u201330.0 range \u2014 Overweight."},
+  {level:"Analyze", q:"What is the key difference between the procedural and object-oriented paradigms?", opts:["Procedural code cannot use loops; OOP code can", "Procedural code keeps data and functions separate; OOP ties them together in an object", "OOP code never uses functions", "There is no meaningful difference \u2014 only syntax changes"], correct:1, explain:"Procedural programs organize logic as functions operating on separate data; OOP bundles related data and behavior together into objects."},
+  {level:"Analyze", q:"A class handles student enrollment, payment processing, and email notifications all in one place. Which class-design guideline is most clearly being violated?", opts:["Completeness", "Consistency", "Cohesion", "Clarity"], correct:2, explain:"Cohesion calls for a class to describe a single entity or a tightly related set of operations \u2014 three unrelated responsibilities in one class violates that."},
+  {level:"Analyze", q:"Which statement correctly describes a composition (\"has-a\") relationship?", opts:["A Circle is a kind of Shape", "A Cylinder has a Circle as one of its data fields", "Two classes share the exact same set of functions", "A function calls itself recursively"], correct:1, explain:"Composition means one class contains another as a data field \u2014 exactly the Cylinder-has-a-Circle relationship."},
+  {level:"Understand", q:"When is a constructor initializer list required, not just an alternative style?", opts:["Whenever a class has any private data fields", "When an object data field's class has no no-arg constructor", "Whenever more than one constructor is overloaded", "It's never actually required \u2014 assignment always works instead"], correct:1, explain:"Without a no-arg constructor, there's no way to default-construct that field before the constructor body runs \u2014 an initializer list sets it directly during construction."},
+  {level:"Evaluate", q:"A StackOfIntegers has push(10), push(20), push(30) called in that order, followed by two pop() calls. What are the two values returned by pop(), in order?", opts:["10, then 20", "30, then 20", "30, then 10", "10, then 30"], correct:1, explain:"A stack is LIFO \u2014 last in, first out. 30 was pushed last, so it pops first; 20 pops second."}
+];
+
+const matchingSets = [
+  {
+    name:"Object Passing & Storage",
+    pairs:[
+      {term:"Pass by Value", def:"A copy is passed; changes inside the function don't affect the original"},
+      {term:"Pass by Reference", def:"The original object's memory location is passed; changes inside the function do affect it"},
+      {term:"Array of Objects", def:"A collection of objects of the same class stored under one variable name"},
+      {term:"Static Variable", def:"Belongs to the class itself; one shared copy across all objects"},
+      {term:"Instance Variable", def:"Belongs to each individual object; every object has its own copy"},
+      {term:"Constant Member Function", def:"A function marked const so it cannot modify any data fields"}
+    ]
+  },
+  {
+    name:"Class Design & Relationships",
+    pairs:[
+      {term:"Cohesion", def:"A class should describe a single entity or a tightly related set of operations"},
+      {term:"Encapsulation", def:"Hide data fields as private; expose controlled access through get/set functions"},
+      {term:"Clarity", def:"Design a class so functions work correctly in any order or combination"},
+      {term:"Completeness", def:"Provide a wide variety of functions so the class serves many different uses"},
+      {term:"Composition (\"has-a\")", def:"One class contains another as a data field, e.g. a Cylinder has a Circle base"},
+      {term:"Constructor Initializer List", def:"Required to initialize an object data field that has no no-arg constructor"}
+    ]
+  }
+];
+
+const levelBadgeClass = {
+  "Remember":"badge-remember", "Understand":"badge-understand", "Apply":"badge-apply",
+  "Analyze":"badge-analyze", "Evaluate":"badge-evaluate", "Create":"badge-create"
+};
+
+/* ============================================================ TABS ============================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.setAttribute('aria-selected','false'));
+    btn.setAttribute('aria-selected','true');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================================================ ACCORDION ============================================================ */
+document.querySelectorAll('.section-head').forEach(head=>{
+  head.addEventListener('click', ()=>{
+    const body = document.getElementById(head.dataset.target);
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    head.setAttribute('aria-expanded', String(!isOpen));
+  });
+});
+
+/* ============================================================ REVEAL BUTTONS (worked example / case study) ============================================================ */
+document.querySelectorAll('.reveal-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const box = document.getElementById(btn.dataset.reveal);
+    box.classList.toggle('shown');
+    btn.textContent = box.classList.contains('shown') ? 'Hide Model Answer' : btn.textContent.replace('Hide','Show');
+  });
+});
+
+/* ============================================================ MINI SELF-CHECKS ============================================================ */
+document.querySelectorAll('.sc-question').forEach(q=>{
+  const correctIdx = parseInt(q.dataset.correct, 10);
+  const feedback = q.querySelector('.sc-feedback');
+  q.querySelectorAll('.sc-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      const idx = parseInt(opt.dataset.idx, 10);
+      q.querySelectorAll('.sc-opt').forEach(o=>o.disabled = true);
+      if(idx === correctIdx){
+        opt.classList.add('correct');
+        feedback.textContent = '\u2713 Correct \u2014 nice work.';
+        feedback.className = 'sc-feedback shown right';
+      } else {
+        opt.classList.add('incorrect');
+        q.querySelector('[data-idx="'+correctIdx+'"]').classList.add('correct');
+        feedback.textContent = '\u2717 Not quite \u2014 review the highlighted answer above.';
+        feedback.className = 'sc-feedback shown wrong';
+      }
+    });
+  });
+});
+
+/* ============================================================ FLASHCARDS ============================================================ */
+let fcDeck = flashcardsData.map((c,i)=>({...c, id:i, status:'new'}));
+let fcFiltered = [...fcDeck];
+let fcIndex = 0;
+
+function fcPopulateCategories(){
+  const sel = document.getElementById('fc-category-filter');
+  const cats = [...new Set(flashcardsData.map(c=>c.cat))];
+  cats.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function fcRender(){
+  const card = fcFiltered[fcIndex];
+  const el = document.getElementById('flashcard');
+  el.classList.remove('flipped');
+  if(!card){
+    document.getElementById('fc-term').textContent = 'No cards in this category.';
+    document.getElementById('fc-definition').textContent = '';
+    return;
+  }
+  document.getElementById('fc-term').textContent = card.term;
+  document.getElementById('fc-definition').textContent = card.def;
+  document.getElementById('fc-cat-front').textContent = card.cat;
+  document.getElementById('fc-cat-back').textContent = card.cat;
+  const badgeFront = document.getElementById('fc-level-front');
+  const badgeBack = document.getElementById('fc-level-back');
+  badgeFront.textContent = card.level; badgeFront.className = 'badge ' + levelBadgeClass[card.level];
+  badgeBack.textContent = card.level; badgeBack.className = 'badge ' + levelBadgeClass[card.level];
+  document.getElementById('fc-position').textContent = fcIndex + 1;
+  document.getElementById('fc-total').textContent = fcFiltered.length;
+  fcUpdateProgress();
+}
+
+function fcUpdateProgress(){
+  const known = fcDeck.filter(c=>c.status==='known').length;
+  const review = fcDeck.filter(c=>c.status==='review').length;
+  document.getElementById('fc-known-count').textContent = known;
+  document.getElementById('fc-review-count').textContent = review;
+  document.getElementById('fc-total-count').textContent = fcDeck.length;
+}
+
+document.getElementById('flashcard').addEventListener('click', ()=>{
+  document.getElementById('flashcard').classList.toggle('flipped');
+});
+document.getElementById('flashcard').addEventListener('keypress', (e)=>{
+  if(e.key === 'Enter' || e.key === ' '){ document.getElementById('flashcard').classList.toggle('flipped'); }
+});
+
+document.getElementById('fc-next').addEventListener('click', ()=>{
+  if(fcFiltered.length===0) return;
+  fcIndex = (fcIndex + 1) % fcFiltered.length;
+  fcRender();
+});
+document.getElementById('fc-prev').addEventListener('click', ()=>{
+  if(fcFiltered.length===0) return;
+  fcIndex = (fcIndex - 1 + fcFiltered.length) % fcFiltered.length;
+  fcRender();
+});
+document.getElementById('fc-mark-known').addEventListener('click', ()=>{
+  if(!fcFiltered[fcIndex]) return;
+  fcDeck.find(c=>c.id===fcFiltered[fcIndex].id).status = 'known';
+  fcUpdateProgress();
+});
+document.getElementById('fc-mark-review').addEventListener('click', ()=>{
+  if(!fcFiltered[fcIndex]) return;
+  fcDeck.find(c=>c.id===fcFiltered[fcIndex].id).status = 'review';
+  fcUpdateProgress();
+});
+document.getElementById('fc-shuffle').addEventListener('click', ()=>{
+  for(let i = fcFiltered.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [fcFiltered[i], fcFiltered[j]] = [fcFiltered[j], fcFiltered[i]];
+  }
+  fcIndex = 0;
+  fcRender();
+});
+document.getElementById('fc-reset').addEventListener('click', ()=>{
+  fcDeck.forEach(c=>c.status='new');
+  fcUpdateProgress();
+});
+document.getElementById('fc-category-filter').addEventListener('change', (e)=>{
+  const val = e.target.value;
+  fcFiltered = val==='all' ? [...fcDeck] : fcDeck.filter(c=>c.cat===val);
+  fcIndex = 0;
+  fcRender();
+});
+
+fcPopulateCategories();
+fcRender();
+
+/* ============================================================ QUIZ ============================================================ */
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let quizTierResults = {};
+
+function quizStart(){
+  quizIndex = 0; quizScore = 0; quizAnswered = false;
+  quizTierResults = {};
+  document.getElementById('quiz-intro').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  quizRenderQuestion();
+}
+
+function quizRenderQuestion(){
+  quizAnswered = false;
+  const q = quizData[quizIndex];
+  document.getElementById('quiz-qnum').textContent = 'Question ' + (quizIndex+1) + ' of ' + quizData.length;
+  const badge = document.getElementById('quiz-level-badge');
+  badge.textContent = q.level; badge.className = 'badge ' + levelBadgeClass[q.level];
+  document.getElementById('quiz-qtext').textContent = q.q;
+  document.getElementById('quiz-progress-fill').style.width = (quizIndex/quizData.length*100) + '%';
+
+  const optsWrap = document.getElementById('quiz-options');
+  optsWrap.innerHTML = '';
+  q.opts.forEach((optText, idx)=>{
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = optText;
+    b.addEventListener('click', ()=>quizAnswer(idx));
+    optsWrap.appendChild(b);
+  });
+  document.getElementById('quiz-explain').classList.remove('shown');
+  document.getElementById('quiz-next').disabled = true;
+}
+
+function quizAnswer(idx){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  const q = quizData[quizIndex];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach((o,i)=>{
+    o.disabled = true;
+    if(i === q.correct) o.classList.add('correct');
+    else if(i === idx) o.classList.add('incorrect');
+  });
+  quizTierResults[q.level] = quizTierResults[q.level] || {correct:0, total:0};
+  quizTierResults[q.level].total++;
+  if(idx === q.correct){
+    quizScore++;
+    quizTierResults[q.level].correct++;
+  }
+  const explainBox = document.getElementById('quiz-explain');
+  explainBox.innerHTML = (idx===q.correct ? '<strong>\u2713 Correct.</strong> ' : '<strong>\u2717 Not quite.</strong> ') + q.explain;
+  explainBox.classList.add('shown');
+  document.getElementById('quiz-next').disabled = false;
+}
+
+document.getElementById('quiz-next').addEventListener('click', ()=>{
+  quizIndex++;
+  if(quizIndex >= quizData.length){
+    quizShowResults();
+  } else {
+    quizRenderQuestion();
+  }
+});
+
+function quizShowResults(){
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'block';
+  document.getElementById('quiz-final-score').textContent = quizScore + ' / ' + quizData.length;
+  const tierWrap = document.getElementById('tier-breakdown');
+  tierWrap.innerHTML = '';
+  Object.keys(quizTierResults).forEach(level=>{
+    const r = quizTierResults[level];
+    const chip = document.createElement('div');
+    chip.className = 'tier-chip';
+    chip.innerHTML = '<div class="tier-score">'+r.correct+'/'+r.total+'</div><div class="tier-label">'+level+'</div>';
+    tierWrap.appendChild(chip);
+  });
+}
+
+document.getElementById('quiz-start').addEventListener('click', quizStart);
+document.getElementById('quiz-retry').addEventListener('click', ()=>{
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-intro').style.display = 'block';
+});
+
+/* ============================================================ MATCHING ============================================================ */
+let matchCurrentSet = 0;
+let matchSelectedTerm = null;
+let matchSelectedDef = null;
+let matchMatchedCount = 0;
+let matchTermOrder = [];
+let matchDefOrder = [];
+
+function matchInit(setIdx){
+  matchCurrentSet = setIdx;
+  matchSelectedTerm = null; matchSelectedDef = null; matchMatchedCount = 0;
+  document.getElementById('match-complete').classList.remove('shown');
+  const pairs = matchingSets[setIdx].pairs;
+
+  matchTermOrder = pairs.map((p,i)=>i);
+  matchDefOrder = pairs.map((p,i)=>i);
+  shuffleArr(matchTermOrder);
+  shuffleArr(matchDefOrder);
+
+  const termsWrap = document.getElementById('match-terms');
+  const defsWrap = document.getElementById('match-defs');
+  termsWrap.innerHTML = '';
+  defsWrap.innerHTML = '';
+
+  matchTermOrder.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-item';
+    b.textContent = pairs[i].term;
+    b.dataset.pairIdx = i;
+    b.addEventListener('click', ()=>matchSelectTerm(b, i));
+    termsWrap.appendChild(b);
+  });
+  matchDefOrder.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-item';
+    b.textContent = pairs[i].def;
+    b.dataset.pairIdx = i;
+    b.addEventListener('click', ()=>matchSelectDef(b, i));
+    defsWrap.appendChild(b);
+  });
+  matchUpdateStatus();
+}
+
+function shuffleArr(arr){
+  for(let i=arr.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+}
+
+function matchSelectTerm(el, pairIdx){
+  if(el.classList.contains('matched')) return;
+  document.querySelectorAll('#match-terms .match-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  matchSelectedTerm = {el, pairIdx};
+  matchTryPair();
+}
+function matchSelectDef(el, pairIdx){
+  if(el.classList.contains('matched')) return;
+  document.querySelectorAll('#match-defs .match-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  matchSelectedDef = {el, pairIdx};
+  matchTryPair();
+}
+
+function matchTryPair(){
+  if(!matchSelectedTerm || !matchSelectedDef) return;
+  if(matchSelectedTerm.pairIdx === matchSelectedDef.pairIdx){
+    matchSelectedTerm.el.classList.remove('selected');
+    matchSelectedDef.el.classList.remove('selected');
+    matchSelectedTerm.el.classList.add('matched');
+    matchSelectedDef.el.classList.add('matched');
+    matchMatchedCount++;
+    matchUpdateStatus();
+    if(matchMatchedCount === matchingSets[matchCurrentSet].pairs.length){
+      document.getElementById('match-complete').classList.add('shown');
+    }
+  } else {
+    matchSelectedTerm.el.classList.add('shake');
+    matchSelectedDef.el.classList.add('shake');
+    setTimeout(()=>{
+      matchSelectedTerm.el.classList.remove('selected','shake');
+      matchSelectedDef.el.classList.remove('selected','shake');
+    }, 420);
+  }
+  matchSelectedTerm = null; matchSelectedDef = null;
+}
+
+function matchUpdateStatus(){
+  document.getElementById('match-status').textContent = matchMatchedCount + ' of ' + matchingSets[matchCurrentSet].pairs.length + ' matched';
+}
+
+document.getElementById('match-set-select').addEventListener('change', (e)=>{
+  matchInit(parseInt(e.target.value,10));
+});
+document.getElementById('match-reset').addEventListener('click', ()=>{
+  matchInit(matchCurrentSet);
+});
+
+matchInit(0);
+</script>
+</body>
+</html>
