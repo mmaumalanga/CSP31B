@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pointers &amp; Dynamic Memory — Interactive Study Deck</title>
+<style>
+  :root{
+    --user-primary:#1a4480;
+    --user-accent:#c8102e;
+    --user-background:#ffffff;
+    --ink:#1c2430;
+    --ink-soft:#4b5563;
+    --line:#e2e6ec;
+    --panel:#f6f8fb;
+    --success:#1a7a4c;
+    --success-bg:#e7f6ee;
+    --danger-bg:#fdecec;
+    --radius:14px;
+    --shadow: 0 6px 20px rgba(26,68,128,0.10);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: linear-gradient(180deg,#f2f5fa 0%, var(--user-background) 340px);
+    color:var(--ink);
+    padding-bottom:60px;
+  }
+  header.top{
+    background:var(--user-primary);
+    color:#fff;
+    padding:28px 20px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; right:-60px; top:-60px; width:220px; height:220px;
+    background:var(--user-accent);
+    opacity:.18;
+    border-radius:50%;
+  }
+  header.top h1{
+    margin:0 0 4px;
+    font-size:1.5rem;
+    max-width:900px;
+    position:relative;
+  }
+  header.top p{
+    margin:0;
+    opacity:.9;
+    font-size:.95rem;
+    max-width:700px;
+    position:relative;
+  }
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 18px;
+  }
+  nav.tabs{
+    display:flex;
+    gap:8px;
+    margin-top:20px;
+    flex-wrap:wrap;
+    position:sticky;
+    top:0;
+    background:var(--user-background);
+    z-index:20;
+    padding:14px 0 10px;
+    border-bottom:1px solid var(--line);
+  }
+  nav.tabs button{
+    border:2px solid var(--user-primary);
+    background:#fff;
+    color:var(--user-primary);
+    font-weight:700;
+    padding:9px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:.92rem;
+    transition:.15s;
+  }
+  nav.tabs button.active{
+    background:var(--user-primary);
+    color:#fff;
+  }
+  nav.tabs button:hover{ filter:brightness(1.05); }
+
+  .view{ display:none; padding-top:20px; }
+  .view.active{ display:block; }
+
+  h2.section-title{
+    color:var(--user-primary);
+    font-size:1.2rem;
+    margin:26px 0 10px;
+    border-left:5px solid var(--user-accent);
+    padding-left:10px;
+  }
+
+  /* ---- Deck selector ---- */
+  .deck-row{
+    display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;
+  }
+  .deck-btn{
+    flex:1 1 140px;
+    text-align:left;
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:10px;
+    padding:10px 12px;
+    cursor:pointer;
+    font-size:.82rem;
+  }
+  .deck-btn small{ display:block; color:var(--ink-soft); font-weight:400; margin-top:2px;}
+  .deck-btn.active{
+    border-color:var(--user-primary);
+    background:#fff;
+    box-shadow: var(--shadow);
+  }
+  .deck-btn .bloom-tag{
+    display:inline-block;
+    margin-top:6px;
+    font-size:.68rem;
+    font-weight:700;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:999px;
+    background:var(--user-accent);
+    color:#fff;
+  }
+  .deck-btn.active .bloom-tag{ background:var(--user-primary); }
+
+  /* ---- Flashcard ---- */
+  .progress-line{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:.85rem; color:var(--ink-soft); margin-bottom:8px;
+  }
+  .progress-track{
+    height:6px; background:var(--line); border-radius:6px; overflow:hidden; margin-bottom:16px;
+  }
+  .progress-fill{
+    height:100%; background:var(--user-accent); width:0%; transition:width .25s;
+  }
+  .card-stage{
+    perspective:1400px;
+    height:260px;
+    margin-bottom:14px;
+  }
+  .flip-card{
+    position:relative;
+    width:100%; height:100%;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.4,.2,.2,1);
+    cursor:pointer;
+  }
+  .flip-card.flipped{ transform:rotateY(180deg); }
+  .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border-radius:var(--radius);
+    padding:24px;
+    display:flex; flex-direction:column; justify-content:center;
+    box-shadow:var(--shadow);
+    border:1px solid var(--line);
+    overflow-y:auto;
+  }
+  .face.front{
+    background:linear-gradient(160deg,#fff, var(--panel));
+  }
+  .face.back{
+    background:var(--user-primary);
+    color:#fff;
+    transform:rotateY(180deg);
+  }
+  .face .kicker{
+    font-size:.7rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--user-accent); margin-bottom:10px;
+  }
+  .face.back .kicker{ color:#ffd7dc; }
+  .face .body-text{ font-size:1.05rem; line-height:1.5; white-space:pre-line; }
+  .face code, .face pre{
+    background:rgba(0,0,0,0.06);
+    border-radius:6px;
+    padding:2px 6px;
+    font-family:"SFMono-Regular",Consolas,Menlo,monospace;
+    font-size:.92em;
+  }
+  .face.back code{ background:rgba(255,255,255,0.16); }
+  .hint-flip{ font-size:.75rem; color:var(--ink-soft); text-align:center; margin-bottom:16px;}
+
+  .card-controls{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:6px;
+  }
+  .card-controls button{
+    border:none;
+    background:var(--user-primary);
+    color:#fff;
+    padding:9px 16px;
+    border-radius:8px;
+    font-size:.85rem;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .card-controls button.secondary{
+    background:#fff; color:var(--user-primary); border:1.5px solid var(--user-primary);
+  }
+  .card-controls button:disabled{ opacity:.4; cursor:not-allowed; }
+
+  /* ---- panels: worked example / real world / misconceptions ---- */
+  .panel{
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin:18px 0;
+    border:1px solid var(--line);
+  }
+  .panel.worked{ background:#eef3fb; border-color:#c9d9f0; }
+  .panel.real-world{ background:#fff6ea; border-color:#f2e0bb; }
+  .panel.misconception{ background:var(--danger-bg); border-color:#f3c6c6; }
+  .panel h3{
+    margin:0 0 8px; font-size:1rem; color:var(--user-primary);
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel.misconception h3{ color:var(--user-accent); }
+  .panel p{ margin:6px 0; font-size:.93rem; line-height:1.55; color:var(--ink);}
+  .panel .step{
+    background:rgba(255,255,255,.7);
+    border-left:3px solid var(--user-primary);
+    padding:8px 12px;
+    margin:8px 0;
+    border-radius:6px;
+    font-size:.88rem;
+  }
+  .panel .try-it{
+    margin-top:12px;
+    background:var(--user-primary);
+    color:#fff;
+    padding:12px 14px;
+    border-radius:8px;
+    font-size:.9rem;
+  }
+  .miso{ margin-bottom:14px; padding-bottom:14px; border-bottom:1px dashed #edb9b9;}
+  .miso:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0;}
+  .miso .wrong{ color:var(--user-accent); font-weight:700; font-size:.85rem;}
+  .miso .right{ color:var(--success); font-weight:700; font-size:.85rem;}
+
+  /* ---- Self check ---- */
+  .selfcheck{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    margin-top:10px;
+  }
+  .selfcheck h4{
+    margin:0 0 10px; font-size:.95rem; color:var(--user-primary);
+    display:flex; align-items:center; gap:6px;
+  }
+  .sc-q{ margin-bottom:12px; }
+  .sc-q p.qtext{ font-weight:600; font-size:.88rem; margin:0 0 6px;}
+  .sc-opts{ display:flex; flex-direction:column; gap:6px;}
+  .sc-opt{
+    text-align:left;
+    background:#fff;
+    border:1px solid var(--line);
+    padding:7px 10px;
+    border-radius:7px;
+    font-size:.83rem;
+    cursor:pointer;
+  }
+  .sc-opt.correct{ background:var(--success-bg); border-color:var(--success); color:var(--success); font-weight:700;}
+  .sc-opt.incorrect{ background:var(--danger-bg); border-color:var(--user-accent); color:var(--user-accent); font-weight:700;}
+  .sc-opt[disabled]{ cursor:default; }
+  .sc-fb{ font-size:.8rem; margin-top:4px; color:var(--ink-soft);}
+
+  /* ---- Quiz ---- */
+  .quiz-q{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    margin-bottom:14px;
+  }
+  .quiz-q .qhead{
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:8px;
+  }
+  .quiz-q .qhead .num{ font-weight:700; color:var(--user-primary); font-size:.85rem;}
+  .quiz-q .qhead .bloom{
+    font-size:.65rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700;
+    background:var(--user-primary); color:#fff; padding:2px 8px; border-radius:999px;
+  }
+  .quiz-q p.qtext{ font-size:.95rem; font-weight:600; margin:0 0 10px;}
+  .quiz-opt{
+    display:block;
+    background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:8px 12px; margin-bottom:7px; cursor:pointer; font-size:.87rem;
+  }
+  .quiz-opt input{ margin-right:8px; }
+  .quiz-opt.correct{ background:var(--success-bg); border-color:var(--success); }
+  .quiz-opt.incorrect{ background:var(--danger-bg); border-color:var(--user-accent); }
+  .quiz-explain{
+    display:none; font-size:.82rem; margin-top:8px; padding:8px 10px;
+    background:#fff; border-left:3px solid var(--user-primary); border-radius:6px; color:var(--ink-soft);
+  }
+  #quizSubmit{
+    background:var(--user-accent); color:#fff; border:none; padding:12px 22px;
+    border-radius:8px; font-weight:700; font-size:.95rem; cursor:pointer; width:100%;
+  }
+  #quizResult{
+    text-align:center; margin-top:16px; font-weight:700; font-size:1.05rem; color:var(--user-primary);
+    display:none;
+  }
+  #quizResetBtn{
+    display:none; margin:12px auto 0; background:#fff; border:1.5px solid var(--user-primary);
+    color:var(--user-primary); padding:9px 18px; border-radius:8px; cursor:pointer; font-weight:600;
+  }
+
+  /* ---- Matching ---- */
+  .match-wrap{ display:flex; gap:18px; flex-wrap:wrap; }
+  .match-col{ flex:1 1 260px; display:flex; flex-direction:column; gap:8px; }
+  .match-item{
+    background:#fff; border:2px solid var(--line); border-radius:9px;
+    padding:11px 14px; cursor:pointer; font-size:.87rem; transition:.15s;
+  }
+  .match-item.selected{ border-color:var(--user-primary); background:#eef3fb; }
+  .match-item.matched{ border-color:var(--success); background:var(--success-bg); color:var(--success); cursor:default; font-weight:600;}
+  .match-item.shake{ border-color:var(--user-accent); background:var(--danger-bg); animation:shake .35s; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+  .match-status{
+    text-align:center; margin-top:16px; font-weight:700; color:var(--user-primary); font-size:1rem; display:none;
+  }
+  #matchResetBtn{
+    display:block; margin:14px auto 0; background:#fff; border:1.5px solid var(--user-primary);
+    color:var(--user-primary); padding:9px 18px; border-radius:8px; cursor:pointer; font-weight:600;
+  }
+  .obj-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px; margin-bottom:18px; font-size:.88rem; color:var(--ink-soft);
+  }
+  .obj-box b{ color:var(--user-primary); }
+  footer{ text-align:center; color:var(--ink-soft); font-size:.78rem; margin-top:40px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h2>CSP31B - C++ Programming II</h2>
+    <h1>Pointers &amp; Dynamic Memory Management</h2>
+    <p>An interactive study set covering pointer basics through deep-copy design — flip through flashcards, test yourself with a quiz, and practice vocabulary with a matching game.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="flash">🗂️ Flashcards</button>
+    <button class="tab-btn" data-view="quiz">📝 Quiz</button>
+    <button class="tab-btn" data-view="match">🧩 Matching</button>
+  </nav>
+
+  <!-- ============ FLASHCARDS VIEW ============ -->
+  <section id="flash" class="view active">
+    <div class="obj-box">
+      <b>How to use this deck:</b> Work through the five sections in order — each builds on the last, moving from basic recall to designing your own deep-copy logic. Click a card to flip it, use Next/Prev to move through, and try the Quick Check at the end of each section before moving on.
+    </div>
+
+    <h2 class="section-title">Choose a Section</h2>
+    <div class="deck-row" id="deckRow"></div>
+
+    <div class="progress-line">
+      <span id="progressLabel">Card 1 of 1</span>
+      <span id="deckBloomLabel"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="card-stage">
+      <div class="flip-card" id="flipCard">
+        <div class="face front">
+          <div class="kicker">Question</div>
+          <div class="body-text" id="cardFront"></div>
+        </div>
+        <div class="face back">
+          <div class="kicker">Answer</div>
+          <div class="body-text" id="cardBack"></div>
+        </div>
+      </div>
+    </div>
+    <p class="hint-flip">Click the card to flip it</p>
+
+    <div class="card-controls">
+      <button class="secondary" id="prevBtn">◀ Prev</button>
+      <button id="flipBtn">Flip Card</button>
+      <button class="secondary" id="shuffleBtn">🔀 Shuffle</button>
+      <button class="secondary" id="nextBtn">Next ▶</button>
+    </div>
+
+    <div id="extraPanels"></div>
+
+    <div class="selfcheck" id="selfCheckBox"></div>
+
+    <h2 class="section-title">⚠️ Watch Out For These Misconceptions</h2>
+    <div class="panel misconception" id="misconceptionPanel"></div>
+  </section>
+
+  <!-- ============ QUIZ VIEW ============ -->
+  <section id="quiz" class="view">
+    <div class="obj-box">
+      <b>Comprehensive Quiz:</b> 10 questions spanning the whole chapter, from basic recall to analysis and evaluation. Answer everything, then submit to see your score and explanations.
+    </div>
+    <div id="quizContainer"></div>
+    <button id="quizSubmit">Submit Quiz</button>
+    <div id="quizResult"></div>
+    <button id="quizResetBtn">Try Again</button>
+  </section>
+
+  <!-- ============ MATCHING VIEW ============ -->
+  <section id="match" class="view">
+    <div class="obj-box">
+      <b>Matching Activity:</b> Click a term on the left, then click its matching definition on the right. Matched pairs turn green; a wrong guess flashes red so you can try again.
+    </div>
+    <div class="match-wrap">
+      <div class="match-col" id="matchTerms"></div>
+      <div class="match-col" id="matchDefs"></div>
+    </div>
+    <div class="match-status" id="matchStatus">🎉 All matched! Great work.</div>
+    <button id="matchResetBtn">Reset Activity</button>
+  </section>
+
+  <footer>Study deck generated from "Chapter 11: Pointers and Dynamic Memory Management."</footer>
+</div>
+
+<script>
+/* =========================================================
+   DATA
+   ========================================================= */
+const decks = [
+  {
+    id:0,
+    title:"Pointer Foundations",
+    tag:"Remember / Understand",
+    cards:[
+      {q:"What is a pointer?", a:"A variable whose value is a memory address — instead of holding data directly, it holds the location of a variable that holds the data."},
+      {q:"What is the syntax to declare a pointer to an int?", a:"<code>int* pVar;</code>\nThe asterisk marks the variable as a pointer, and its type must match the type it points to."},
+      {q:"What does the & (address-of) operator do?", a:"It returns the memory address of a variable.\nExample: <code>&x</code> gives the address where x is stored."},
+      {q:"What does dereferencing a pointer (the * operator) do?", a:"It accesses the value stored at the address the pointer holds — this is called indirection.\nExample: <code>*pCount</code> gets the int that pCount points to."},
+      {q:"In this declaration, which variable is actually a pointer?\n\n<code>int *pI, pJ;</code>", a:"Only <code>pI</code> is a pointer. <code>pJ</code> is an ordinary int — the * attaches to the variable name, not the whole line."},
+      {q:"How should you initialize a pointer in modern C++ if it has no target yet?", a:"Set it to <code>nullptr</code>:\n<code>int *p = nullptr;</code>\nThis avoids the fatal errors that come from dereferencing garbage addresses."},
+      {q:"What does the typedef keyword let you do, and how would you alias int* as intPointer?", a:"typedef creates a synonym for an existing type.\n<code>typedef int* intPointer;</code>\nAfter this, <code>intPointer p1, p2;</code> declares two int pointers."}
+    ],
+    selfcheck:[
+      {q:"Which correctly declares p as a pointer to double?", opts:["double p*;","double* p;","pointer<double> p;"], correct:1, fb:"The asterisk goes with the variable, and the type before it must match what p will point to."},
+      {q:"If p points to x, what does *p give you?", opts:["The address of x","The value stored at the address p holds","A copy of the pointer p"], correct:1, fb:"Dereferencing retrieves the value at the address, not the address itself."},
+      {q:"What's the safest thing to do immediately after declaring a pointer with no known target yet?", opts:["Leave it uninitialized until needed","Initialize it to nullptr","Set it equal to 0.0"], correct:1, fb:"nullptr clearly signals 'points to nothing' and prevents undefined-behavior bugs."}
+    ]
+  },
+  {
+    id:1,
+    title:"Arrays &amp; Pointers",
+    tag:"Apply",
+    cards:[
+      {q:"How is an array name related to a pointer?", a:"An array name without brackets/subscript represents the starting address of the array — it behaves like a pointer to its first element in most expressions (though it isn't a reassignable pointer variable)."},
+      {q:"Given <code>int list[6] = {11,12,13,14,15,16};</code> — what does <code>list</code> alone evaluate to?", a:"The address of <code>list[0]</code>, i.e. it's equivalent to <code>&list[0]</code>."},
+      {q:"What is the difference between <code>*list + 1</code> and <code>*(list + 1)</code>?", a:"<code>*list + 1</code> dereferences first (getting list[0]) then adds 1 to that VALUE.\n<code>*(list + 1)</code> moves the pointer forward one element THEN dereferences — giving list[1].\n* has higher precedence than +, but explicit parentheses override that order."},
+      {q:"What address does the expression <code>list + i</code> represent?", a:"<code>&list[i]</code> — pointer arithmetic automatically scales by the size of the pointed-to type, not by raw bytes."},
+      {q:"Name two C++ standard library functions (from this chapter) that operate on arrays using pointers.", a:"Any two of: <code>min_element</code>, <code>max_element</code>, <code>sort</code>, <code>random_shuffle</code>, <code>find</code>."}
+    ],
+    selfcheck:[
+      {q:"For <code>int list[6]</code>, what does <code>list + 2</code> point to?", opts:["list[0]","list[2]","list[6]"], correct:1, fb:"Pointer arithmetic moves by element, so +2 lands on the third element, list[2]."},
+      {q:"Do <code>*(list+1)</code> and <code>*list+1</code> always produce the same value?", opts:["Yes, always","No — they differ whenever list[0]+1 ≠ list[1]","Only for sorted arrays"], correct:1, fb:"Operator precedence means these are different operations, not just different notation for the same thing."},
+      {q:"True or False: an array variable and a pointer variable are 100% interchangeable in every context.", opts:["True","False"], correct:1, fb:"False — arrays can't be reassigned and sizeof(array) reports the whole array's size, unlike a pointer."}
+    ]
+  },
+  {
+    id:2,
+    title:"Pointers with Functions",
+    tag:"Apply / Analyze",
+    cards:[
+      {q:"In <code>void f(int* p1, int* &p2)</code>, how do p1 and p2 differ in how they're passed?", a:"p1 is pass-by-value: f gets a COPY of the address, so reassigning p1 inside f does not change the caller's pointer.\np2 is pass-by-reference: it's an alias for the caller's pointer itself, so reassigning p2 inside f DOES change the caller's pointer."},
+      {q:"Why declare a pointer parameter as const, e.g. <code>const ClassName* p</code>?", a:"It promises the function won't modify the object p points to — protecting against accidental changes while still avoiding the cost of a full copy."},
+      {q:"Can a C++ function return a pointer?", a:"Yes — a function's return type can be a pointer, e.g. returning a pointer to a dynamically allocated result array."},
+      {q:"(Analyze) Why is it dangerous to return a pointer to a local (stack) variable from a function?", a:"The local variable is destroyed when the function returns, so the returned pointer becomes 'dangling' — it points to memory that's no longer valid. Dereferencing it afterward is undefined behavior (it may crash, or silently return garbage)."}
+    ],
+    selfcheck:[
+      {q:"Passing a pointer parameter BY VALUE means the function can:", opts:["Change what the caller's pointer points to (the data), but not reassign the caller's pointer itself","Neither change the data nor the pointer","Freely reassign the caller's original pointer variable"], correct:0, fb:"A copy of the address arrives, so the function can follow it to change the data, but reassigning the local copy doesn't touch the caller's pointer."},
+      {q:"Passing <code>int*&</code> (pointer by reference) allows the function to:", opts:["Only read the pointer's value","Reassign the caller's actual pointer variable","Nothing different from pass-by-value"], correct:1, fb:"A reference to the pointer is an alias for the original variable, so reassignments propagate back to the caller."},
+      {q:"What's wrong with <code>int* f(){ int x = 5; return &x; }</code>?", opts:["Nothing, it's fine","It returns the address of a destroyed local variable (dangling pointer)","It fails to compile in all compilers"], correct:1, fb:"x lives on the stack and is gone once f() returns — the caller receives an address to memory that's no longer reserved for x."}
+    ]
+  },
+  {
+    id:3,
+    title:"Dynamic Memory &amp; Objects",
+    tag:"Apply / Analyze",
+    cards:[
+      {q:"Which operator allocates memory on the heap, and which frees it?", a:"<code>new</code> allocates.\n<code>delete</code> (or <code>delete[]</code> for arrays) deallocates it."},
+      {q:"Write the syntax to dynamically allocate an array of 6 ints, and to free it later.", a:"<code>int* result = new int[6];</code>\n...later...\n<code>delete [] result;</code>"},
+      {q:"Name both ways to access a member of a dynamically created object through a pointer p.", a:"<code>(*p).member</code> — dereference the pointer, then use the dot operator.\n<code>p->member</code> — the shorthand arrow operator (does the same thing)."},
+      {q:"What is the <code>this</code> pointer and when is it especially useful?", a:"A hidden pointer available inside every non-static member function, pointing to the calling object. It's especially useful when a parameter name shadows a data field, e.g. a setter writing <code>this->name = name;</code> to distinguish the field from the parameter."},
+      {q:"What is a destructor — when does it run, and how is it named?", a:"A special member function invoked automatically when an object is destroyed, typically used for cleanup (like freeing dynamically allocated memory). It's named the same as the class but prefixed with a tilde, e.g. <code>~Circle()</code>."}
+    ],
+    selfcheck:[
+      {q:"To free memory allocated with <code>new int[10]</code>, you should use:", opts:["delete", "delete[]", "free()"], correct:1, fb:"Array allocations require the [] form of delete so every element is properly released."},
+      {q:"<code>p->length()</code> is shorthand for:", opts:["<code>(*p).length()</code>","<code>p.length()</code>","<code>&p.length()</code>"], correct:0, fb:"The arrow operator dereferences and accesses a member in one step."},
+      {q:"A destructor is invoked:", opts:["Only if you call it manually","Automatically when the object is destroyed","Automatically every time a member function runs"], correct:1, fb:"Destructors fire automatically at the end of an object's lifetime — that's what makes them reliable for cleanup."}
+    ]
+  },
+  {
+    id:4,
+    title:"Copy Constructors: Shallow vs. Deep Copy",
+    tag:"Analyze / Evaluate / Create",
+    cards:[
+      {q:"What is a copy constructor, and what is its signature for a class Circle?", a:"A constructor that initializes a new object using another object of the same class as a template.\nSignature: <code>Circle(const Circle&)</code>."},
+      {q:"What does the DEFAULT (compiler-generated) copy constructor do, field by field?", a:"It performs a shallow copy: it copies each data field's VALUE directly — including copying a pointer field's address rather than the data that address points to."},
+      {q:"(Analyze) Two Course objects share one dynamically-allocated students array after <code>Course course2(course1);</code> using the default copy constructor. Why does <code>course2.addStudent(\"Lisa\")</code> also show up in course1's roster?", a:"The shallow copy only copied the POINTER (the address) stored in the students field — it did not copy the array itself. Both objects' students fields now hold the identical address, so any change made through either object is visible through both."},
+      {q:"(Evaluate) What is the key structural difference a CUSTOM deep-copy constructor introduces, compared to the default one?", a:"It allocates a brand-new block of memory for the pointer field, then copies the pointed-to VALUES element-by-element into that new block — so the two objects end up with independent data that no longer share memory."},
+      {q:"(Create) Sketch the steps a deep-copy constructor should take for a class with <code>Student* students;</code> and <code>int numberOfStudents;</code>", a:"1. Copy simple (non-pointer) fields normally, e.g. numberOfStudents.\n2. Allocate a NEW array: <code>students = new Student[numberOfStudents];</code>\n3. Loop through the source object's array and copy each element's value into the new array.\n4. Never reuse or copy the source object's pointer directly — always point to the freshly allocated memory."}
+    ],
+    selfcheck:[
+      {q:"The default (compiler-generated) copy constructor performs a:", opts:["Deep copy","Shallow copy","No copy at all"], correct:1, fb:"Without custom code, C++ just copies each field's raw value — including addresses stored in pointers."},
+      {q:"True or False: after a shallow copy, both objects' pointer fields point to the same memory block.", opts:["True","False"], correct:0, fb:"That's exactly the risk — the pointer value (the address) was duplicated, not the data it references."},
+      {q:"To make two objects fully independent when a pointer field is involved, you should write a:", opts:["Default constructor","Custom deep-copy constructor that allocates new memory","Destructor only"], correct:1, fb:"Only a deep copy allocates separate memory and duplicates the underlying values."}
+    ]
+  }
+];
+
+const misconceptions = [
+  {
+    wrong:"“Pointers and arrays are basically the same thing, so they can always be used interchangeably.”",
+    right:"An array name DECAYS into a pointer to its first element in most expressions, but an array is not itself a reassignable pointer variable. You can't do <code>list = anotherArray;</code>, and <code>sizeof(list)</code> reports the whole array's byte size — a pointer variable's sizeof would just report the size of an address. Treat 'array behaves like a pointer in expressions' and 'array IS a pointer' as two very different claims."
+  },
+  {
+    wrong:"“When you copy an object, you copy everything — including whatever its pointer fields point to.”",
+    right:"The DEFAULT copy constructor only performs a shallow copy: it copies the pointer's address, not the data at that address. Two objects end up sharing the same underlying memory unless you explicitly write a custom deep-copy constructor that allocates new memory and copies the values themselves."
+  },
+  {
+    wrong:"“An uninitialized pointer is automatically nullptr until I assign it something.”",
+    right:"An uninitialized local pointer holds an arbitrary (garbage) address, not nullptr. Dereferencing it is undefined behavior and can corrupt memory or crash your program. Always explicitly initialize pointers — to a valid address or to <code>nullptr</code> — before using them."
+  }
+];
+
+const workedExample = {
+  title:"Worked Example — Tracing a Shallow Copy Bug",
+  scenario:"Suppose <code>Course</code> has a field <code>Student* students;</code> that points to a dynamically allocated array of students. We run:",
+  code:"Course course1(\"CSP31B\", 10);\nCourse course2(course1);      // uses the DEFAULT copy constructor\ncourse1.addStudent(\"Peter\");\ncourse2.addStudent(\"Lisa\");",
+  steps:[
+    "Step 1 — <code>course1</code> is constructed normally: it allocates its own students array on the heap, and <code>course1.students</code> holds that array's address, call it 0x100.",
+    "Step 2 — <code>Course course2(course1);</code> invokes the DEFAULT copy constructor. Field by field, it copies course1's values into course2 — including the students field. Since students is a pointer, the copy is <code>course2.students = course1.students;</code>. This copies the VALUE 0x100 — the address — not the array's contents.",
+    "Step 3 — Now both <code>course1.students</code> and <code>course2.students</code> hold the exact same address, 0x100. There is only ONE array in memory; two objects merely have two labels pointing at it.",
+    "Step 4 — <code>course1.addStudent(\"Peter\")</code> writes into the array at 0x100. <code>course2.addStudent(\"Lisa\")</code> writes into the SAME array at 0x100. So both course1 and course2 now report both Peter and Lisa on their rosters — even though only one of the two addStudent calls was made on each object."
+  ],
+  tryIt:"Now you try: trace through the same four steps, but assume course2 was built with a CUSTOM deep-copy constructor instead (one that allocates a new array and copies each Student's data into it). At Step 3, what address would course2.students hold, and would Step 4 still cause the roster mix-up? Flip to Card 4 or 5 in this section if you want to check your reasoning."
+};
+
+const realWorld = {
+  title:"Real-World Application — The Registration System Bug",
+  text:"Imagine you're building a course-registration system for a college. Each `Course` object dynamically stores its own roster of `Student` records. During testing, a teaching assistant copies a `Course` object to build a 'preview' version for reviewing before publishing it — using the compiler's default copy constructor because nobody thought to write a custom one. In production, students who register for the *preview* course mysteriously start appearing on the *original* course's official roster too, and vice versa. Grades submitted against one course silently affect the other. This is not a hypothetical: it's precisely the shallow-copy bug traced above, and it's one of the most common real-world sources of hard-to-reproduce data-corruption bugs in systems that manage collections through raw pointers — which is exactly why custom deep-copy constructors (and modern alternatives like smart pointers or `std::vector`) matter in production code."
+};
+
+/* Quiz data — mixed Bloom levels */
+const quizData = [
+  {q:"What does a pointer variable store?", opts:["A copy of another variable's value","The memory address of another variable","A function name"], correct:1, bloom:"Remember", exp:"By definition, a pointer holds an address, not a plain value."},
+  {q:"Which line correctly declares a pointer to an int named pCount?", opts:["int pCount*;","int* pCount;","pointer int pCount;"], correct:1, bloom:"Remember", exp:"The asterisk precedes the variable name in a pointer declaration."},
+  {q:"Given <code>int *pI, pJ;</code> — which statement is true?", opts:["Both pI and pJ are pointers","Only pI is a pointer; pJ is a plain int","Only pJ is a pointer; pI is a plain int"], correct:1, bloom:"Understand", exp:"The * only applies to the variable it's directly attached to."},
+  {q:"What is the safest initial value for a pointer with no known target yet?", opts:["0.0","nullptr","An uninitialized declaration is safest"], correct:1, bloom:"Understand", exp:"nullptr explicitly marks 'points to nothing' and prevents undefined-behavior bugs from garbage addresses."},
+  {q:"For <code>int list[6]</code>, what does the expression <code>*(list + 2)</code> evaluate to?", opts:["The address of list[2]","The value stored in list[2]","list[0] + 2"], correct:1, bloom:"Apply", exp:"list+2 computes the address of the third element; the * then dereferences it to retrieve its value."},
+  {q:"In <code>void f(int* p1, int* &p2)</code>, which parameter lets the function reassign the CALLER's pointer itself?", opts:["p1, because it's a pointer","p2, because it's passed by reference","Neither — pointers can never be reassigned in a function"], correct:1, bloom:"Apply", exp:"p2 is an alias (reference) to the caller's actual pointer variable, so reassigning p2 changes the caller's pointer."},
+  {q:"Why is <code>int* f(){ int x = 5; return &x; }</code> dangerous?", opts:["It leaks memory permanently","It returns the address of a local variable that no longer exists after f() returns","It causes a compile-time type mismatch"], correct:1, bloom:"Analyze", exp:"x is destroyed when the function returns, leaving the caller with a dangling pointer to invalid memory."},
+  {q:"After <code>Course course2(course1);</code> using the DEFAULT copy constructor, why do course1 and course2 share the same student roster in memory?", opts:["Because C++ automatically deep-copies all class objects","Because the default copy constructor copies the students pointer's address, not the array it points to","Because Course has no copy constructor at all"], correct:1, bloom:"Analyze", exp:"A shallow copy duplicates the pointer value (the address) — both objects end up referencing one shared array."},
+  {q:"Which change most directly fixes the shallow-copy roster-sharing bug?", opts:["Renaming the students field","Writing a custom copy constructor that allocates a new array and copies each student's data into it","Declaring the students pointer as const"], correct:1, bloom:"Evaluate", exp:"A deep copy is the fix: allocate independent memory and copy the underlying values, rather than the address."},
+  {q:"You are designing a class <code>Playlist</code> with <code>Song* songs;</code> and <code>int songCount;</code>. Which copy-constructor plan correctly produces two fully independent Playlist objects?", opts:["Copy songs directly (this->songs = other.songs;) and copy songCount","Allocate this->songs = new Song[other.songCount]; then loop and copy each Song's data from other.songs; also copy songCount","Skip writing a copy constructor since the compiler already deep-copies pointers"], correct:1, bloom:"Create", exp:"This is exactly the deep-copy pattern: new memory, element-by-element copy, and copying the simple fields too."}
+];
+
+/* Matching data */
+const matchData = [
+  {term:"Pointer", def:"A variable that holds a memory address"},
+  {term:"Dereference (*)", def:"Access the value stored at the address a pointer holds"},
+  {term:"nullptr", def:"Value indicating a pointer currently points to nothing"},
+  {term:"new", def:"Allocates memory dynamically on the heap"},
+  {term:"delete / delete[]", def:"Frees memory that was dynamically allocated"},
+  {term:"this", def:"Hidden pointer inside a member function that refers to the calling object"},
+  {term:"Destructor", def:"Special function automatically invoked when an object is destroyed"},
+  {term:"Shallow copy", def:"Copies a pointer field's address, not the data it points to"},
+  {term:"Deep copy", def:"Allocates new memory and copies the actual pointed-to data"},
+  {term:"Copy constructor", def:"Constructor that builds a new object from an existing object of the same class"}
+];
+
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.view).classList.add("active");
+  });
+});
+
+/* =========================================================
+   FLASHCARDS LOGIC
+   ========================================================= */
+let currentDeck = 0;
+let currentCard = 0;
+let isFlipped = false;
+let deckOrder = {}; // stores shuffled index order per deck
+
+decks.forEach(d => { deckOrder[d.id] = d.cards.map((_,i)=>i); });
+
+function renderDeckTabs(){
+  const row = document.getElementById("deckRow");
+  row.innerHTML = "";
+  decks.forEach((d, idx)=>{
+    const b = document.createElement("button");
+    b.className = "deck-btn" + (idx===currentDeck ? " active":"");
+    b.innerHTML = `${idx+1}. ${d.title}<span class="bloom-tag">${d.tag}</span>`;
+    b.addEventListener("click", ()=>{ loadDeck(idx); });
+    row.appendChild(b);
+  });
+}
+
+function loadDeck(idx){
+  currentDeck = idx;
+  currentCard = 0;
+  isFlipped = false;
+  renderDeckTabs();
+  renderCard();
+  renderExtras();
+  renderSelfCheck();
+}
+
+function orderedCard(){
+  const deck = decks[currentDeck];
+  const order = deckOrder[deck.id];
+  return deck.cards[order[currentCard]];
+}
+
+function renderCard(){
+  const deck = decks[currentDeck];
+  const card = orderedCard();
+  document.getElementById("cardFront").innerHTML = card.q;
+  document.getElementById("cardBack").innerHTML = card.a;
+  document.getElementById("flipCard").classList.remove("flipped");
+  isFlipped = false;
+  document.getElementById("progressLabel").textContent = `Card ${currentCard+1} of ${deck.cards.length}`;
+  document.getElementById("deckBloomLabel").textContent = deck.tag;
+  document.getElementById("progressFill").style.width = ((currentCard+1)/deck.cards.length*100)+"%";
+  document.getElementById("prevBtn").disabled = currentCard===0;
+  document.getElementById("nextBtn").disabled = currentCard===deck.cards.length-1;
+}
+
+function renderExtras(){
+  const box = document.getElementById("extraPanels");
+  box.innerHTML = "";
+  if(currentDeck === 4){
+    box.innerHTML = `
+      <div class="panel worked">
+        <h3>🔍 ${workedExample.title}</h3>
+        <p>${workedExample.scenario}</p>
+        <pre style="white-space:pre-wrap;">${workedExample.code}</pre>
+        ${workedExample.steps.map(s=>`<div class="step">${s}</div>`).join("")}
+        <div class="try-it">✏️ ${workedExample.tryIt}</div>
+      </div>
+      <div class="panel real-world">
+        <h3>🌍 ${realWorld.title}</h3>
+        <p>${realWorld.text}</p>
+      </div>`;
+  }
+}
+
+function renderSelfCheck(){
+  const deck = decks[currentDeck];
+  const box = document.getElementById("selfCheckBox");
+  box.innerHTML = `<h4>✅ Quick Check — ${deck.title}</h4>`;
+  deck.selfcheck.forEach((sc, qi)=>{
+    const qDiv = document.createElement("div");
+    qDiv.className = "sc-q";
+    qDiv.innerHTML = `<p class="qtext">${qi+1}. ${sc.q}</p>`;
+    const optsDiv = document.createElement("div");
+    optsDiv.className = "sc-opts";
+    sc.opts.forEach((opt, oi)=>{
+      const b = document.createElement("button");
+      b.className = "sc-opt";
+      b.innerHTML = opt;
+      b.addEventListener("click", ()=>{
+        const allBtns = optsDiv.querySelectorAll(".sc-opt");
+        allBtns.forEach(x=>x.disabled = true);
+        if(oi === sc.correct){ b.classList.add("correct"); }
+        else{
+          b.classList.add("incorrect");
+          allBtns[sc.correct].classList.add("correct");
+        }
+        const fb = document.createElement("div");
+        fb.className = "sc-fb";
+        fb.textContent = sc.fb;
+        qDiv.appendChild(fb);
+      });
+      optsDiv.appendChild(b);
+    });
+    qDiv.appendChild(optsDiv);
+    box.appendChild(qDiv);
+  });
+}
+
+function renderMisconceptions(){
+  const box = document.getElementById("misconceptionPanel");
+  box.innerHTML = `<h3>Common Misconceptions</h3>` + misconceptions.map(m=>`
+    <div class="miso">
+      <p class="wrong">✗ Misconception: ${m.wrong}</p>
+      <p class="right">✓ Why it's wrong &amp; the correct idea:</p>
+      <p>${m.right}</p>
+    </div>
+  `).join("");
+}
+
+document.getElementById("flipCard").addEventListener("click", ()=>{
+  isFlipped = !isFlipped;
+  document.getElementById("flipCard").classList.toggle("flipped", isFlipped);
+});
+document.getElementById("flipBtn").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  isFlipped = !isFlipped;
+  document.getElementById("flipCard").classList.toggle("flipped", isFlipped);
+});
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  const deck = decks[currentDeck];
+  if(currentCard < deck.cards.length-1){ currentCard++; renderCard(); }
+});
+document.getElementById("prevBtn").addEventListener("click", ()=>{
+  if(currentCard > 0){ currentCard--; renderCard(); }
+});
+document.getElementById("shuffleBtn").addEventListener("click", ()=>{
+  const deck = decks[currentDeck];
+  const order = deckOrder[deck.id];
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i],order[j]] = [order[j],order[i]];
+  }
+  currentCard = 0;
+  renderCard();
+});
+
+renderDeckTabs();
+renderCard();
+renderExtras();
+renderSelfCheck();
+renderMisconceptions();
+
+/* =========================================================
+   QUIZ LOGIC
+   ========================================================= */
+function buildQuiz(){
+  const container = document.getElementById("quizContainer");
+  container.innerHTML = "";
+  quizData.forEach((q, qi)=>{
+    const qDiv = document.createElement("div");
+    qDiv.className = "quiz-q";
+    qDiv.innerHTML = `<div class="qhead"><span class="num">Question ${qi+1}</span><span class="bloom">${q.bloom}</span></div>
+      <p class="qtext">${q.q}</p>`;
+    q.opts.forEach((opt, oi)=>{
+      const label = document.createElement("label");
+      label.className = "quiz-opt";
+      label.innerHTML = `<input type="radio" name="q${qi}" value="${oi}"> ${opt}`;
+      qDiv.appendChild(label);
+    });
+    const exp = document.createElement("div");
+    exp.className = "quiz-explain";
+    exp.id = `exp${qi}`;
+    exp.textContent = "💡 " + q.exp;
+    qDiv.appendChild(exp);
+    container.appendChild(qDiv);
+  });
+}
+buildQuiz();
+
+document.getElementById("quizSubmit").addEventListener("click", ()=>{
+  let score = 0;
+  quizData.forEach((q, qi)=>{
+    const selected = document.querySelector(`input[name="q${qi}"]:checked`);
+    const opts = document.querySelectorAll(`.quiz-q:nth-child(${qi+1}) .quiz-opt`);
+    opts.forEach((o,oi)=>{
+      o.querySelector("input").disabled = true;
+      if(oi === q.correct){ o.classList.add("correct"); }
+    });
+    if(selected){
+      const chosenIdx = parseInt(selected.value);
+      if(chosenIdx === q.correct){ score++; }
+      else{ opts[chosenIdx].classList.add("incorrect"); }
+    }
+    document.getElementById(`exp${qi}`).style.display = "block";
+  });
+  const resultBox = document.getElementById("quizResult");
+  resultBox.style.display = "block";
+  resultBox.textContent = `You scored ${score} / ${quizData.length}. ` +
+    (score === quizData.length ? "Outstanding — full marks!" :
+     score >= quizData.length*0.7 ? "Solid work — review the missed explanations above." :
+     "Worth revisiting the flashcard sections above before trying again.");
+  document.getElementById("quizSubmit").style.display = "none";
+  document.getElementById("quizResetBtn").style.display = "block";
+});
+
+document.getElementById("quizResetBtn").addEventListener("click", ()=>{
+  document.getElementById("quizResult").style.display = "none";
+  document.getElementById("quizResetBtn").style.display = "none";
+  document.getElementById("quizSubmit").style.display = "block";
+  buildQuiz();
+});
+
+/* =========================================================
+   MATCHING LOGIC
+   ========================================================= */
+let selectedTerm = null;
+let matchedCount = 0;
+let shuffledDefs = [];
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildMatching(){
+  matchedCount = 0;
+  selectedTerm = null;
+  document.getElementById("matchStatus").style.display = "none";
+
+  const termsCol = document.getElementById("matchTerms");
+  const defsCol = document.getElementById("matchDefs");
+  termsCol.innerHTML = "";
+  defsCol.innerHTML = "";
+
+  const shuffledTerms = shuffleArr(matchData);
+  shuffledDefs = shuffleArr(matchData);
+
+  shuffledTerms.forEach(item=>{
+    const div = document.createElement("div");
+    div.className = "match-item";
+    div.dataset.term = item.term;
+    div.textContent = item.term;
+    div.addEventListener("click", ()=> onTermClick(div, item.term));
+    termsCol.appendChild(div);
+  });
+
+  shuffledDefs.forEach(item=>{
+    const div = document.createElement("div");
+    div.className = "match-item";
+    div.dataset.term = item.term;
+    div.textContent = item.def;
+    div.addEventListener("click", ()=> onDefClick(div, item.term));
+    defsCol.appendChild(div);
+  });
+}
+
+function onTermClick(el, term){
+  if(el.classList.contains("matched")) return;
+  document.querySelectorAll("#matchTerms .match-item").forEach(x=>x.classList.remove("selected"));
+  el.classList.add("selected");
+  selectedTerm = term;
+}
+
+function onDefClick(el, term){
+  if(el.classList.contains("matched") || !selectedTerm) return;
+  const termEl = document.querySelector(`#matchTerms .match-item[data-term="${CSS.escape(selectedTerm)}"]`);
+  if(term === selectedTerm){
+    el.classList.remove("selected");
+    el.classList.add("matched");
+    if(termEl){ termEl.classList.remove("selected"); termEl.classList.add("matched"); }
+    selectedTerm = null;
+    matchedCount++;
+    if(matchedCount === matchData.length){
+      document.getElementById("matchStatus").style.display = "block";
+    }
+  } else {
+    el.classList.add("shake");
+    if(termEl) termEl.classList.add("shake");
+    setTimeout(()=>{
+      el.classList.remove("shake");
+      if(termEl){ termEl.classList.remove("shake"); termEl.classList.remove("selected"); }
+      selectedTerm = null;
+    }, 400);
+  }
+}
+
+document.getElementById("matchResetBtn").addEventListener("click", buildMatching);
+buildMatching();
+</script>
+</body>
+</html>
