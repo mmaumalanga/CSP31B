@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSP31B · Templates, Vectors &amp; Stacks Study Activities — San Joaquin Delta College</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --user-primary:#1a4480;
+    --user-accent:#c8102e;
+    --user-background:#ffffff;
+    --primary-dark:#0f2c54;
+    --primary-tint:#eaf0f8;
+    --accent-tint:#fbe9ec;
+    --ink:#12203a;
+    --muted:#52627a;
+    --border:#d7e0ea;
+    --success:#1e7d4a;
+    --success-tint:#e6f4ec;
+    --warn-tint:#fff4e0;
+    --warn:#a35b00;
+    --font-body:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+    --radius:14px;
+    --shadow:0 2px 10px rgba(15,44,84,0.08);
+    --shadow-lg:0 12px 32px rgba(15,44,84,0.16);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    background:var(--user-background);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-weight:800; margin:0 0 .4em; line-height:1.25;}
+  p{margin:0 0 .8em;}
+  code, .mono{font-family:var(--font-mono);}
+  button{font-family:inherit; cursor:pointer;}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+  /* ---------- Header / Tabs ---------- */
+  header.app-header{
+    position:sticky; top:0; z-index:50;
+    background:var(--user-primary);
+    color:#fff;
+    box-shadow:var(--shadow-lg);
+  }
+  .header-inner{
+    max-width:1100px; margin:0 auto; padding:14px 20px 0;
+  }
+  .kicker{
+    font-size:12px; letter-spacing:.14em; font-weight:700; text-transform:uppercase;
+    color:#bcd0ee; margin-bottom:2px;
+  }
+  .app-header h1{
+    font-size:22px; margin:0 0 12px; color:#fff;
+  }
+  nav.tabbar{
+    display:flex; gap:4px; overflow-x:auto; scrollbar-width:none;
+    border-bottom:1px solid rgba(255,255,255,0.18);
+  }
+  nav.tabbar::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    background:transparent; border:none; color:#cfe0f5;
+    padding:11px 18px; font-size:14.5px; font-weight:600;
+    border-bottom:3px solid transparent; white-space:nowrap;
+    transition:all .15s ease;
+  }
+  .tab-btn .tab-emoji{margin-right:6px;}
+  .tab-btn:hover{color:#fff; background:rgba(255,255,255,0.08);}
+  .tab-btn[aria-selected="true"]{
+    color:#fff; border-bottom-color:var(--user-accent);
+  }
+
+  main{max-width:1100px; margin:0 auto; padding:28px 20px 80px;}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  .intro-lead{
+    font-size:16px; color:var(--muted); max-width:760px;
+  }
+
+  /* ---------- Badges ---------- */
+  .badge{
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.03em;
+    padding:3px 9px; border-radius:999px; text-transform:uppercase;
+  }
+  .badge-remember{background:#e7edf8; color:#2a4c85;}
+  .badge-understand{background:#e2f2ec; color:#1e7d4a;}
+  .badge-apply{background:#fff1de; color:#a35b00;}
+  .badge-analyze{background:#f7e6ea; color:#a01238;}
+  .badge-evaluate{background:#efe4f7; color:#6a2fa3;}
+  .badge-create{background:#e0f2f7; color:#0d6d84;}
+
+  /* ---------- Accordion (Learn tab) ---------- */
+  .section-card{
+    border:1px solid var(--border); border-radius:var(--radius);
+    margin-bottom:14px; overflow:hidden; background:#fff;
+  }
+  .section-head{
+    width:100%; display:flex; align-items:center; gap:12px;
+    background:var(--primary-tint); border:none; padding:16px 18px;
+    text-align:left; font-size:16px; font-weight:700; color:var(--user-primary);
+  }
+  .section-head .num{
+    display:flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:8px; background:var(--user-primary);
+    color:#fff; font-size:13px; flex-shrink:0;
+  }
+  .section-head .chev{margin-left:auto; transition:transform .2s ease; font-size:14px; color:var(--muted);}
+  .section-head[aria-expanded="true"] .chev{transform:rotate(180deg);}
+  .section-body{padding:0 20px; max-height:0; overflow:hidden; transition:max-height .3s ease, padding .3s ease;}
+  .section-body.open{padding:18px 20px 24px; max-height:4000px;}
+
+  ul.clean{margin:0 0 14px; padding-left:20px;}
+  ul.clean li{margin-bottom:7px;}
+  ul.clean li::marker{color:var(--user-accent);}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:680px){.two-col{grid-template-columns:1fr;}}
+
+  .mini-card{
+    background:var(--primary-tint); border-radius:12px; padding:14px 16px;
+  }
+  .mini-card h4{color:var(--user-primary); font-size:14.5px; margin-bottom:6px;}
+
+  table.data-table{
+    width:100%; border-collapse:collapse; margin:10px 0 16px; font-size:14px;
+  }
+  table.data-table th{
+    background:var(--user-primary); color:#fff; text-align:left;
+    padding:9px 12px; font-size:12.5px; letter-spacing:.02em;
+  }
+  table.data-table td{
+    padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top;
+  }
+  table.data-table tr:nth-child(even) td{background:#f7fafc;}
+
+  /* callouts */
+  .callout{
+    border-radius:12px; padding:14px 16px; margin:14px 0; border:1px solid transparent;
+  }
+  .callout-title{font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .callout.misconception{background:var(--accent-tint); border-color:#f3c3cc;}
+  .callout.misconception .callout-title{color:var(--user-accent);}
+  .callout.worked{background:var(--primary-tint); border-color:#c7d7ec;}
+  .callout.worked .callout-title{color:var(--user-primary);}
+  .callout.apply{background:var(--warn-tint); border-color:#f0d9a8;}
+  .callout.apply .callout-title{color:var(--warn);}
+  .callout.real-world{background:var(--success-tint); border-color:#bfe3cd;}
+  .callout.real-world .callout-title{color:var(--success);}
+
+  .reasoning-step{
+    display:flex; gap:10px; padding:8px 0; border-top:1px dashed #c7d7ec;
+  }
+  .reasoning-step:first-of-type{border-top:none;}
+  .reasoning-step .step-tag{
+    flex-shrink:0; font-size:11px; font-weight:800; color:#fff; background:var(--user-primary);
+    border-radius:6px; padding:3px 8px; height:fit-content; text-transform:uppercase;
+  }
+
+  textarea.answer-box{
+    width:100%; min-height:70px; border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px; font-family:var(--font-body); font-size:14px; resize:vertical;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--user-primary); color:#fff; border:none; border-radius:9px;
+    padding:9px 16px; font-size:13.5px; font-weight:600; transition:filter .15s ease;
+  }
+  .btn:hover{filter:brightness(1.1);}
+  .btn.secondary{background:#fff; color:var(--user-primary); border:1.5px solid var(--user-primary);}
+  .btn.accent{background:var(--user-accent);}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .reveal-box{
+    display:none; margin-top:10px; background:#fff; border:1px dashed #c7d7ec; border-radius:10px; padding:12px 14px; font-size:14px;
+  }
+  .reveal-box.shown{display:block;}
+
+  /* ---------- Mini self-check ---------- */
+  .self-check{
+    margin-top:18px; border:1.5px solid var(--user-primary); border-radius:12px; padding:16px 18px;
+    background:#fbfdff;
+  }
+  .self-check-title{
+    font-weight:800; font-size:14px; color:var(--user-primary);
+    display:flex; align-items:center; gap:8px; margin-bottom:10px;
+  }
+  .sc-question{margin-bottom:14px;}
+  .sc-question p.q-text{font-weight:600; font-size:14.5px; margin-bottom:8px;}
+  .sc-options{display:flex; flex-direction:column; gap:7px;}
+  .sc-opt{
+    text-align:left; border:1.5px solid var(--border); background:#fff; border-radius:9px;
+    padding:9px 12px; font-size:14px; color:var(--ink); transition:all .12s ease;
+  }
+  .sc-opt:hover{border-color:var(--user-primary);}
+  .sc-opt.correct{background:var(--success-tint); border-color:var(--success); color:#155c37; font-weight:600;}
+  .sc-opt.incorrect{background:var(--accent-tint); border-color:var(--user-accent); color:#8f0c22; font-weight:600;}
+  .sc-opt[disabled]{cursor:default;}
+  .sc-feedback{font-size:13.5px; margin-top:8px; padding:8px 10px; border-radius:8px; display:none;}
+  .sc-feedback.shown{display:block;}
+  .sc-feedback.right{background:var(--success-tint); color:#155c37;}
+  .sc-feedback.wrong{background:var(--accent-tint); color:#8f0c22;}
+
+  /* ---------- Flashcards ---------- */
+  .fc-toolbar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:18px;
+  }
+  .fc-toolbar select{
+    padding:8px 12px; border-radius:9px; border:1.5px solid var(--border); font-size:13.5px; font-family:inherit;
+    background:#fff;
+  }
+  .fc-progress{
+    margin-left:auto; font-size:13px; color:var(--muted); display:flex; gap:14px;
+  }
+  .fc-progress b{color:var(--ink);}
+  .fc-stage{
+    max-width:560px; margin:0 auto;
+  }
+  .fc-counter{text-align:center; font-size:13px; color:var(--muted); margin-bottom:10px;}
+  .flashcard{
+    perspective:1400px; height:260px; cursor:pointer; margin-bottom:18px;
+  }
+  .flashcard-inner{
+    position:relative; width:100%; height:100%; transition:transform .5s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+  .fc-face{
+    position:absolute; inset:0; backface-visibility:hidden;
+    border-radius:16px; padding:26px; display:flex; flex-direction:column;
+    box-shadow:var(--shadow-lg); border:1px solid var(--border);
+  }
+  .fc-front{background:var(--user-primary); color:#fff; justify-content:center; align-items:center; text-align:center; gap:14px;}
+  .fc-front .fc-term{font-size:22px; font-weight:800;}
+  .fc-back{background:#fff; transform:rotateY(180deg); justify-content:center;}
+  .fc-back p{font-size:15.5px; color:var(--ink); margin:0;}
+  .fc-tag-row{position:absolute; top:14px; left:16px; right:16px; display:flex; justify-content:space-between;}
+  .fc-cat{font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:#cfe0f5; font-weight:700;}
+  .fc-back .fc-cat{color:var(--muted);}
+  .fc-hint{font-size:12px; color:#cfe0f5; margin-top:auto;}
+  .fc-back .fc-hint{color:var(--muted); margin-top:14px;}
+
+  .fc-controls{
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;
+  }
+  .fc-nav{display:flex; justify-content:space-between; margin-top:16px;}
+
+  /* ---------- Quiz ---------- */
+  .quiz-intro{
+    background:var(--primary-tint); border-radius:14px; padding:22px; text-align:center;
+  }
+  .quiz-wrap{max-width:640px; margin:0 auto;}
+  .quiz-progress-bar{
+    height:8px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:18px;
+  }
+  .quiz-progress-fill{height:100%; background:var(--user-accent); width:0%; transition:width .3s ease;}
+  .quiz-card{
+    border:1px solid var(--border); border-radius:16px; padding:22px; box-shadow:var(--shadow);
+  }
+  .quiz-meta{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+  .quiz-qnum{font-size:13px; color:var(--muted); font-weight:600;}
+  .quiz-qtext{font-size:17px; font-weight:700; margin-bottom:16px;}
+  .quiz-options{display:flex; flex-direction:column; gap:9px;}
+  .quiz-opt{
+    text-align:left; border:1.5px solid var(--border); background:#fff; border-radius:10px;
+    padding:11px 14px; font-size:14.5px; transition:all .12s ease;
+  }
+  .quiz-opt:hover:not([disabled]){border-color:var(--user-primary); background:var(--primary-tint);}
+  .quiz-opt.correct{background:var(--success-tint); border-color:var(--success); font-weight:700; color:#155c37;}
+  .quiz-opt.incorrect{background:var(--accent-tint); border-color:var(--user-accent); font-weight:700; color:#8f0c22;}
+  .quiz-explain{
+    margin-top:14px; padding:12px 14px; border-radius:10px; background:#f7fafc; font-size:13.5px; display:none;
+  }
+  .quiz-explain.shown{display:block;}
+  .quiz-footer{display:flex; justify-content:flex-end; margin-top:16px;}
+  .quiz-results{text-align:center; padding:30px 10px;}
+  .quiz-score{font-size:46px; font-weight:800; color:var(--user-primary);}
+  .tier-breakdown{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin:22px 0;
+  }
+  .tier-chip{
+    border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center;
+  }
+  .tier-chip .tier-score{font-size:20px; font-weight:800; color:var(--user-primary);}
+  .tier-chip .tier-label{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+
+  /* ---------- Matching ---------- */
+  .match-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;}
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:26px;}
+  @media (max-width:680px){.match-grid{grid-template-columns:1fr;}}
+  .match-col-title{font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:8px;}
+  .match-item{
+    display:block; width:100%; text-align:left; border:1.5px solid var(--border); background:#fff;
+    border-radius:10px; padding:11px 14px; margin-bottom:9px; font-size:14px; transition:all .12s ease;
+  }
+  .match-item:hover:not(.matched){border-color:var(--user-primary);}
+  .match-item.selected{border-color:var(--user-primary); background:var(--primary-tint); box-shadow:0 0 0 3px rgba(26,68,128,0.12);}
+  .match-item.matched{background:var(--success-tint); border-color:var(--success); color:#155c37; cursor:default; opacity:.85;}
+  .match-item.shake{animation:shake .4s ease;}
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(3px);}
+    30%,50%,70%{transform:translateX(-5px);} 40%,60%{transform:translateX(5px);}
+  }
+  .match-status{text-align:center; margin-top:18px; font-size:14px; color:var(--muted);}
+  .match-complete{
+    text-align:center; padding:24px; background:var(--success-tint); border-radius:14px; color:#155c37; font-weight:700;
+    display:none;
+  }
+  .match-complete.shown{display:block;}
+
+  footer.app-footer{
+    text-align:center; padding:24px 20px 40px; color:var(--muted); font-size:12.5px;
+  }
+  @media (max-width:600px){
+    .flashcard{height:300px;}
+    .app-header h1{font-size:18px;}
+  }
+
+  /* ---------- Code snippets (C++ Fundamentals) ---------- */
+  code{font-family:var(--font-mono); background:#eef2f6; padding:1px 5px; border-radius:4px; font-size:.93em;}
+  .code-block{
+    background:#0f2c54; color:#e8f0fb; font-family:var(--font-mono); font-size:13px;
+    border-radius:10px; padding:12px 16px; margin:10px 0; line-height:1.6; white-space:pre-wrap;
+  }
+  .code-block .cmt{color:#8fb3dd;}
+  .output-box{
+    background:#0b0b0b; color:#c9f7c9; font-family:var(--font-mono); font-size:13px;
+    border-radius:8px; padding:8px 14px; display:inline-block; margin:4px 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="kicker">CSP31B · C++ Programming II · San Joaquin Delta College</div>
+    <h1>Templates, Vectors &amp; Stacks</h1>
+    <nav class="tabbar" role="tablist" aria-label="Study activity sections">
+      <button class="tab-btn" role="tab" data-tab="learn" aria-selected="true"><span class="tab-emoji">📘</span>Learn</button>
+      <button class="tab-btn" role="tab" data-tab="flashcards" aria-selected="false"><span class="tab-emoji">🗂️</span>Flashcards</button>
+      <button class="tab-btn" role="tab" data-tab="quiz" aria-selected="false"><span class="tab-emoji">✅</span>Quiz</button>
+      <button class="tab-btn" role="tab" data-tab="matching" aria-selected="false"><span class="tab-emoji">🔗</span>Matching</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================================================ LEARN PANEL ============================================================ -->
+  <section class="panel active" id="panel-learn" role="tabpanel" aria-labelledby="tab-learn">
+    <p class="intro-lead">Six sections build from generic functions up through class templates, the vector class, and evaluating expressions with stacks. Each section ends with a quick self-check. Then head to <strong>Flashcards</strong>, the <strong>Quiz</strong>, or the <strong>Matching</strong> activity to practice.</p>
+
+    <!-- SECTION 1 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="true" data-target="sec1"><span class="num">1</span> Why Templates? From Overloading to Generics <span class="badge badge-remember" style="margin-left:8px;">Remember</span><span class="chev">▾</span></button>
+      <div class="section-body open" id="sec1">
+        <p>Suppose you need to find the maximum of two ints, two doubles, and two chars. Without templates, you'd write three nearly identical overloaded functions - one per type, all with the same logic copy-pasted:</p>
+        <div class="code-block">int maxValue(const int& n1, const int& n2) { ... }
+double maxValue(const double& n1, const double& n2) { ... }
+char maxValue(const char& n1, const char& n2) { ... }  <span class="cmt">// all identical logic!</span></div>
+        <p>A <strong>template</strong> lets you write the logic <em>once</em>, for a generic type, and have the compiler generate the type-specific version automatically:</p>
+        <div class="code-block">template&lt;typename T&gt;
+T maxValue(const T& value1, const T& value2)
+{
+    if (value1 &gt; value2)
+        return value1;
+    else
+        return value2;
+}</div>
+
+        <div class="callout worked">
+          <div class="callout-title">🧩 Worked Example - One Function, Four Types</div>
+          <p style="margin-bottom:10px;">The exact same <code>maxValue</code> template function, called with four different types:</p>
+          <div class="reasoning-step"><span class="step-tag">maxValue(1, 3)</span><span>T is deduced as int. 1 &gt; 3 is false, so it returns 3. Output: <strong>Maximum between 1 and 3 is 3</strong>.</span></div>
+          <div class="reasoning-step"><span class="step-tag">maxValue(1.5, 0.3)</span><span>T is deduced as double. 1.5 &gt; 0.3 is true. Output: <strong>Maximum between 1.5 and 0.3 is 1.5</strong>.</span></div>
+          <div class="reasoning-step"><span class="step-tag">maxValue('A', 'N')</span><span>T is deduced as char, compared by character code. 'A' &gt; 'N' is false. Output: <strong>Maximum between 'A' and 'N' is N</strong>.</span></div>
+          <div class="reasoning-step"><span class="step-tag">maxValue("NBC","ABC")</span><span>Output: <strong>Maximum between "NBC" and "ABC" is NBC</strong> - the same generic function, with no changes, works correctly for every one of these types.</span></div>
+        </div>
+
+        <p style="font-size:13.5px; color:var(--muted);"><em>The generic maxValue works for any type T, as long as (1) both values share the same type, and (2) that type supports the &gt; operator.</em></p>
+
+        <div class="self-check" data-section="sec1">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. What problem do templates solve?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">They make programs run faster at runtime</button>
+              <button class="sc-opt" data-idx="1">They let you write one version of a function or class that works with many different types</button>
+              <button class="sc-opt" data-idx="2">They remove the need for functions entirely</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">2. What two conditions must a type T satisfy to work with the generic maxValue function?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">T must be a built-in numeric type only</button>
+              <button class="sc-opt" data-idx="1">T must have a no-arg constructor</button>
+              <button class="sc-opt" data-idx="2">Both values must share the same type T, and T must support the &gt; operator</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec2"><span class="num">2</span> Function Template Details <span class="badge badge-understand" style="margin-left:8px;">Understand</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec2">
+        <p>You can use either <code>&lt;typename T&gt;</code> or <code>&lt;class T&gt;</code> to declare a type parameter - they're interchangeable. <strong><code>typename</code> is preferred</strong> because it's more descriptive; <code>class</code> can be visually confused with an actual class declaration.</p>
+
+        <p>A template can declare <strong>more than one</strong> type parameter, separated by commas:</p>
+        <div class="code-block">template&lt;typename T1, typename T2, typename T3&gt;
+<span class="cmt">// each of T1, T2, T3 can be a different type when the template is used</span></div>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"Using &lt;class T&gt; in a template means I'm declaring an actual C++ class."</strong> Not so. Inside a template's angle brackets, <code>class</code> is just a keyword that introduces a type parameter - functionally identical to <code>typename</code> in this position. It has nothing to do with defining a class type here, which is exactly why <code>typename</code> is the preferred, less confusing choice.</p>
+        </div>
+
+        <p style="font-size:13.5px; color:var(--muted);"><em>Best practice: when developing a new generic function, start by writing and debugging a normal, non-generic version first, then convert it to a template once it works correctly.</em></p>
+
+        <div class="self-check" data-section="sec2">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. Why is &lt;typename T&gt; generally preferred over &lt;class T&gt;?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">&lt;class T&gt; is not valid C++ syntax</button>
+              <button class="sc-opt" data-idx="1">&lt;typename T&gt; is more descriptive and avoids confusion with an actual class declaration</button>
+              <button class="sc-opt" data-idx="2">&lt;typename T&gt; runs faster at compile time</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. How do you declare a template with three independent type parameters?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0"><code>template&lt;typename T1, typename T2, typename T3&gt;</code></button>
+              <button class="sc-opt" data-idx="1"><code>template&lt;typename T1; typename T2; typename T3&gt;</code></button>
+              <button class="sc-opt" data-idx="2">C++ templates can only ever declare one type parameter</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec3"><span class="num">3</span> Class Templates: The Generic Stack <span class="badge badge-apply" style="margin-left:8px;">Apply</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec3">
+        <p>Just like functions, whole <strong>classes</strong> can be generic. A class template declares a type parameter that's used throughout the class:</p>
+        <div class="code-block">template&lt;typename T&gt;
+class Stack
+{
+  public:
+    Stack();
+    bool empty() const;
+    T peek() const;
+    void push(T value);
+    T pop();
+    int getSize() const;
+
+  private:
+    T elements[100];
+    int size;
+};</div>
+
+        <div class="callout worked">
+          <div class="callout-title">🧩 Worked Example - The Same Stack, Two Types</div>
+          <div class="code-block">Stack&lt;int&gt; intStack;
+for (int i = 0; i &lt; 10; i++)
+    intStack.push(i);
+while (!intStack.empty())
+    cout &lt;&lt; intStack.pop() &lt;&lt; " ";</div>
+          <div class="reasoning-step"><span class="step-tag">Trace</span><span>Pushing 0 through 9 fills the stack with 0 on the bottom and 9 on top. Popping is LIFO, so it comes out top-first: <strong>9 8 7 6 5 4 3 2 1 0</strong>.</span></div>
+          <div class="code-block">Stack&lt;string&gt; stringStack;
+stringStack.push("Chicago");
+stringStack.push("Denver");
+stringStack.push("London");
+while (!stringStack.empty())
+    cout &lt;&lt; stringStack.pop() &lt;&lt; " ";</div>
+          <div class="reasoning-step"><span class="step-tag">Trace</span><span>The identical class template, instantiated with <code>string</code> instead of <code>int</code>. London was pushed last, so it pops first: <strong>London Denver Chicago</strong>.</span></div>
+        </div>
+
+        <p>To define a member function outside the class body, repeat the template prefix and qualify the function name with <code>Stack&lt;T&gt;::</code>:</p>
+        <div class="code-block">template&lt;typename T&gt;
+Stack&lt;T&gt;::Stack()
+{
+    size = 0;
+}
+
+template&lt;typename T&gt;
+bool Stack&lt;T&gt;::empty() const
+{
+    return (size == 0);
+}</div>
+
+        <div class="self-check" data-section="sec3">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">1. A Stack&lt;int&gt; has 5, 10, 15 pushed onto it in that order. What does pop() return first?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">5</button>
+              <button class="sc-opt" data-idx="1">10</button>
+              <button class="sc-opt" data-idx="2">15</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">2. How do you correctly define the empty() member function outside the Stack&lt;T&gt; class body?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0"><code>bool Stack::empty() const { ... }</code></button>
+              <button class="sc-opt" data-idx="1"><code>template&lt;typename T&gt; bool Stack&lt;T&gt;::empty() const { ... }</code></button>
+              <button class="sc-opt" data-idx="2"><code>bool empty(Stack&lt;T&gt;) const { ... }</code></button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec4"><span class="num">4</span> Customizing Class Templates <span class="badge badge-understand" style="margin-left:8px;">Understand / Apply</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec4">
+        <p>A class template can specify a <strong>default type</strong>, used when none is given at instantiation:</p>
+        <div class="code-block">template&lt;typename T = int&gt;
+class Stack { ... };
+
+Stack&lt;&gt; stack;  <span class="cmt">// same as Stack&lt;int&gt; stack;</span></div>
+
+        <p>You can also mix in <strong>nontype parameters</strong> - ordinary values, not types - alongside type parameters:</p>
+        <div class="code-block">template&lt;typename T, int capacity&gt;
+class Stack
+{
+  private:
+    T elements[capacity];  <span class="cmt">// capacity sets the array size</span>
+    int size;
+};</div>
+
+        <p><strong>Static members</strong> are allowed in template classes too - but each distinct instantiation (each "template specialization," like <code>Stack&lt;int&gt;</code> vs. <code>Stack&lt;string&gt;</code>) gets its <em>own separate copy</em> of that static member, not one copy shared across all of them.</p>
+
+        <div class="callout misconception">
+          <div class="callout-title">⚠️ Common Misconception</div>
+          <p style="margin:0;"><strong>"If a class template supports a default type, I can use that same default-type trick in a function template too."</strong> Not true. Default type parameters (like <code>template&lt;typename T = int&gt;</code>) are only allowed in <strong>class</strong> templates in C++, not in function templates. If you need a similar effect for a function, you must specify the type explicitly when calling it.</p>
+        </div>
+
+        <h4 style="color:var(--user-primary); font-size:14.5px; margin-top:16px;">Why Header-Only?</h4>
+        <p>Ordinary classes split their declaration (.h) from their implementation (.cpp). For class <strong>templates</strong>, it's safer to combine both into a single header file - some compilers cannot reliably compile a template's declaration and implementation as separate files.</p>
+
+        <div class="self-check" data-section="sec4">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. Given template&lt;typename T = int&gt; class Stack, what does the declaration Stack&lt;&gt; myStack; create?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">A compiler error, since no type was given</button>
+              <button class="sc-opt" data-idx="1">A Stack of int, since int is the default type</button>
+              <button class="sc-opt" data-idx="2">A Stack that can hold any type at once</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. Can a plain function template (not a class template) use a default type parameter, like template&lt;typename T = int&gt; T f(T x)?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">No - default type parameters are only allowed in class templates</button>
+              <button class="sc-opt" data-idx="1">Yes, this works identically to class templates</button>
+              <button class="sc-opt" data-idx="2">Only if the function has no parameters at all</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec5"><span class="num">5</span> The vector Class: A Resizable Alternative to Arrays <span class="badge badge-apply" style="margin-left:8px;">Understand / Apply</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec5">
+        <p>Arrays have a serious limitation: their size is fixed once declared. The C++ <strong>vector</strong> class behaves like an array, but its size can <strong>grow automatically</strong> as needed.</p>
+        <div class="code-block">vector&lt;int&gt; intVector{1, 9};  <span class="cmt">// C++11 vector initializer, similar to an array initializer</span>
+vector&lt;vector&lt;int&gt;&gt; matrix{{1,2,3}, {4,5,6}, {7,8,9}, {10,11,12}};</div>
+
+        <table class="data-table">
+          <tr><th>Operation</th><th>What it does</th></tr>
+          <tr><td class="math">v.push_back(x)</td><td>Inserts x at the end of the vector</td></tr>
+          <tr><td class="math">v.insert(p, x)</td><td>Inserts x at position p (a pointer into the vector)</td></tr>
+          <tr><td class="math">v.begin()</td><td>Pointer to the first element</td></tr>
+          <tr><td class="math">v.end()</td><td>Pointer just past the last element (so v.end()-1 is the last element)</td></tr>
+        </table>
+        <p>Several familiar array algorithms also work directly on vectors: <code>min_element</code>, <code>max_element</code>, <code>sort</code>, <code>random_shuffle</code>, and <code>find</code>.</p>
+
+        <div class="callout real-world">
+          <div class="callout-title">🌍 Real-World Application - Retiring a Fixed-Size Array</div>
+          <p>A classic <code>DeckOfCards</code> program traditionally stores 52 cards in a fixed-size array - which works fine until a future version needs a variable number of decks, jokers, or a custom card count. Rewriting the program to store cards in a <code>vector&lt;int&gt;</code> instead removes that ceiling entirely: the deck can grow or shrink at runtime, and the same familiar operations (<code>sort</code>, <code>find</code>, indexing) still work exactly as before. This is exactly why real production code overwhelmingly prefers vectors over raw fixed-size arrays.</p>
+        </div>
+
+        <div class="self-check" data-section="sec5">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. What is the main advantage of vector over a plain array?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Vectors can only store integers</button>
+              <button class="sc-opt" data-idx="1">A vector's size can grow or shrink automatically at runtime</button>
+              <button class="sc-opt" data-idx="2">Vectors do not support indexing</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="2">
+            <p class="q-text">2. What does v.end() - 1 refer to in a vector v?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">The first element</button>
+              <button class="sc-opt" data-idx="1">One past the last element</button>
+              <button class="sc-opt" data-idx="2">The last actual element in the vector</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="section-card">
+      <button class="section-head" aria-expanded="false" data-target="sec6"><span class="num">6</span> Evaluating Expressions with Stacks &amp; Smart Pointers <span class="badge badge-evaluate" style="margin-left:8px;">Analyze / Create</span><span class="chev">▾</span></button>
+      <div class="section-body" id="sec6">
+        <p>How does a program evaluate an expression like <code>3 + 4 * 2</code>, respecting operator precedence and parentheses? A classic technique uses <strong>two stacks</strong> - one for operands, one for operators - scanned left to right:</p>
+        <ul class="clean">
+          <li>An <strong>operand</strong> (a number) is pushed onto the <code>operandStack</code></li>
+          <li>A <strong>+</strong> or <strong>-</strong> triggers processing of any pending operators already on top of <code>operatorStack</code>, then the new operator is pushed</li>
+          <li>A <strong>*</strong> or <strong>/</strong> similarly processes pending <code>*</code>/<code>/</code> operators first, then pushes</li>
+          <li>A <strong>(</strong> is simply pushed onto <code>operatorStack</code></li>
+          <li>A <strong>)</strong> triggers processing of operators until the matching <code>(</code> is found and removed</li>
+          <li>Once scanning finishes, any operators still left on <code>operatorStack</code> are processed in order</li>
+        </ul>
+
+        <div class="callout worked">
+          <div class="callout-title">🧩 Worked Example - Evaluating 3 + 4 * 2</div>
+          <div class="reasoning-step"><span class="step-tag">Scan 3</span><span>Operand &rarr; push to operandStack. operandStack: [3]</span></div>
+          <div class="reasoning-step"><span class="step-tag">Scan +</span><span>operatorStack is empty, so just push +. operatorStack: [+]</span></div>
+          <div class="reasoning-step"><span class="step-tag">Scan 4</span><span>Operand &rarr; push. operandStack: [3, 4]</span></div>
+          <div class="reasoning-step"><span class="step-tag">Scan *</span><span>* outranks the + already on top, so * is NOT processed yet - it's simply pushed on top. operatorStack: [+, *]</span></div>
+          <div class="reasoning-step"><span class="step-tag">Scan 2</span><span>Operand &rarr; push. operandStack: [3, 4, 2]</span></div>
+          <div class="reasoning-step"><span class="step-tag">End of input</span><span>Clear the remaining stack: pop * first (top of stack) &rarr; 4*2=8, push 8. Then pop + &rarr; 3+8=11. <strong>Result: 11</strong> - correctly respecting precedence, even though the expression was scanned strictly left to right.</span></div>
+        </div>
+
+        <div class="callout apply">
+          <div class="callout-title">✍️ Your Turn - Trace It (Create)</div>
+          <p style="margin-bottom:8px;">Using the same algorithm, trace through <code>2 * 3 + 4</code> step by step, and determine the final result. Write out your operandStack/operatorStack states, then reveal the answer.</p>
+          <textarea class="answer-box" placeholder="Scan 2: ...&#10;Scan *: ...&#10;Scan 3: ...&#10;Scan +: ...&#10;Scan 4: ...&#10;Final: ..."></textarea>
+          <div style="margin-top:10px;"><button class="btn secondary reveal-btn" data-reveal="reveal-expr">Show Answer</button></div>
+          <div class="reveal-box" id="reveal-expr">
+            Scan 2 &rarr; operandStack:[2]. Scan * &rarr; operatorStack empty, push: [*]. Scan 3 &rarr; operandStack:[2,3]. Scan + &rarr; * is on top and outranks nothing higher, so process it now: pop 3,2, compute 2*3=6, push 6 &rarr; operandStack:[6]; then push + &rarr; operatorStack:[+]. Scan 4 &rarr; operandStack:[6,4]. End of input: pop + &rarr; 6+4=<strong>10</strong>.
+          </div>
+        </div>
+
+        <h4 style="color:var(--user-primary); font-size:14.5px; margin-top:16px;">Smart Pointers</h4>
+        <p>C++11 introduced <code>unique_ptr</code>, a <strong>smart pointer</strong> template class that behaves like a regular pointer but automatically deallocates its memory once the object is no longer used - helping avoid memory leaks that raw pointers can easily cause.</p>
+
+        <div class="self-check" data-section="sec6">
+          <div class="self-check-title">✔️ Quick Self-Check</div>
+          <div class="sc-question" data-correct="1">
+            <p class="q-text">1. In the two-stack expression algorithm, what triggers processing operators already on the operatorStack?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">Reaching the very first character of the expression</button>
+              <button class="sc-opt" data-idx="1">Scanning a new operator (or closing parenthesis) that needs those pending operators resolved first</button>
+              <button class="sc-opt" data-idx="2">The operandStack becoming full</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+          <div class="sc-question" data-correct="0">
+            <p class="q-text">2. What is the defining feature of a smart pointer like unique_ptr?</p>
+            <div class="sc-options">
+              <button class="sc-opt" data-idx="0">It automatically deallocates its object's memory when the object is no longer needed</button>
+              <button class="sc-opt" data-idx="1">It can point to multiple objects simultaneously</button>
+              <button class="sc-opt" data-idx="2">It is slower than a raw pointer but otherwise identical</button>
+            </div>
+            <div class="sc-feedback"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+<!-- ============================================================ FLASHCARDS PANEL ============================================================ -->
+  <section class="panel" id="panel-flashcards" role="tabpanel" aria-labelledby="tab-flashcards">
+    <p class="intro-lead">24 terms from Templates, Vectors &amp; Stacks, ordered from foundational recall to applied and analytical thinking. Click a card to flip it, then mark whether you knew it.</p>
+
+    <div class="fc-toolbar">
+      <select id="fc-category-filter" aria-label="Filter flashcards by category">
+        <option value="all">All Categories</option>
+      </select>
+      <button class="btn secondary" id="fc-shuffle">🔀 Shuffle</button>
+      <button class="btn secondary" id="fc-reset">↺ Reset Progress</button>
+      <div class="fc-progress">
+        <span>Known: <b id="fc-known-count">0</b></span>
+        <span>Reviewing: <b id="fc-review-count">0</b></span>
+        <span>Total: <b id="fc-total-count">0</b></span>
+      </div>
+    </div>
+
+    <div class="fc-stage">
+      <div class="fc-counter"><span id="fc-position">1</span> / <span id="fc-total">24</span></div>
+      <div class="flashcard" id="flashcard" tabindex="0" role="button" aria-label="Flashcard, click to flip">
+        <div class="flashcard-inner">
+          <div class="fc-face fc-front">
+            <div class="fc-tag-row"><span class="fc-cat" id="fc-cat-front"></span><span class="badge" id="fc-level-front"></span></div>
+            <div class="fc-term" id="fc-term"></div>
+            <div class="fc-hint">Click to reveal the answer</div>
+          </div>
+          <div class="fc-face fc-back">
+            <div class="fc-tag-row"><span class="fc-cat" id="fc-cat-back"></span><span class="badge" id="fc-level-back"></span></div>
+            <p id="fc-definition"></p>
+            <div class="fc-hint">Click to flip back</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fc-controls">
+        <button class="btn secondary" id="fc-mark-review">🔁 Still Learning</button>
+        <button class="btn" id="fc-mark-known">✔️ Got It</button>
+      </div>
+      <div class="fc-nav">
+        <button class="btn secondary" id="fc-prev">← Previous</button>
+        <button class="btn secondary" id="fc-next">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ QUIZ PANEL ============================================================ -->
+  <section class="panel" id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz">
+    <div class="quiz-wrap">
+      <div class="quiz-intro" id="quiz-intro">
+        <h3 style="color:var(--user-primary);">Templates, Vectors &amp; Stacks Comprehension Quiz</h3>
+        <p style="color:var(--muted); max-width:460px; margin:0 auto 16px;">14 questions, scaffolded from basic recall up through analysis and evaluation. You'll get feedback and an explanation after every answer.</p>
+        <button class="btn accent" id="quiz-start">Start Quiz</button>
+      </div>
+
+      <div id="quiz-active" style="display:none;">
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div>
+        <div class="quiz-card">
+          <div class="quiz-meta">
+            <span class="quiz-qnum" id="quiz-qnum">Question 1 of 14</span>
+            <span class="badge" id="quiz-level-badge"></span>
+          </div>
+          <div class="quiz-qtext" id="quiz-qtext"></div>
+          <div class="quiz-options" id="quiz-options"></div>
+          <div class="quiz-explain" id="quiz-explain"></div>
+          <div class="quiz-footer">
+            <button class="btn" id="quiz-next" disabled>Next Question →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="quiz-results" style="display:none;">
+        <div class="quiz-results">
+          <div style="font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700;">Your Score</div>
+          <div class="quiz-score" id="quiz-final-score">0 / 12</div>
+          <div class="tier-breakdown" id="tier-breakdown"></div>
+          <button class="btn accent" id="quiz-retry">Retry Quiz</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ MATCHING PANEL ============================================================ -->
+  <section class="panel" id="panel-matching" role="tabpanel" aria-labelledby="tab-matching">
+    <p class="intro-lead">Click a term on the left, then click its matching definition on the right. Matched pairs lock in green.</p>
+
+    <div class="match-toolbar">
+      <select id="match-set-select" aria-label="Choose matching set">
+        <option value="0">Set A — Template Vocabulary</option>
+        <option value="1">Set B — Vectors, Stacks &amp; Smart Pointers</option>
+      </select>
+      <button class="btn secondary" id="match-reset">↺ Reset</button>
+    </div>
+
+    <div class="match-grid">
+      <div>
+        <div class="match-col-title">Terms</div>
+        <div id="match-terms"></div>
+      </div>
+      <div>
+        <div class="match-col-title">Definitions</div>
+        <div id="match-defs"></div>
+      </div>
+    </div>
+    <div class="match-status" id="match-status">0 of 6 matched</div>
+    <div class="match-complete" id="match-complete">🎉 Great work — all pairs matched correctly!</div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  CSP31B · C++ Programming II — Templates, Vectors &amp; Stacks &nbsp;|&nbsp; San Joaquin Delta College, Department of Computer Science
+</footer>
+<script>
+/* ============================================================ DATA ============================================================ */
+
+const flashcardsData = [
+  {cat:"Function Templates", level:"Remember", term:"Template", def:"A blueprint that lets you write one function or class that works with a generic type, instead of writing separate near-identical versions for each type."},
+  {cat:"Function Templates", level:"Remember", term:"Function Template Syntax", def:"template<typename T> - declares T as a generic type parameter that the function can use in place of a specific type."},
+  {cat:"Function Templates", level:"Remember", term:"typename Keyword", def:"Used inside a template's angle brackets to declare a type parameter, e.g. template<typename T>. Preferred over the equivalent class keyword because it's more descriptive."},
+  {cat:"Function Templates", level:"Understand", term:"Why prefer typename over class in a template parameter?", def:"They're functionally identical here, but typename avoids visually confusing the type parameter with an actual class declaration."},
+  {cat:"Function Templates", level:"Apply", term:"Trace: maxValue('A', 'N') using the generic maxValue<T> function", def:"'A' > 'N' is false (by character code), so the function returns 'N'. Output: Maximum between 'A' and 'N' is N."},
+  {cat:"Function Templates", level:"Apply", term:"Trace: maxValue(\"NBC\", \"ABC\") using the generic maxValue<T> function", def:"The same unmodified template function works correctly here too. Output: Maximum between \"NBC\" and \"ABC\" is NBC."},
+  {cat:"Function Templates", level:"Understand", term:"Multiple Type Parameters", def:"template<typename T1, typename T2, typename T3> - a template can declare more than one type parameter, separated by commas."},
+  {cat:"Class Templates", level:"Remember", term:"Class Template", def:"A blueprint for a class that works with a generic type, e.g. template<typename T> class Stack { ... };"},
+  {cat:"Class Templates", level:"Remember", term:"Stack<T> Declaration", def:"Stack<int> intStack; creates a Stack of int. Stack<string> stringStack; creates the identical class template instantiated for string instead."},
+  {cat:"Class Templates", level:"Apply", term:"Trace: Stack<int>, push 0 through 9 in order, then pop until empty - what prints?", def:"9 8 7 6 5 4 3 2 1 0 - a stack is LIFO, so the last value pushed (9) is the first one popped."},
+  {cat:"Class Templates", level:"Apply", term:"Trace: Stack<string>, push \"Chicago\", \"Denver\", \"London\" in order, then pop until empty - what prints?", def:"London Denver Chicago - the identical class template, instantiated with string, still follows the same LIFO order."},
+  {cat:"Class Templates", level:"Understand", term:"Why keep a class template's declaration and implementation in ONE header file?", def:"Some compilers cannot reliably compile a template's declaration and implementation as two separate files (.h and .cpp), so it's safer to combine them."},
+  {cat:"Class Templates", level:"Understand", term:"Out-of-class member function syntax for a template class", def:"Repeat the template prefix, then qualify with ClassName<T>:: - e.g. template<typename T> bool Stack<T>::empty() const { ... }"},
+  {cat:"Customization", level:"Understand", term:"Default Type Parameter (class templates only)", def:"template<typename T = int> class Stack { ... }; lets you write Stack<> myStack; as shorthand for Stack<int> myStack;"},
+  {cat:"Customization", level:"Analyze", term:"Analyze: can a function template use a default type parameter the same way a class template can?", def:"No - default type parameters are only allowed in class templates in C++, not in function templates."},
+  {cat:"Customization", level:"Remember", term:"Nontype Parameter", def:"A template parameter that is an ordinary value rather than a type, e.g. template<typename T, int capacity> class Stack { T elements[capacity]; };"},
+  {cat:"Customization", level:"Understand", term:"Static Members in a Template Class", def:"Allowed, but each distinct instantiation (e.g. Stack<int> vs. Stack<string>) gets its own separate copy of the static member - they are not shared across different instantiations."},
+  {cat:"vector Class", level:"Remember", term:"vector", def:"A C++ class that behaves like an array but whose size can grow or shrink automatically at runtime, unlike a fixed-size array."},
+  {cat:"vector Class", level:"Understand", term:"C++11 Vector Initializer", def:"vector<int> intVector{1, 9}; - initializes a vector with values, similar in style to an array initializer."},
+  {cat:"vector Class", level:"Apply", term:"What do v.begin() and v.end()-1 refer to in a vector v?", def:"v.begin() points to the first element; v.end() points just past the last element, so v.end()-1 points to the actual last element."},
+  {cat:"vector Class", level:"Remember", term:"Algorithms usable on vectors", def:"min_element, max_element, sort, random_shuffle, and find all work on vectors, the same way they work on arrays."},
+  {cat:"Stacks & Pointers", level:"Analyze", term:"Analyze: in the two-stack expression evaluation algorithm, what are the operandStack and operatorStack each used for?", def:"operandStack holds numeric values as they're scanned; operatorStack holds pending operators (and open parentheses) until they need to be resolved."},
+  {cat:"Stacks & Pointers", level:"Apply", term:"Apply: trace evaluating 3 + 4 * 2 with the two-stack algorithm - what is the final result?", def:"11 - scanning left to right, * is pushed above + without being processed yet (since * outranks +); at the end, * is resolved first (4*2=8), then + (3+8=11)."},
+  {cat:"Stacks & Pointers", level:"Remember", term:"Smart Pointer (unique_ptr)", def:"A C++11 template class that behaves like a pointer but automatically deallocates its object's memory once the object is no longer used, helping prevent memory leaks."}
+];
+
+const quizData = [
+  {level:"Remember", q:"What problem do templates solve in C++?", opts:["They make programs compile faster", "They let you write one function or class that works with many different types instead of duplicating code per type", "They remove the need for classes entirely", "They are only used for error handling"], correct:1, explain:"Templates let you write generic logic once and have the compiler generate type-specific versions automatically, avoiding near-duplicate overloaded functions or classes."},
+  {level:"Remember", q:"Why is <typename T> generally preferred over <class T> when declaring a template's type parameter?", opts:["<class T> is invalid syntax in modern C++", "<typename T> is more descriptive and avoids confusion with an actual class declaration", "<typename T> compiles to faster machine code", "<class T> can only be used with built-in types"], correct:1, explain:"They are functionally interchangeable in this position, but typename is preferred because it doesn't visually resemble an actual class declaration."},
+  {level:"Apply", q:"Using the generic maxValue<T> function, what does maxValue(1, 3) return?", opts:["1", "3", "0", "A compiler error, since 1 and 3 are the same type"], correct:1, explain:"T is deduced as int; 1 > 3 is false, so the function returns 3."},
+  {level:"Apply", q:"Using the generic maxValue<T> function, what does maxValue('A', 'N') return?", opts:["'A'", "'N'", "Both values, concatenated", "A compiler error, since char doesn't support the > operator"], correct:1, explain:"Characters are compared by character code; 'A' > 'N' is false, so the function returns 'N'."},
+  {level:"Understand", q:"How do you declare a template with three independent type parameters?", opts:["template<typename T1, typename T2, typename T3>", "template<typename T1; typename T2; typename T3>", "template<typename T1 typename T2 typename T3>", "C++ templates can only ever declare a single type parameter"], correct:0, explain:"Multiple type parameters are separated by commas inside the same set of angle brackets."},
+  {level:"Apply", q:"A Stack<int> has 0 through 9 pushed onto it in order. If you then pop until the stack is empty, what is printed?", opts:["0 1 2 3 4 5 6 7 8 9", "9 8 7 6 5 4 3 2 1 0", "A random order, since stacks don't guarantee order", "Only the last value pushed, 9"], correct:1, explain:"A stack is LIFO (last in, first out). Since 9 was pushed last, it's popped first, giving 9 8 7 6 5 4 3 2 1 0."},
+  {level:"Apply", q:"A Stack<string> has \"Chicago\", \"Denver\", \"London\" pushed onto it in that order. If you then pop until empty, what is printed?", opts:["Chicago Denver London", "London Denver Chicago", "London Chicago Denver", "Denver London Chicago"], correct:1, explain:"LIFO order: \"London\" was pushed last, so it pops first, followed by \"Denver\", then \"Chicago\"."},
+  {level:"Understand", q:"Why is it recommended to keep a class template's declaration and implementation together in ONE header file, unlike an ordinary class?", opts:["Templates cannot have separate implementation files at all under the C++ standard", "Some compilers cannot reliably compile a template's declaration and implementation when split across separate files", "It makes the compiled program run faster", "Header files are required to be smaller than 100 lines"], correct:1, explain:"While the C++ standard technically allows separation, many compilers have trouble with it in practice, so combining them into one header is the safer convention."},
+  {level:"Apply", q:"Given template<typename T = int> class Stack, what type does Stack<> myStack; create?", opts:["A compiler error, since no type argument was given", "Stack<int>, since int is the specified default type", "A Stack that can hold any type simultaneously", "Stack<void>"], correct:1, explain:"The default type parameter (int) is used automatically whenever the angle brackets are left empty."},
+  {level:"Analyze", q:"Can a function template (not a class template) use a default type parameter, such as template<typename T = int> T f(T x)?", opts:["Yes, function templates and class templates support default types identically", "No - default type parameters are only allowed in class templates in C++", "Only if the function has no parameters", "Only in C++20 or later"], correct:1, explain:"Default type parameters are a class-template-only feature in C++; function templates require the type to be specified (or deducible) at each call."},
+  {level:"Understand", q:"What is a nontype parameter in a template, such as the capacity in template<typename T, int capacity>?", opts:["A second type parameter with a different name", "An ordinary value (not a type) passed in the template's angle brackets, e.g. to fix an array's size", "A parameter that can never be used inside the class", "A syntax error in modern C++"], correct:1, explain:"A nontype parameter is a plain value (like an int) rather than a type, useful for things like specifying a fixed array size at compile time."},
+  {level:"Understand", q:"If a template class has a static member, how many copies of that static member exist across Stack<int> and Stack<string>?", opts:["Exactly one copy, shared between Stack<int> and Stack<string>", "Two separate copies - one per distinct template instantiation", "Zero, since static members are not allowed in template classes", "It depends on how many objects of each type are created"], correct:1, explain:"Each template specialization (each distinct type the template is instantiated with) gets its own separate copy of any static member - they are not shared across different instantiations."},
+  {level:"Apply", q:"Which of the following correctly initializes a vector<int> with the values 1 and 9 using C++11 syntax?", opts:["vector<int> intVector(1, 9);", "vector<int> intVector{1, 9};", "vector<int> intVector = [1, 9];", "vector<int> intVector<1, 9>;"], correct:1, explain:"C++11 vector initializer syntax uses curly braces, similar in style to an array initializer: vector<int> intVector{1, 9};"},
+  {level:"Analyze", q:"In the two-stack algorithm for evaluating expressions, what are the operandStack and operatorStack each responsible for?", opts:["Both stacks hold the same data as a backup copy of each other", "operandStack holds numeric values as they're scanned; operatorStack holds pending operators (and open parentheses) until they need to be resolved", "operandStack holds operators; operatorStack holds numeric values", "Only one stack is actually used; the second is unnecessary"], correct:1, explain:"The operand stack accumulates numbers as they're read, while the operator stack holds pending operators and parentheses until precedence rules say it's time to apply them."}
+];
+
+const matchingSets = [
+  {
+    name:"Template Vocabulary",
+    pairs:[
+      {term:"Function Template", def:"A blueprint for a function that works with a generic type, using template<typename T>"},
+      {term:"Class Template", def:"A blueprint for a class that works with a generic type, e.g. Stack<T>"},
+      {term:"typename", def:"Preferred keyword to declare a type parameter, avoiding confusion with a class declaration"},
+      {term:"Default Type Parameter", def:"A fallback type used when none is specified, e.g. Stack<> meaning Stack<int> (class templates only)"},
+      {term:"Nontype Parameter", def:"A non-type value passed in a template's angle brackets, e.g. an array capacity"},
+      {term:"Static Member (template class)", def:"Each template specialization gets its own separate copy"}
+    ]
+  },
+  {
+    name:"Vectors, Stacks & Smart Pointers",
+    pairs:[
+      {term:"vector", def:"A resizable array whose size can grow or shrink automatically"},
+      {term:"push_back", def:"Inserts an element at the end of a vector"},
+      {term:"v.begin() / v.end()", def:"Pointers to the first element / just past the last element of a vector"},
+      {term:"Operand Stack", def:"Holds numeric values while an expression is being evaluated"},
+      {term:"Operator Stack", def:"Holds pending operators (and parentheses) while an expression is being evaluated"},
+      {term:"unique_ptr", def:"A smart pointer that automatically deallocates memory when no longer used"}
+    ]
+  }
+];
+
+const levelBadgeClass = {
+  "Remember":"badge-remember", "Understand":"badge-understand", "Apply":"badge-apply",
+  "Analyze":"badge-analyze", "Evaluate":"badge-evaluate", "Create":"badge-create"
+};
+
+
+
+/* ============================================================ TABS ============================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.setAttribute('aria-selected','false'));
+    btn.setAttribute('aria-selected','true');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================================================ ACCORDION ============================================================ */
+document.querySelectorAll('.section-head').forEach(head=>{
+  head.addEventListener('click', ()=>{
+    const body = document.getElementById(head.dataset.target);
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    head.setAttribute('aria-expanded', String(!isOpen));
+  });
+});
+
+/* ============================================================ REVEAL BUTTONS (worked example / case study) ============================================================ */
+document.querySelectorAll('.reveal-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const box = document.getElementById(btn.dataset.reveal);
+    box.classList.toggle('shown');
+    btn.textContent = box.classList.contains('shown') ? 'Hide Model Answer' : btn.textContent.replace('Hide','Show');
+  });
+});
+
+/* ============================================================ MINI SELF-CHECKS ============================================================ */
+document.querySelectorAll('.sc-question').forEach(q=>{
+  const correctIdx = parseInt(q.dataset.correct, 10);
+  const feedback = q.querySelector('.sc-feedback');
+  q.querySelectorAll('.sc-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      const idx = parseInt(opt.dataset.idx, 10);
+      q.querySelectorAll('.sc-opt').forEach(o=>o.disabled = true);
+      if(idx === correctIdx){
+        opt.classList.add('correct');
+        feedback.textContent = '✓ Correct - nice work.';
+        feedback.className = 'sc-feedback shown right';
+      } else {
+        opt.classList.add('incorrect');
+        q.querySelector('[data-idx="'+correctIdx+'"]').classList.add('correct');
+        feedback.textContent = '✗ Not quite - review the highlighted answer above.';
+        feedback.className = 'sc-feedback shown wrong';
+      }
+    });
+  });
+});
+
+/* ============================================================ FLASHCARDS ============================================================ */
+let fcDeck = flashcardsData.map((c,i)=>({...c, id:i, status:'new'}));
+let fcFiltered = [...fcDeck];
+let fcIndex = 0;
+
+function fcPopulateCategories(){
+  const sel = document.getElementById('fc-category-filter');
+  const cats = [...new Set(flashcardsData.map(c=>c.cat))];
+  cats.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function fcRender(){
+  const card = fcFiltered[fcIndex];
+  const el = document.getElementById('flashcard');
+  el.classList.remove('flipped');
+  if(!card){
+    document.getElementById('fc-term').textContent = 'No cards in this category.';
+    document.getElementById('fc-definition').textContent = '';
+    return;
+  }
+  document.getElementById('fc-term').textContent = card.term;
+  document.getElementById('fc-definition').textContent = card.def;
+  document.getElementById('fc-cat-front').textContent = card.cat;
+  document.getElementById('fc-cat-back').textContent = card.cat;
+  const badgeFront = document.getElementById('fc-level-front');
+  const badgeBack = document.getElementById('fc-level-back');
+  badgeFront.textContent = card.level; badgeFront.className = 'badge ' + levelBadgeClass[card.level];
+  badgeBack.textContent = card.level; badgeBack.className = 'badge ' + levelBadgeClass[card.level];
+  document.getElementById('fc-position').textContent = fcIndex + 1;
+  document.getElementById('fc-total').textContent = fcFiltered.length;
+  fcUpdateProgress();
+}
+
+function fcUpdateProgress(){
+  const known = fcDeck.filter(c=>c.status==='known').length;
+  const review = fcDeck.filter(c=>c.status==='review').length;
+  document.getElementById('fc-known-count').textContent = known;
+  document.getElementById('fc-review-count').textContent = review;
+  document.getElementById('fc-total-count').textContent = fcDeck.length;
+}
+
+document.getElementById('flashcard').addEventListener('click', ()=>{
+  document.getElementById('flashcard').classList.toggle('flipped');
+});
+document.getElementById('flashcard').addEventListener('keypress', (e)=>{
+  if(e.key === 'Enter' || e.key === ' '){ document.getElementById('flashcard').classList.toggle('flipped'); }
+});
+
+document.getElementById('fc-next').addEventListener('click', ()=>{
+  if(fcFiltered.length===0) return;
+  fcIndex = (fcIndex + 1) % fcFiltered.length;
+  fcRender();
+});
+document.getElementById('fc-prev').addEventListener('click', ()=>{
+  if(fcFiltered.length===0) return;
+  fcIndex = (fcIndex - 1 + fcFiltered.length) % fcFiltered.length;
+  fcRender();
+});
+document.getElementById('fc-mark-known').addEventListener('click', ()=>{
+  if(!fcFiltered[fcIndex]) return;
+  fcDeck.find(c=>c.id===fcFiltered[fcIndex].id).status = 'known';
+  fcUpdateProgress();
+});
+document.getElementById('fc-mark-review').addEventListener('click', ()=>{
+  if(!fcFiltered[fcIndex]) return;
+  fcDeck.find(c=>c.id===fcFiltered[fcIndex].id).status = 'review';
+  fcUpdateProgress();
+});
+document.getElementById('fc-shuffle').addEventListener('click', ()=>{
+  for(let i = fcFiltered.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [fcFiltered[i], fcFiltered[j]] = [fcFiltered[j], fcFiltered[i]];
+  }
+  fcIndex = 0;
+  fcRender();
+});
+document.getElementById('fc-reset').addEventListener('click', ()=>{
+  fcDeck.forEach(c=>c.status='new');
+  fcUpdateProgress();
+});
+document.getElementById('fc-category-filter').addEventListener('change', (e)=>{
+  const val = e.target.value;
+  fcFiltered = val==='all' ? [...fcDeck] : fcDeck.filter(c=>c.cat===val);
+  fcIndex = 0;
+  fcRender();
+});
+
+fcPopulateCategories();
+fcRender();
+
+/* ============================================================ QUIZ ============================================================ */
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let quizTierResults = {};
+
+function quizStart(){
+  quizIndex = 0; quizScore = 0; quizAnswered = false;
+  quizTierResults = {};
+  document.getElementById('quiz-intro').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  quizRenderQuestion();
+}
+
+function quizRenderQuestion(){
+  quizAnswered = false;
+  const q = quizData[quizIndex];
+  document.getElementById('quiz-qnum').textContent = 'Question ' + (quizIndex+1) + ' of ' + quizData.length;
+  const badge = document.getElementById('quiz-level-badge');
+  badge.textContent = q.level; badge.className = 'badge ' + levelBadgeClass[q.level];
+  document.getElementById('quiz-qtext').textContent = q.q;
+  document.getElementById('quiz-progress-fill').style.width = (quizIndex/quizData.length*100) + '%';
+
+  const optsWrap = document.getElementById('quiz-options');
+  optsWrap.innerHTML = '';
+  q.opts.forEach((optText, idx)=>{
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = optText;
+    b.addEventListener('click', ()=>quizAnswer(idx));
+    optsWrap.appendChild(b);
+  });
+  document.getElementById('quiz-explain').classList.remove('shown');
+  document.getElementById('quiz-next').disabled = true;
+}
+
+function quizAnswer(idx){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  const q = quizData[quizIndex];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach((o,i)=>{
+    o.disabled = true;
+    if(i === q.correct) o.classList.add('correct');
+    else if(i === idx) o.classList.add('incorrect');
+  });
+  quizTierResults[q.level] = quizTierResults[q.level] || {correct:0, total:0};
+  quizTierResults[q.level].total++;
+  if(idx === q.correct){
+    quizScore++;
+    quizTierResults[q.level].correct++;
+  }
+  const explainBox = document.getElementById('quiz-explain');
+  explainBox.innerHTML = (idx===q.correct ? '<strong>✓ Correct.</strong> ' : '<strong>✗ Not quite.</strong> ') + q.explain;
+  explainBox.classList.add('shown');
+  document.getElementById('quiz-next').disabled = false;
+}
+
+document.getElementById('quiz-next').addEventListener('click', ()=>{
+  quizIndex++;
+  if(quizIndex >= quizData.length){
+    quizShowResults();
+  } else {
+    quizRenderQuestion();
+  }
+});
+
+function quizShowResults(){
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'block';
+  document.getElementById('quiz-final-score').textContent = quizScore + ' / ' + quizData.length;
+  const tierWrap = document.getElementById('tier-breakdown');
+  tierWrap.innerHTML = '';
+  Object.keys(quizTierResults).forEach(level=>{
+    const r = quizTierResults[level];
+    const chip = document.createElement('div');
+    chip.className = 'tier-chip';
+    chip.innerHTML = '<div class="tier-score">'+r.correct+'/'+r.total+'</div><div class="tier-label">'+level+'</div>';
+    tierWrap.appendChild(chip);
+  });
+}
+
+document.getElementById('quiz-start').addEventListener('click', quizStart);
+document.getElementById('quiz-retry').addEventListener('click', ()=>{
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-intro').style.display = 'block';
+});
+
+/* ============================================================ MATCHING ============================================================ */
+let matchCurrentSet = 0;
+let matchSelectedTerm = null;
+let matchSelectedDef = null;
+let matchMatchedCount = 0;
+let matchTermOrder = [];
+let matchDefOrder = [];
+
+function matchInit(setIdx){
+  matchCurrentSet = setIdx;
+  matchSelectedTerm = null; matchSelectedDef = null; matchMatchedCount = 0;
+  document.getElementById('match-complete').classList.remove('shown');
+  const pairs = matchingSets[setIdx].pairs;
+
+  matchTermOrder = pairs.map((p,i)=>i);
+  matchDefOrder = pairs.map((p,i)=>i);
+  shuffleArr(matchTermOrder);
+  shuffleArr(matchDefOrder);
+
+  const termsWrap = document.getElementById('match-terms');
+  const defsWrap = document.getElementById('match-defs');
+  termsWrap.innerHTML = '';
+  defsWrap.innerHTML = '';
+
+  matchTermOrder.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-item';
+    b.textContent = pairs[i].term;
+    b.dataset.pairIdx = i;
+    b.addEventListener('click', ()=>matchSelectTerm(b, i));
+    termsWrap.appendChild(b);
+  });
+  matchDefOrder.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-item';
+    b.textContent = pairs[i].def;
+    b.dataset.pairIdx = i;
+    b.addEventListener('click', ()=>matchSelectDef(b, i));
+    defsWrap.appendChild(b);
+  });
+  matchUpdateStatus();
+}
+
+function shuffleArr(arr){
+  for(let i=arr.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+}
+
+function matchSelectTerm(el, pairIdx){
+  if(el.classList.contains('matched')) return;
+  document.querySelectorAll('#match-terms .match-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  matchSelectedTerm = {el, pairIdx};
+  matchTryPair();
+}
+function matchSelectDef(el, pairIdx){
+  if(el.classList.contains('matched')) return;
+  document.querySelectorAll('#match-defs .match-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  matchSelectedDef = {el, pairIdx};
+  matchTryPair();
+}
+
+function matchTryPair(){
+  if(!matchSelectedTerm || !matchSelectedDef) return;
+  if(matchSelectedTerm.pairIdx === matchSelectedDef.pairIdx){
+    matchSelectedTerm.el.classList.remove('selected');
+    matchSelectedDef.el.classList.remove('selected');
+    matchSelectedTerm.el.classList.add('matched');
+    matchSelectedDef.el.classList.add('matched');
+    matchMatchedCount++;
+    matchUpdateStatus();
+    if(matchMatchedCount === matchingSets[matchCurrentSet].pairs.length){
+      document.getElementById('match-complete').classList.add('shown');
+    }
+  } else {
+    matchSelectedTerm.el.classList.add('shake');
+    matchSelectedDef.el.classList.add('shake');
+    setTimeout(()=>{
+      matchSelectedTerm.el.classList.remove('selected','shake');
+      matchSelectedDef.el.classList.remove('selected','shake');
+    }, 420);
+  }
+  matchSelectedTerm = null; matchSelectedDef = null;
+}
+
+function matchUpdateStatus(){
+  document.getElementById('match-status').textContent = matchMatchedCount + ' of ' + matchingSets[matchCurrentSet].pairs.length + ' matched';
+}
+
+document.getElementById('match-set-select').addEventListener('change', (e)=>{
+  matchInit(parseInt(e.target.value,10));
+});
+document.getElementById('match-reset').addEventListener('click', ()=>{
+  matchInit(matchCurrentSet);
+});
+
+matchInit(0);
+</script>
+</body>
+</html>
