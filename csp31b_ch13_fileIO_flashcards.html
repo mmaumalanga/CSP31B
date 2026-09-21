@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSP31B · Chapter 13 — File Input and Output | San Joaquin Delta College</title>
+<style>
+  :root{
+    --user-primary:#1a4480;
+    --user-accent:#c8102e;
+    --user-background:#ffffff;
+    --primary-dark:#102b52;
+    --primary-tint:#eaf0f9;
+    --accent-tint:#fbe9ec;
+    --ink:#1c2430;
+    --ink-muted:#5a6472;
+    --border:#d7dee8;
+    --card-bg:#f6f8fb;
+    --success:#1e7d34;
+    --success-tint:#e7f5ea;
+    --danger:#b3101f;
+    --danger-tint:#fbe7e8;
+    --radius:12px;
+    --shadow:0 2px 10px rgba(16,43,82,0.08);
+    --serif: Georgia, 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--user-background);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    padding-bottom:60px;
+  }
+
+  a{ color:var(--user-primary); }
+
+  header.site{
+    background:var(--user-primary);
+    color:#fff;
+    padding:22px 20px 20px;
+  }
+  header.site .wrap{
+    max-width:1000px;
+    margin:0 auto;
+  }
+  header.site .eyebrow{
+    font-size:0.78rem;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    color:#c7d6ee;
+    margin:0 0 6px;
+    font-weight:600;
+  }
+  header.site h1{
+    margin:0 0 6px;
+    font-size:1.55rem;
+    font-family:var(--serif);
+    font-weight:700;
+  }
+  header.site p.sub{
+    margin:0;
+    color:#dbe5f4;
+    font-size:0.95rem;
+  }
+
+  nav.tabs{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    box-shadow:0 1px 4px rgba(16,43,82,0.06);
+  }
+  nav.tabs .wrap{
+    max-width:1000px;
+    margin:0 auto;
+    display:flex;
+    overflow-x:auto;
+  }
+  nav.tabs button{
+    appearance:none;
+    border:none;
+    background:transparent;
+    font-family:var(--sans);
+    font-size:0.92rem;
+    font-weight:600;
+    color:var(--ink-muted);
+    padding:14px 18px 12px;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    white-space:nowrap;
+  }
+  nav.tabs button:hover{ color:var(--user-primary); }
+  nav.tabs button.active{
+    color:var(--user-primary);
+    border-bottom-color:var(--user-accent);
+  }
+  nav.tabs button .tag{
+    display:inline-block;
+    margin-left:6px;
+    font-size:0.66rem;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:var(--primary-tint);
+    color:var(--user-primary);
+    padding:2px 6px;
+    border-radius:20px;
+  }
+
+  main{
+    max-width:1000px;
+    margin:0 auto;
+    padding:26px 20px 10px;
+  }
+
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; animation:fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  h2.section-title{
+    font-family:var(--serif);
+    color:var(--primary-dark);
+    font-size:1.35rem;
+    margin:34px 0 12px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  h2.section-title:first-child{ margin-top:0; }
+
+  h3.sub-title{
+    font-size:1.05rem;
+    color:var(--user-primary);
+    margin:20px 0 8px;
+  }
+
+  .card-block{
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:16px;
+  }
+
+  ul.obj-list{ margin:0; padding-left:20px; }
+  ul.obj-list li{ margin-bottom:6px; }
+
+  /* ---------- Worked example ---------- */
+  .worked-steps{ list-style:none; margin:0; padding:0; counter-reset:step; }
+  .worked-steps li{
+    counter-increment:step;
+    position:relative;
+    padding:2px 0 16px 40px;
+    border-left:2px solid var(--border);
+    margin-left:14px;
+  }
+  .worked-steps li:last-child{ border-left-color:transparent; padding-bottom:0; }
+  .worked-steps li::before{
+    content:counter(step);
+    position:absolute;
+    left:-15px;
+    top:0;
+    width:28px;
+    height:28px;
+    background:var(--user-primary);
+    color:#fff;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0.85rem;
+    font-weight:700;
+  }
+  .worked-steps code, code{
+    background:#101826;
+    color:#dce6f5;
+    padding:1px 6px;
+    border-radius:5px;
+    font-size:0.88em;
+    font-family:'SF Mono', Consolas, Menlo, monospace;
+  }
+  pre.code-block{
+    background:#101826;
+    color:#e4ecf9;
+    padding:14px 16px;
+    border-radius:8px;
+    overflow-x:auto;
+    font-family:'SF Mono', Consolas, Menlo, monospace;
+    font-size:0.85rem;
+    line-height:1.5;
+    margin:8px 0;
+  }
+  pre.code-block .cm{ color:#8fb4e8; font-style:italic; }
+  .reasoning{
+    font-size:0.9rem;
+    color:var(--ink-muted);
+    margin-top:4px;
+  }
+
+  details.reveal{
+    background:#fff;
+    border:1px dashed var(--user-primary);
+    border-radius:var(--radius);
+    padding:12px 16px;
+    margin-top:10px;
+  }
+  details.reveal summary{
+    cursor:pointer;
+    font-weight:700;
+    color:var(--user-primary);
+  }
+  details.reveal[open] summary{ margin-bottom:10px; }
+
+  /* ---------- Misconceptions ---------- */
+  .misconception{
+    border-left:4px solid var(--user-accent);
+    background:var(--accent-tint);
+    border-radius:0 var(--radius) var(--radius) 0;
+    padding:14px 18px;
+    margin-bottom:14px;
+  }
+  .misconception .label{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-weight:700;
+    color:var(--user-accent);
+    font-size:0.8rem;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin-bottom:6px;
+  }
+  .misconception .myth{ font-weight:600; margin:0 0 6px; }
+  .misconception .truth{ margin:0; color:var(--ink); }
+  .misconception .truth b{ color:var(--success); }
+
+  /* ---------- Bloom badges ---------- */
+  .bloom{
+    display:inline-block;
+    font-size:0.68rem;
+    font-weight:700;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    padding:3px 9px;
+    border-radius:20px;
+  }
+  .bloom.remember, .bloom.understand, .bloom.apply{ background:var(--primary-tint); color:var(--user-primary); }
+  .bloom.analyze, .bloom.evaluate, .bloom.create{ background:var(--accent-tint); color:var(--user-accent); }
+
+  /* ---------- Flashcards ---------- */
+  .stack-nav{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .stack-nav button{
+    appearance:none;
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--ink-muted);
+    padding:8px 14px;
+    border-radius:20px;
+    font-size:0.85rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .stack-nav button.active{
+    background:var(--user-primary);
+    border-color:var(--user-primary);
+    color:#fff;
+  }
+
+  .deck-wrap{ margin-bottom:10px; }
+  .deck-progress{
+    font-size:0.85rem;
+    color:var(--ink-muted);
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .progress-track{
+    flex:1;
+    height:6px;
+    background:var(--border);
+    border-radius:6px;
+    margin:0 12px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--user-accent);
+    width:0%;
+    transition:width .3s ease;
+  }
+
+  .flashcard{
+    perspective:1400px;
+    width:100%;
+    height:260px;
+    margin-bottom:16px;
+    cursor:pointer;
+  }
+  .card-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    transition:transform .5s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .flashcard.flipped .card-inner{ transform:rotateY(180deg); }
+  .card-face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+  }
+  .card-front{ background:#fff; }
+  .card-back{
+    background:var(--primary-tint);
+    transform:rotateY(180deg);
+  }
+  .card-face .face-label{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+    color:var(--ink-muted);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .card-face .face-body{
+    flex:1;
+    display:flex;
+    align-items:center;
+    font-size:1.08rem;
+    font-weight:500;
+    overflow-y:auto;
+  }
+  .card-face .face-foot{
+    text-align:center;
+    font-size:0.78rem;
+    color:var(--ink-muted);
+    margin-top:8px;
+  }
+
+  .deck-controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .btn{
+    appearance:none;
+    border:1px solid var(--user-primary);
+    background:#fff;
+    color:var(--user-primary);
+    padding:9px 16px;
+    border-radius:8px;
+    font-size:0.88rem;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn:hover{ background:var(--primary-tint); }
+  .btn.solid{ background:var(--user-primary); color:#fff; }
+  .btn.solid:hover{ background:var(--primary-dark); }
+  .btn.accent{ background:var(--user-accent); border-color:var(--user-accent); color:#fff; }
+  .btn.accent:hover{ opacity:.9; }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+  /* ---------- Self-check / Quiz ---------- */
+  .self-check{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin:18px 0 36px;
+  }
+  .self-check h4{
+    margin:0 0 4px;
+    color:var(--user-primary);
+    font-size:1rem;
+  }
+  .self-check .hint{ font-size:0.85rem; color:var(--ink-muted); margin-bottom:14px;}
+  .quiz-q{ margin-bottom:18px; padding-bottom:16px; border-bottom:1px dashed var(--border); }
+  .quiz-q:last-of-type{ border-bottom:none; }
+  .quiz-q p.prompt{ font-weight:600; margin:0 0 10px; }
+  .quiz-q .opts label{
+    display:block;
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:9px 12px;
+    margin-bottom:7px;
+    cursor:pointer;
+    font-size:0.92rem;
+  }
+  .quiz-q .opts label:hover{ border-color:var(--user-primary); }
+  .quiz-q .opts input{ margin-right:8px; }
+  .quiz-q .opts label.correct{ background:var(--success-tint); border-color:var(--success); }
+  .quiz-q .opts label.incorrect{ background:var(--danger-tint); border-color:var(--danger); }
+  .quiz-q .fb{
+    display:none;
+    margin-top:8px;
+    font-size:0.87rem;
+    padding:8px 12px;
+    border-radius:8px;
+  }
+  .quiz-q .fb.show{ display:block; }
+  .quiz-q .fb.good{ background:var(--success-tint); color:var(--success); }
+  .quiz-q .fb.bad{ background:var(--danger-tint); color:var(--danger); }
+
+  .score-banner{
+    display:none;
+    background:var(--primary-tint);
+    border:1px solid var(--user-primary);
+    border-radius:var(--radius);
+    padding:16px 20px;
+    margin-top:16px;
+    font-weight:700;
+    color:var(--primary-dark);
+  }
+  .score-banner.show{ display:block; }
+
+  /* ---------- Matching ---------- */
+  .match-wrap{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+  }
+  @media (max-width:640px){ .match-wrap{ grid-template-columns:1fr; } }
+  .match-col h4{
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-muted);
+    margin:0 0 10px;
+  }
+  .match-item{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:11px 14px;
+    margin-bottom:9px;
+    cursor:pointer;
+    font-size:0.9rem;
+    transition:all .15s ease;
+  }
+  .match-item:hover{ border-color:var(--user-primary); }
+  .match-item.selected{ border-color:var(--user-primary); background:var(--primary-tint); box-shadow:0 0 0 2px var(--user-primary) inset; }
+  .match-item.matched{ background:var(--success-tint); border-color:var(--success); color:var(--success); cursor:default; }
+  .match-item.wrong{ background:var(--danger-tint); border-color:var(--danger); animation:shake .3s; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
+
+  .match-status{
+    margin:16px 0;
+    font-weight:700;
+    color:var(--user-primary);
+  }
+  .match-status.done{ color:var(--success); }
+
+  footer.site{
+    max-width:1000px;
+    margin:40px auto 0;
+    padding:16px 20px;
+    color:var(--ink-muted);
+    font-size:0.78rem;
+    border-top:1px solid var(--border);
+  }
+
+  .scenario{
+    background:#fff;
+    border:1px solid var(--border);
+    border-left:4px solid var(--user-primary);
+    border-radius:0 var(--radius) var(--radius) 0;
+    padding:16px 20px;
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <p class="eyebrow">San Joaquin Delta College · CSP31B — C++ Programming II</p>
+    <h1>Chapter 13: File Input and Output</h1>
+    <p class="sub">Flashcards, self-checks, a comprehensive quiz, and a matching activity for ofstream, ifstream, fstream, binary I/O, and random file access.</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="flashcards">Flashcards</button>
+    <button class="tab-btn" data-tab="quiz">Quiz <span class="tag">secondary</span></button>
+    <button class="tab-btn" data-tab="matching">Matching <span class="tag">secondary</span></button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ===================== OVERVIEW TAB ===================== -->
+  <section id="overview" class="tab-panel active">
+
+    <h2 class="section-title">Learning Objectives</h2>
+    <div class="card-block">
+      <ul class="obj-list">
+        <li>Write data to a text file with <code>ofstream</code> and read it back with <code>ifstream</code>.</li>
+        <li>Test whether a file exists and detect the end of a file.</li>
+        <li>Read and write data using <code>getline</code>, <code>get</code>, and <code>put</code>.</li>
+        <li>Open a file with the correct combination of <code>fstream</code> modes.</li>
+        <li>Use <code>eof()</code>, <code>fail()</code>, <code>bad()</code>, and <code>good()</code> to test stream state.</li>
+        <li>Explain the difference between text I/O and binary I/O, and use <code>ios::binary</code>.</li>
+        <li>Read and write binary data with <code>read</code>, <code>write</code>, and <code>reinterpret_cast</code>.</li>
+        <li>Use <code>seekg</code>/<code>seekp</code> for random access, and update records in place.</li>
+      </ul>
+    </div>
+
+    <h2 class="section-title">Worked Example — Writing Then Reading Student Scores</h2>
+    <div class="card-block">
+      <p><b>Problem:</b> Store two students' first name, middle initial, last name, and score in a file named
+      <code>scores.txt</code>, then read the file back and display each record.</p>
+
+      <h3 class="sub-title">Reasoning, step by step</h3>
+      <ol class="worked-steps">
+        <li>
+          <strong>Include the header and declare an output stream.</strong>
+          <pre class="code-block"><span class="cm">// ofstream lets us write to a file the same way we write to cout</span>
+#include &lt;fstream&gt;
+using namespace std;
+
+ofstream output;</pre>
+          <p class="reasoning">We reach for <code>ofstream</code> specifically because this step only writes — using <code>fstream</code> here would work too, but it would ask C++ to support reading it never needs.</p>
+        </li>
+        <li>
+          <strong>Open the file and immediately check that it succeeded.</strong>
+          <pre class="code-block">output.open("scores.txt");</pre>
+          <p class="reasoning">Opening with no mode flags defaults to <code>ios::out</code>, which — this is the detail students most often miss — silently erases any existing content in <code>scores.txt</code> the moment <code>open()</code> runs, before a single byte is written.</p>
+        </li>
+        <li>
+          <strong>Write each record using the same <code>&lt;&lt;</code> syntax used for console output.</strong>
+          <pre class="code-block">output &lt;&lt; "John T Smith " &lt;&lt; 90 &lt;&lt; endl;
+output &lt;&lt; "Eric K Jones " &lt;&lt; 85 &lt;&lt; endl;</pre>
+          <p class="reasoning">Each field is separated by whitespace on purpose — later, when we read this file back with <code>&gt;&gt;</code>, that operator delimits tokens on whitespace, so the write format has to match how we intend to read it.</p>
+        </li>
+        <li>
+          <strong>Close the stream.</strong>
+          <pre class="code-block">output.close();</pre>
+          <p class="reasoning">Closing flushes any buffered data to disk. Skipping this step is one of the most common sources of "my file looks empty" bugs (see the misconception below for the nuance here).</p>
+        </li>
+        <li>
+          <strong>Open a second stream to read the file back.</strong>
+          <pre class="code-block">ifstream input;
+input.open("scores.txt");
+if (input.fail()) {
+    cout &lt;&lt; "File does not exist" &lt;&lt; endl;
+    return 1;
+}</pre>
+          <p class="reasoning">Checking <code>fail()</code> right after <code>open()</code> is the standard, idiomatic way to confirm the file actually exists before trying to read from it.</p>
+        </li>
+        <li>
+          <strong>Read the fields back with <code>&gt;&gt;</code>, in the same order they were written.</strong>
+          <pre class="code-block">string firstName, lastName;
+char mi;
+int score;
+
+while (input &gt;&gt; firstName &gt;&gt; mi &gt;&gt; lastName &gt;&gt; score) {
+    cout &lt;&lt; firstName &lt;&lt; " " &lt;&lt; mi &lt;&lt; " "
+         &lt;&lt; lastName &lt;&lt; " " &lt;&lt; score &lt;&lt; endl;
+}
+input.close();</pre>
+          <p class="reasoning">Placing the whole extraction chain as the loop condition is deliberate: <code>&gt;&gt;</code> returns the stream itself, which converts to <code>false</code> the moment a read fails (including hitting end-of-file), so the loop stops exactly when there is nothing left to read — no separate <code>eof()</code> check needed in this pattern.</p>
+        </li>
+      </ol>
+
+      <h3 class="sub-title">Your Turn (Apply)</h3>
+      <p>Using the same pattern, write a program that stores three product records — a product name (string),
+      a category code (a single character, e.g. <code>'E'</code> for electronics), and a price (double) —
+      into a file named <code>inventory.txt</code>, then reads the file back and prints each product with its
+      price formatted to two decimal places.</p>
+      <details class="reveal">
+        <summary>Reveal a model solution</summary>
+        <pre class="code-block">#include &lt;fstream&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+int main() {
+    ofstream output("inventory.txt");
+    output &lt;&lt; "Keyboard " &lt;&lt; 'E' &lt;&lt; " " &lt;&lt; 24.99 &lt;&lt; endl;
+    output &lt;&lt; "Notebook " &lt;&lt; 'S' &lt;&lt; " " &lt;&lt; 1.49  &lt;&lt; endl;
+    output &lt;&lt; "Monitor "  &lt;&lt; 'E' &lt;&lt; " " &lt;&lt; 129.0 &lt;&lt; endl;
+    output.close();
+
+    ifstream input("inventory.txt");
+    if (input.fail()) { return 1; }
+
+    string name; char cat; double price;
+    while (input &gt;&gt; name &gt;&gt; cat &gt;&gt; price) {
+        cout &lt;&lt; name &lt;&lt; " (" &lt;&lt; cat &lt;&lt; ") $"
+             &lt;&lt; fixed &lt;&lt; setprecision(2) &lt;&lt; price &lt;&lt; endl;
+    }
+    input.close();
+    return 0;
+}</pre>
+        <p class="reasoning">Notice the write order (name, char, double) exactly matches the read order — the same discipline used in the worked example above.</p>
+      </details>
+    </div>
+
+    <h2 class="section-title">Real-World Application</h2>
+    <div class="scenario">
+      <p><b>Case: Lab Check-In Kiosk.</b> Delta College's CS lab wants a simple kiosk program: every time a
+      student badges in, the program appends their student ID and a timestamp to <code>attendance_log.txt</code>.
+      The log must never lose a previous day's entries, even though the kiosk program is started fresh each
+      morning.</p>
+      <p><b>Design questions this raises:</b></p>
+      <ul class="obj-list">
+        <li>Which open mode combination prevents the previous day's log from being erased on startup?</li>
+        <li>At the end of the semester, a script re-opens the log to total each student's visits — how should it
+        detect that it has reached the last entry?</li>
+        <li>What should the program do if <code>attendance_log.txt</code> doesn't exist yet on a brand-new lab
+        computer?</li>
+      </ul>
+      <details class="reveal">
+        <summary>Reveal the design rationale</summary>
+        <p>Open with <code>ios::out | ios::app</code> — <code>app</code> forces every write to the end of the file
+        regardless of where the file pointer would otherwise sit, so old entries are never overwritten. To sum
+        visits later, loop while extraction succeeds (as in the worked example) rather than pre-checking
+        <code>eof()</code>, since <code>eof()</code> is only reliably true <em>after</em> a read has already
+        failed. Finally, call <code>fail()</code> immediately after <code>open()</code> — but here a failed open
+        should <em>create</em> the file rather than report an error, since a missing log on a new machine is
+        expected, not exceptional.</p>
+      </details>
+    </div>
+
+    <h2 class="section-title">Common Misconceptions</h2>
+
+    <div class="misconception">
+      <p class="label">⚠ Misconception 1</p>
+      <p class="myth">"If I forget to call <code>close()</code>, my program will crash or lose the file entirely."</p>
+      <p class="truth"><b>Why it's wrong:</b> The <code>ofstream</code>/<code>ifstream</code> destructor closes
+      the stream automatically when the object goes out of scope, so the program itself won't crash. <b>Correct
+      reasoning:</b> the real risk is that output may be sitting in an internal buffer that hasn't been flushed
+      to disk yet — so if the program terminates abnormally, or if another part of the same program tries to
+      reopen and read that file before the stream object is destroyed, the data can appear missing or
+      incomplete. Calling <code>close()</code> explicitly removes that risk instead of relying on timing.</p>
+    </div>
+
+    <div class="misconception">
+      <p class="label">⚠ Misconception 2</p>
+      <p class="myth">"Text files and binary files are stored in fundamentally different ways by the computer."</p>
+      <p class="truth"><b>Why it's wrong:</b> Every file on disk is stored as binary — there is no separate
+      "text storage format" at the hardware level. <b>Correct reasoning:</b> text I/O is a layer of abstraction
+      built on top of binary I/O that encodes and decodes characters (e.g., the digits of 199 as three separate
+      character codes). Binary I/O skips that encoding step and writes the value's raw byte representation
+      directly (199 as the single byte <code>C7</code> in hex) — the difference is in <b>interpretation</b>, not
+      in whether the underlying storage is "binary."</p>
+    </div>
+
+    <div class="misconception">
+      <p class="label">⚠ Misconception 3</p>
+      <p class="myth">"The <code>&gt;&gt;</code> operator is always a safe way to read any text data from a file."</p>
+      <p class="truth"><b>Why it's wrong:</b> <code>&gt;&gt;</code> stops reading at the first whitespace
+      character. <b>Correct reasoning:</b> a value like a city name — <code>"San Francisco"</code> — contains an
+      internal space, so <code>&gt;&gt;</code> would split it into two separate reads ("San" and "Francisco")
+      instead of one string. <code>getline(input, str, delimitChar)</code> reads through embedded whitespace up
+      to a chosen delimiter, which is the correct tool whenever a field may itself contain spaces.</p>
+    </div>
+
+  </section>
+
+  <!-- ===================== FLASHCARDS TAB ===================== -->
+  <section id="flashcards" class="tab-panel">
+    <h2 class="section-title">Flashcards</h2>
+    <p style="color:var(--ink-muted); margin-top:-6px;">Five decks, one per major topic. Each deck moves from
+    <span class="bloom remember">Remember</span> toward <span class="bloom analyze">Analyze / Create</span>, and
+    ends with a two-question self-check. Click a card to flip it.</p>
+
+    <div class="stack-nav" id="stackNav"></div>
+
+    <div class="deck-wrap">
+      <div class="deck-progress">
+        <span id="deckLabel">Card 1 of 5</span>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <span id="bloomLabel"></span>
+      </div>
+
+      <div class="flashcard" id="flashcard">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="face-label">Question</div>
+            <div class="face-body" id="cardFront"></div>
+            <div class="face-foot">Click to flip</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="face-label">Answer</div>
+            <div class="face-body" id="cardBack"></div>
+            <div class="face-foot">Click to flip back</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="deck-controls">
+        <button class="btn" id="prevBtn">◀ Previous</button>
+        <button class="btn solid" id="flipBtn">Flip Card</button>
+        <button class="btn" id="nextBtn">Next ▶</button>
+        <button class="btn accent" id="shuffleBtn">Shuffle Deck</button>
+      </div>
+    </div>
+
+    <div id="selfChecksHost"></div>
+  </section>
+
+  <!-- ===================== QUIZ TAB ===================== -->
+  <section id="quiz" class="tab-panel">
+    <h2 class="section-title">Comprehensive Quiz <span style="font-size:0.6em; color:var(--ink-muted); font-weight:400;">(secondary component)</span></h2>
+    <p style="color:var(--ink-muted); margin-top:-6px;">Twelve questions spanning the full chapter, ordered from
+    <span class="bloom remember">Remember</span> to <span class="bloom create">Create</span>. Answer everything,
+    then check your work.</p>
+    <div id="quizHost"></div>
+    <div style="text-align:center; margin-top:10px;">
+      <button class="btn solid" id="quizSubmit">Check My Answers</button>
+      <button class="btn" id="quizReset">Reset Quiz</button>
+    </div>
+    <div class="score-banner" id="quizScore"></div>
+  </section>
+
+  <!-- ===================== MATCHING TAB ===================== -->
+  <section id="matching" class="tab-panel">
+    <h2 class="section-title">Matching Activity <span style="font-size:0.6em; color:var(--ink-muted); font-weight:400;">(secondary component)</span></h2>
+    <p style="color:var(--ink-muted); margin-top:-6px;">Click a term on the left, then click its matching
+    definition on the right. Correct pairs lock in green.</p>
+    <div class="match-status" id="matchStatus">0 of 12 matched</div>
+    <div class="match-wrap">
+      <div class="match-col">
+        <h4>Term / Function</h4>
+        <div id="matchTerms"></div>
+      </div>
+      <div class="match-col">
+        <h4>Definition</h4>
+        <div id="matchDefs"></div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:16px;">
+      <button class="btn" id="matchReset">Reset Activity</button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  CSP31B — C++ Programming II · San Joaquin Delta College · Chapter 13, File Input and Output.
+</footer>
+
+<script>
+(function(){
+
+  /* ============================================================
+     DATA
+  ============================================================ */
+
+  var stacks = [
+    {
+      id:"A", title:"Writing Data to a File",
+      cards:[
+        {bloom:"remember", front:"Which C++ class is used to write data to a text file?",
+         back:"ofstream — it provides output-stream operations for writing to files."},
+        {bloom:"remember", front:"What function must be called so buffered data is properly saved to a file?",
+         back:"close() — it flushes the stream and closes it. Skipping this can leave data unsaved."},
+        {bloom:"understand", front:"What happens if you open an existing file for output without append mode?",
+         back:"Its previous contents are destroyed without warning — the file is overwritten from the very beginning."},
+        {bloom:"understand", front:"What is the key difference between an absolute and a relative file name?",
+         back:"An absolute name includes the full path and drive letter (e.g., c:\\example\\scores.txt) and is machine-dependent. A relative name is based on the current directory and is far more portable across systems."},
+        {bloom:"apply", front:"How should the Windows path c:\\example\\scores.txt be written correctly as a C++ string literal?",
+         back:'"c:\\\\example\\\\scores.txt" — each backslash in the path must be escaped as two backslashes inside a string literal.'}
+      ]
+    },
+    {
+      id:"B", title:"Reading Data from a File",
+      cards:[
+        {bloom:"remember", front:"Which class is used to read data from a text file?",
+         back:"ifstream."},
+        {bloom:"remember", front:"How can a program check whether a file exists before reading it?",
+         back:"Call fail() immediately after open(); if it returns true, the file does not exist (or could not be opened)."},
+        {bloom:"understand", front:"What does the eof() function tell you?",
+         back:"Whether the end of the file has been reached — useful when you don't know in advance how many items are in the file."},
+        {bloom:"apply", front:"Why can't the >> operator safely read a city name like \"New York\" from a file?",
+         back:">> is delimited by whitespace, so it would read \"New York\" as two separate tokens (\"New\" and \"York\"). getline() with a chosen delimiter reads the whole string correctly."},
+        {bloom:"apply", front:"What is the difference between the get and put functions?",
+         back:"get() reads a single character from an input stream; put() writes a single character to an output stream."}
+      ]
+    },
+    {
+      id:"C", title:"fstream & File Open Modes",
+      cards:[
+        {bloom:"remember", front:"Which class lets one object both read from and write to a file?",
+         back:"fstream — convenient when a program needs to use the same stream object for both input and output."},
+        {bloom:"remember", front:"Which operator combines multiple file-open modes together?",
+         back:"| — the bitwise inclusive-OR operator, e.g. ios::out | ios::app."},
+        {bloom:"understand", front:"What does ios::out | ios::app accomplish when opening a file?",
+         back:"It opens the file for output and positions every write at the end, appending new data instead of overwriting existing content."},
+        {bloom:"analyze", front:"eof(), fail(), bad(), and good() all test stream state. Which one signals a serious, unrecoverable error — distinct from simply reaching end of file?",
+         back:"bad() — it flags a serious, typically unrecoverable error. eof() just means the read pointer reached the end; fail() covers more general (often recoverable) issues like a format mismatch."},
+        {bloom:"evaluate", front:"Why isn't checking good() alone sufficient when you need to diagnose why a stream operation failed?",
+         back:"good() only reports that no error/eof/fail bits are set at all — it can't tell you whether the real cause was reaching eof, a formatting failure, or a serious I/O error. You need eof(), fail(), and bad() individually to pinpoint the cause."}
+      ]
+    },
+    {
+      id:"D", title:"Binary I/O",
+      cards:[
+        {bloom:"remember", front:"Which mode flag must be included to open a file for binary I/O?",
+         back:"ios::binary — by default, a file is opened in text mode."},
+        {bloom:"understand", front:"Why can it be said that \"all files are essentially binary files\"?",
+         back:"Computers store everything as binary. Text I/O is just a layer built on top of binary I/O that encodes and decodes characters for human readability."},
+        {bloom:"apply", front:"What cast lets you treat the address of an int as a char* so it can be passed to write()?",
+         back:"reinterpret_cast<char*>(&variable) — casts the address of a primitive value or object to a character-array pointer for binary I/O."},
+        {bloom:"apply", front:"What is the general syntax of the write function on a stream object?",
+         back:"streamObject.write(char* bytes, int size);"},
+        {bloom:"analyze", front:"Why is the integer 199 stored as three separate characters in a text file, but as a single byte (hex C7) in a binary file?",
+         back:"In text mode each digit is encoded as its own character: '1','9','9'. In binary mode the actual numeric value is written directly as its raw byte representation (199 decimal = C7 hex) — no character encoding involved."}
+      ]
+    },
+    {
+      id:"E", title:"Random Access Files",
+      cards:[
+        {bloom:"remember", front:"What is a \"file pointer\" in the context of file I/O?",
+         back:"An internal marker indicating the byte position in the file where the next read or write operation will occur."},
+        {bloom:"understand", front:"What do seekg and seekp do?",
+         back:"seekg moves the file pointer for an input (get) stream; seekp moves the file pointer for an output (put) stream — both enable random, non-sequential access."},
+        {bloom:"apply", front:"Each Student record is 100 bytes. Which call moves the read pointer directly to the 3rd record?",
+         back:"input.seekg(2 * 100); — records are 0-indexed, so the 3rd record begins at byte offset 200 (two full records in)."},
+        {bloom:"analyze", front:"Before updating a record in place, why must the file be opened in binary mode with BOTH ios::in and ios::out?",
+         back:"Binary mode avoids text-encoding conversions that would misalign byte offsets, and having both in and out on one stream lets the program seek/read the old record and seek/write the corrected one without closing and reopening the file."},
+        {bloom:"create", front:"Outline the steps needed to change only the last name of the 2nd student stored in a binary file of Student objects.",
+         back:"1) Open the file with ios::binary | ios::in | ios::out. 2) seekg to the 2nd record's offset (1 × record size). 3) read() the Student object into memory. 4) Modify its last-name field. 5) seekp back to that same offset. 6) write() the updated object back. 7) close() the file."}
+      ]
+    }
+  ];
+
+  var selfChecks = {
+    A:[
+      {q:"What happens to an existing file's contents if you open it with ofstream and no ios::app flag?",
+       opts:["Nothing changes until you write", "The contents are destroyed without warning", "C++ throws a runtime exception", "The file becomes read-only"],
+       correct:1,
+       exp:"Default ofstream output mode overwrites from the start — there is no warning or confirmation prompt."},
+      {q:"Which string literal correctly represents the Windows path C:\\data\\scores.txt in C++ source code?",
+       opts:['"C:\\data\\scores.txt"', '"C:\\\\data\\\\scores.txt"', "'C:\\data\\scores.txt'", '"C:/data/scores.txt" (required form)'],
+       correct:1,
+       exp:"Backslash is a special (escape) character in C++ string literals, so each one must be written as two backslashes."}
+    ],
+    B:[
+      {q:"Which function should be called immediately after open() to check whether a file exists?",
+       opts:["eof()", "fail()", "good()", "close()"],
+       correct:1,
+       exp:"fail() returning true right after open() indicates the file could not be found or opened."},
+      {q:"Reading the string \"San Francisco\" with the >> operator into one string variable will...",
+       opts:["Work correctly as a single value", "Split it into two separate reads: \"San\" and \"Francisco\"", "Throw a compile-time error", "Silently skip the entire value"],
+       correct:1,
+       exp:">> is whitespace-delimited, so an internal space breaks the value into two tokens; getline() should be used instead."}
+    ],
+    C:[
+      {q:"Which operator is used to combine ios::out and ios::app together?",
+       opts:["+", "&", "|", "&&"],
+       correct:2,
+       exp:"| is the bitwise inclusive-OR operator used to combine multiple open-mode flags."},
+      {q:"Which function most specifically indicates a serious, unrecoverable stream error rather than just reaching end-of-file?",
+       opts:["eof()", "good()", "bad()", "is_open()"],
+       correct:2,
+       exp:"bad() flags serious, generally unrecoverable I/O errors, distinct from the routine eof() end-of-data signal."}
+    ],
+    D:[
+      {q:"Which mode flag must be included to open a file for binary I/O?",
+       opts:["ios::text", "ios::binary", "ios::raw", "ios::byte"],
+       correct:1,
+       exp:"Files default to text mode; ios::binary must be specified explicitly for binary I/O."},
+      {q:"What is the primary purpose of reinterpret_cast in binary file I/O?",
+       opts:["Convert an int to a string", "Cast the address of a value or object to char* for reading/writing raw bytes", "Round a floating-point number", "Validate a file path"],
+       correct:1,
+       exp:"write() and read() expect a char* — reinterpret_cast lets any type's address be treated as raw bytes."}
+    ],
+    E:[
+      {q:"Which function moves the file pointer of an input stream to a specific byte location?",
+       opts:["seekp", "tellg", "seekg", "put"],
+       correct:2,
+       exp:"seekg (\"seek get\") repositions the pointer used for reading; seekp does the same for writing."},
+      {q:"If each record is 50 bytes, what offset would seekg use to reach the 5th record (0-indexed math)?",
+       opts:["5 * 50", "4 * 50", "5 + 50", "50 / 5"],
+       correct:1,
+       exp:"The 5th record is at index 4 (0-indexed), so its byte offset is 4 × 50 = 200."}
+    ]
+  };
+
+  var quizQuestions = [
+    {bloom:"remember", q:"Which class is used only for writing to files?",
+     opts:["ifstream","ofstream","fstream","sstream"], correct:1,
+     exp:"ofstream is the output-only file stream class."},
+    {bloom:"remember", q:"Which function must be called to properly close a file stream?",
+     opts:["exit()","close()","end()","flush()"], correct:1,
+     exp:"close() closes the stream (and flushes buffered data). flush() only flushes without closing."},
+    {bloom:"understand", q:"What is true about opening an existing file with ofstream in the default mode?",
+     opts:["It appends to the file","It throws an exception","It destroys the existing contents without warning","It refuses to open"], correct:2,
+     exp:"Default ofstream mode overwrites the file from the beginning."},
+    {bloom:"understand", q:"Why is a relative file name generally preferred over an absolute file name?",
+     opts:["It's faster to process","It's more portable across machines and platforms","It uses less memory","C++ syntax requires it"], correct:1,
+     exp:"Absolute names bake in a drive letter and machine-specific path, which breaks portability."},
+    {bloom:"apply", q:'Which line correctly opens "data.txt" so new writes are appended, not overwritten?',
+     opts:['f.open("data.txt", ios::out);','f.open("data.txt", ios::out | ios::app);','f.open("data.txt", ios::in | ios::trunc);','f.open("data.txt", ios::binary);'], correct:1,
+     exp:"ios::out | ios::app combines output mode with append positioning."},
+    {bloom:"apply", q:'Which call correctly reads a full line such as "Stockton, CA" — including the comma and space?',
+     opts:["input >> line;","getline(input, line);","input.get(line);  // reading a single character","input.read(line, 20);"], correct:1,
+     exp:"getline() reads through embedded whitespace/punctuation up to the newline (or a chosen delimiter); >> would stop at the first space."},
+    {bloom:"analyze", q:"A loop reads a file with >> but never checks eof(); it ends up processing one extra 'phantom' record. What's the most likely cause?",
+     opts:["The file has hidden characters","The failed final read leaves the previous values unchanged, and the loop body still runs on that stale data","ofstream corrupted the file","The compiler optimized the data away"], correct:1,
+     exp:"If the loop condition doesn't test the stream's success (e.g., a while(true) with a separate eof check placed incorrectly), the last failed extraction can leave old variable values to be processed again."},
+    {bloom:"analyze", q:"In code that uses reinterpret_cast to write an int with write(), what is actually being cast?",
+     opts:["The integer's value into a string","The address of the integer into a char*","The file stream into an integer","The integer into a double"], correct:1,
+     exp:"reinterpret_cast<char*>(&value) reinterprets the address of the int as a pointer to bytes, which is what write() requires."},
+    {bloom:"analyze", q:'A program opens a file with ios::binary and calls seekp(0, ios::end) immediately before every write. What is the effect?',
+     opts:["It always overwrites the first record","It positions every write at the current end of file, effectively appending each time","It deletes the file first","It has no effect on write position"], correct:1,
+     exp:"Seeking to the end before each write reproduces append-like behavior manually."},
+    {bloom:"evaluate", q:"A grade log sometimes needs earlier entries corrected. Which justifies choosing 'rewrite the whole file from an in-memory list' over always opening with ios::app?",
+     opts:["ios::app is always slower","ios::app can only add new entries at the end; it cannot modify or remove earlier ones, while rewriting supports edits and deletions","ios::out uses less disk space","Binary mode is required to correct any file"], correct:1,
+     exp:"Append mode is one-directional — it is the wrong tool whenever past records must be changed, not just extended."},
+    {bloom:"evaluate", q:"Which statement best compares text I/O and binary I/O for storing a large array of doubles?",
+     opts:["Text I/O is always more compact","Binary I/O avoids converting numbers to and from character representations and preserves exact values, making it more efficient and precise for numeric data","Binary I/O cannot store floating-point numbers","Text and binary I/O always produce identical file sizes"], correct:1,
+     exp:"Binary I/O writes the raw value directly; text I/O must format/parse each number as characters, which costs both time and precision risk."},
+    {bloom:"create", q:"You must design a program that stores Student objects and lets a user jump directly to and update any one student without rewriting the whole file. Which combination of concepts does this require?",
+     opts:["getline() and ios::app only","fstream opened with ios::binary | ios::in | ios::out, plus seekg/seekp using record-size offsets","ifstream only, reading sequentially every time","ofstream with ios::trunc on every update"], correct:1,
+     exp:"Random access to a specific record, plus the ability to both read and rewrite it, requires exactly this combination."}
+  ];
+
+  var matchPairs = [
+    {term:"ofstream", def:"Used to write data to a file"},
+    {term:"ifstream", def:"Used to read data from a file"},
+    {term:"fstream", def:"Supports both reading and writing with one object"},
+    {term:"close()", def:"Ensures buffered data is flushed and the file is properly closed"},
+    {term:"eof()", def:"Tests whether the end of the file has been reached"},
+    {term:"fail()", def:"Detects a general (often recoverable) stream error, such as a missing file"},
+    {term:"bad()", def:"Indicates a serious, typically unrecoverable stream error"},
+    {term:"ios::app", def:"Opens a file so new data is appended rather than overwriting it"},
+    {term:"ios::binary", def:"Opens a file in binary mode instead of the default text mode"},
+    {term:"reinterpret_cast", def:"Casts the address of a value or object to char* for binary I/O"},
+    {term:"seekg / seekp", def:"Move the file pointer to support random (non-sequential) access"},
+    {term:"getline()", def:"Reads a full line, or up to a delimiter, including embedded whitespace"}
+  ];
+
+  /* ============================================================
+     TAB SWITCHING
+  ============================================================ */
+  var tabBtns = document.querySelectorAll(".tab-btn");
+  var panels = document.querySelectorAll(".tab-panel");
+  tabBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      tabBtns.forEach(function(b){ b.classList.remove("active"); });
+      panels.forEach(function(p){ p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  /* ============================================================
+     FLASHCARDS
+  ============================================================ */
+  var currentStackIndex = 0;
+  var currentCardIndex = 0;
+
+  var stackNav = document.getElementById("stackNav");
+  stacks.forEach(function(s, i){
+    var b = document.createElement("button");
+    b.textContent = s.title;
+    if(i===0) b.classList.add("active");
+    b.addEventListener("click", function(){
+      currentStackIndex = i;
+      currentCardIndex = 0;
+      renderStackNav();
+      renderCard();
+    });
+    stackNav.appendChild(b);
+  });
+
+  function renderStackNav(){
+    Array.from(stackNav.children).forEach(function(b, i){
+      b.classList.toggle("active", i===currentStackIndex);
+    });
+  }
+
+  var flashcardEl = document.getElementById("flashcard");
+  var cardFrontEl = document.getElementById("cardFront");
+  var cardBackEl = document.getElementById("cardBack");
+  var deckLabel = document.getElementById("deckLabel");
+  var bloomLabel = document.getElementById("bloomLabel");
+  var progressFill = document.getElementById("progressFill");
+
+  function renderCard(){
+    flashcardEl.classList.remove("flipped");
+    var stack = stacks[currentStackIndex];
+    var card = stack.cards[currentCardIndex];
+    cardFrontEl.textContent = card.front;
+    cardBackEl.textContent = card.back;
+    deckLabel.textContent = stack.title + " — Card " + (currentCardIndex+1) + " of " + stack.cards.length;
+    bloomLabel.innerHTML = '<span class="bloom ' + card.bloom + '">' + card.bloom + '</span>';
+    progressFill.style.width = (((currentCardIndex+1)/stack.cards.length)*100) + "%";
+  }
+
+  flashcardEl.addEventListener("click", function(){
+    flashcardEl.classList.toggle("flipped");
+  });
+  document.getElementById("flipBtn").addEventListener("click", function(e){
+    e.stopPropagation();
+    flashcardEl.classList.toggle("flipped");
+  });
+  document.getElementById("prevBtn").addEventListener("click", function(){
+    var stack = stacks[currentStackIndex];
+    currentCardIndex = (currentCardIndex - 1 + stack.cards.length) % stack.cards.length;
+    renderCard();
+  });
+  document.getElementById("nextBtn").addEventListener("click", function(){
+    var stack = stacks[currentStackIndex];
+    currentCardIndex = (currentCardIndex + 1) % stack.cards.length;
+    renderCard();
+  });
+  document.getElementById("shuffleBtn").addEventListener("click", function(){
+    var stack = stacks[currentStackIndex];
+    for(var i = stack.cards.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i+1));
+      var tmp = stack.cards[i]; stack.cards[i] = stack.cards[j]; stack.cards[j] = tmp;
+    }
+    currentCardIndex = 0;
+    renderCard();
+  });
+
+  renderCard();
+
+  /* ---- self-checks under the flashcards ---- */
+  var scHost = document.getElementById("selfChecksHost");
+  stacks.forEach(function(stack){
+    var sc = selfChecks[stack.id];
+    var block = document.createElement("div");
+    block.className = "self-check";
+    var html = '<h4>Self-Check — ' + stack.title + '</h4>' +
+               '<p class="hint">Quick two-question check before moving to the next deck.</p>';
+    sc.forEach(function(item, qi){
+      var qid = "sc_" + stack.id + "_" + qi;
+      html += '<div class="quiz-q" data-q="' + qid + '" data-correct="' + item.correct + '">' +
+              '<p class="prompt">' + (qi+1) + '. ' + item.q + '</p><div class="opts">';
+      item.opts.forEach(function(opt, oi){
+        html += '<label><input type="radio" name="' + qid + '" value="' + oi + '"> ' + opt + '</label>';
+      });
+      html += '</div><div class="fb"></div></div>';
+    });
+    html += '<button class="btn solid sc-submit">Check Answers</button>' +
+            '<span class="fb sc-result" style="margin-left:10px; font-weight:700;"></span>';
+    block.innerHTML = html;
+    scHost.appendChild(block);
+
+    block.querySelector(".sc-submit").addEventListener("click", function(){
+      var qDivs = block.querySelectorAll(".quiz-q");
+      var correctCount = 0;
+      qDivs.forEach(function(qd, qi){
+        var correctIdx = parseInt(qd.dataset.correct, 10);
+        var chosen = qd.querySelector('input[name="' + qd.dataset.q + '"]:checked');
+        var labels = qd.querySelectorAll(".opts label");
+        labels.forEach(function(l){ l.classList.remove("correct","incorrect"); });
+        var fb = qd.querySelector(".fb");
+        if(!chosen){
+          fb.textContent = "Please select an answer.";
+          fb.className = "fb bad show";
+          return;
+        }
+        var chosenIdx = parseInt(chosen.value, 10);
+        labels[correctIdx].classList.add("correct");
+        if(chosenIdx === correctIdx){
+          correctCount++;
+          fb.textContent = "Correct. " + sc[qi].exp;
+          fb.className = "fb good show";
+        } else {
+          labels[chosenIdx].classList.add("incorrect");
+          fb.textContent = "Not quite. " + sc[qi].exp;
+          fb.className = "fb bad show";
+        }
+      });
+      var resultEl = block.querySelector(".sc-result");
+      resultEl.textContent = "Score: " + correctCount + " / " + qDivs.length;
+      resultEl.style.color = (correctCount === qDivs.length) ? "var(--success)" : "var(--user-accent)";
+    });
+  });
+
+  /* ============================================================
+     QUIZ
+  ============================================================ */
+  var quizHost = document.getElementById("quizHost");
+  function buildQuiz(){
+    quizHost.innerHTML = "";
+    quizQuestions.forEach(function(item, qi){
+      var qDiv = document.createElement("div");
+      qDiv.className = "quiz-q";
+      qDiv.dataset.correct = item.correct;
+      var html = '<p class="prompt"><span class="bloom ' + item.bloom + '">' + item.bloom + '</span> &nbsp;' + (qi+1) + '. ' + item.q + '</p><div class="opts">';
+      item.opts.forEach(function(opt, oi){
+        html += '<label><input type="radio" name="quiz_' + qi + '" value="' + oi + '"> ' + opt + '</label>';
+      });
+      html += '</div><div class="fb"></div>';
+      qDiv.innerHTML = html;
+      quizHost.appendChild(qDiv);
+    });
+  }
+  buildQuiz();
+
+  document.getElementById("quizSubmit").addEventListener("click", function(){
+    var qDivs = quizHost.querySelectorAll(".quiz-q");
+    var correctCount = 0;
+    var unanswered = 0;
+    qDivs.forEach(function(qd, qi){
+      var correctIdx = parseInt(qd.dataset.correct, 10);
+      var chosen = qd.querySelector('input[name="quiz_' + qi + '"]:checked');
+      var labels = qd.querySelectorAll(".opts label");
+      labels.forEach(function(l){ l.classList.remove("correct","incorrect"); });
+      var fb = qd.querySelector(".fb");
+      if(!chosen){
+        unanswered++;
+        fb.textContent = "No answer selected.";
+        fb.className = "fb bad show";
+        return;
+      }
+      var chosenIdx = parseInt(chosen.value, 10);
+      labels[correctIdx].classList.add("correct");
+      if(chosenIdx === correctIdx){
+        correctCount++;
+        fb.textContent = "Correct. " + quizQuestions[qi].exp;
+        fb.className = "fb good show";
+      } else {
+        labels[chosenIdx].classList.add("incorrect");
+        fb.textContent = "Not quite. " + quizQuestions[qi].exp;
+        fb.className = "fb bad show";
+      }
+    });
+    var scoreEl = document.getElementById("quizScore");
+    scoreEl.textContent = "Score: " + correctCount + " / " + qDivs.length +
+      (unanswered ? " (" + unanswered + " unanswered)" : "") +
+      " — " + Math.round((correctCount/qDivs.length)*100) + "%";
+    scoreEl.classList.add("show");
+  });
+
+  document.getElementById("quizReset").addEventListener("click", function(){
+    buildQuiz();
+    document.getElementById("quizScore").classList.remove("show");
+  });
+
+  /* ============================================================
+     MATCHING ACTIVITY
+  ============================================================ */
+  var termsHost = document.getElementById("matchTerms");
+  var defsHost = document.getElementById("matchDefs");
+  var matchStatus = document.getElementById("matchStatus");
+  var selectedTerm = null;
+  var matchedCount = 0;
+
+  function shuffledIndices(n){
+    var arr = [];
+    for(var i=0;i<n;i++) arr.push(i);
+    for(var i=arr.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr;
+  }
+
+  function buildMatching(){
+    termsHost.innerHTML = "";
+    defsHost.innerHTML = "";
+    selectedTerm = null;
+    matchedCount = 0;
+    matchStatus.textContent = "0 of " + matchPairs.length + " matched";
+    matchStatus.classList.remove("done");
+
+    matchPairs.forEach(function(pair, idx){
+      var t = document.createElement("div");
+      t.className = "match-item";
+      t.textContent = pair.term;
+      t.dataset.idx = idx;
+      t.addEventListener("click", function(){ onTermClick(t); });
+      termsHost.appendChild(t);
+    });
+
+    var order = shuffledIndices(matchPairs.length);
+    order.forEach(function(idx){
+      var d = document.createElement("div");
+      d.className = "match-item";
+      d.textContent = matchPairs[idx].def;
+      d.dataset.idx = idx;
+      d.addEventListener("click", function(){ onDefClick(d); });
+      defsHost.appendChild(d);
+    });
+  }
+
+  function onTermClick(el){
+    if(el.classList.contains("matched")) return;
+    Array.from(termsHost.children).forEach(function(c){ c.classList.remove("selected"); });
+    el.classList.add("selected");
+    selectedTerm = el;
+  }
+
+  function onDefClick(el){
+    if(el.classList.contains("matched") || !selectedTerm) return;
+    if(el.dataset.idx === selectedTerm.dataset.idx){
+      el.classList.add("matched");
+      selectedTerm.classList.remove("selected");
+      selectedTerm.classList.add("matched");
+      selectedTerm = null;
+      matchedCount++;
+      matchStatus.textContent = matchedCount + " of " + matchPairs.length + " matched";
+      if(matchedCount === matchPairs.length){
+        matchStatus.textContent = "All " + matchPairs.length + " matched! Nice work.";
+        matchStatus.classList.add("done");
+      }
+    } else {
+      el.classList.add("wrong");
+      setTimeout(function(){ el.classList.remove("wrong"); }, 350);
+      selectedTerm.classList.remove("selected");
+      selectedTerm = null;
+    }
+  }
+
+  document.getElementById("matchReset").addEventListener("click", buildMatching);
+  buildMatching();
+
+})();
+</script>
+</body>
+</html>
