@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSP31B · Operator Overloading Study Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --user-primary:#1a4480;
+  --user-accent:#c8102e;
+  --user-background:#ffffff;
+  --ink:#1b2333;
+  --muted:#5a6477;
+  --line:#d8dee9;
+  --soft-blue:#eef3fa;
+  --soft-red:#fdf1f3;
+  --good:#1d7a4c;
+  --soft-good:#ebf7f0;
+  --warn:#8a5a00;
+  --soft-warn:#fff7e6;
+  --code-bg:#0f2547;
+  --radius-lg:14px;
+  --radius-sm:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--user-background);color:var(--ink);line-height:1.6;font-size:16px}
+code,pre,.mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace}
+a{color:var(--user-primary)}
+:focus-visible{outline:3px solid var(--user-accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Header */
+header.hero{background:var(--user-primary);color:#fff;padding:28px 20px 0}
+.hero-inner{max-width:1080px;margin:0 auto}
+.course-line{font-size:.95rem;opacity:.85;margin:0}
+.hero h1{font-size:clamp(1.7rem,3.6vw,2.5rem);line-height:1.15;margin:.3rem 0 .6rem;font-weight:800;letter-spacing:-.01em}
+.hero-eq{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:14px 0 22px;font-family:'JetBrains Mono',monospace;font-size:clamp(1rem,2.4vw,1.35rem)}
+.hero-eq span.box{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:var(--radius-sm)}
+.hero-eq span.is{color:#ffd3da;font-family:'Inter',sans-serif;font-weight:600;font-size:.95rem}
+.hero p.lede{max-width:70ch;margin:0 0 20px;opacity:.95}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+nav.tabs button{font:inherit;font-weight:600;font-size:.95rem;background:transparent;color:#fff;border:0;padding:12px 16px;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap;opacity:.85}
+nav.tabs button:hover{opacity:1;background:rgba(255,255,255,.1)}
+nav.tabs button[aria-selected="true"]{background:var(--user-background);color:var(--user-primary);opacity:1;box-shadow:inset 0 3px 0 var(--user-accent)}
+
+main{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+section.panel{display:none}
+section.panel.active{display:block}
+h2{color:var(--user-primary);font-size:1.6rem;margin:0 0 .4rem;line-height:1.25}
+h3{font-size:1.2rem;margin:1.8rem 0 .5rem;color:var(--ink)}
+p{max-width:75ch}
+.intro{color:var(--muted);margin-top:0}
+
+/* Bloom badges */
+.bloom{display:inline-block;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid currentColor;vertical-align:middle}
+.b-remember{color:#2f5f9e}.b-understand{color:#1a4480}.b-apply{color:#1d7a4c}
+.b-analyze{color:#8a5a00}.b-evaluate{color:#b0452a}.b-create{color:#c8102e}
+
+/* Learn layout */
+.path{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 26px;padding:0;list-style:none}
+.path li button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:999px;cursor:pointer;color:var(--ink)}
+.path li button.on{background:var(--user-primary);color:#fff;border-color:var(--user-primary)}
+.path li button .done{color:var(--good);font-weight:700}
+.path li button.on .done{color:#bfe8d1}
+.lesson{display:none}.lesson.active{display:block}
+.lesson-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.lesson-head h2{margin:0}
+
+pre.code{background:var(--code-bg);color:#e8eefb;padding:16px 18px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.88rem;line-height:1.55;margin:12px 0 18px;border-left:4px solid var(--user-accent)}
+pre.code .k{color:#8fc1ff}pre.code .c{color:#8a9bb8;font-style:italic}pre.code .s{color:#ffc58a}
+code.inl{background:var(--soft-blue);color:var(--user-primary);padding:1px 6px;border-radius:5px;font-size:.9em}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.note{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;background:#fff}
+.note h4{margin:0 0 6px;font-size:1rem}
+
+/* Worked example */
+.worked{border:2px solid var(--user-primary);border-radius:var(--radius-lg);overflow:hidden;margin:18px 0}
+.worked > .wtitle{background:var(--user-primary);color:#fff;padding:10px 16px;font-weight:700}
+.worked ol.steps{margin:0;padding:16px 20px 16px 44px}
+.worked ol.steps li{margin-bottom:12px}
+.worked ol.steps li .why{display:block;color:var(--muted);font-size:.93rem;margin-top:2px}
+.trace{font-family:'JetBrains Mono',monospace;background:var(--soft-blue);padding:10px 14px;border-radius:var(--radius-sm);font-size:.9rem;overflow-x:auto}
+
+/* Misconception flag */
+.miscon{border-left:5px solid var(--user-accent);background:var(--soft-red);padding:14px 18px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:18px 0}
+.miscon .flag{font-weight:800;color:var(--user-accent);margin:0 0 6px}
+.miscon p{margin:.35rem 0}
+.miscon .wrong{font-family:'JetBrains Mono',monospace;font-size:.88rem;background:#fff;padding:2px 6px;border-radius:4px;text-decoration:line-through;text-decoration-color:var(--user-accent)}
+
+/* Real-world */
+.realworld{background:var(--soft-warn);border:1px solid #f0d9a8;border-radius:var(--radius-lg);padding:18px 20px;margin:20px 0}
+.realworld h3{margin-top:0;color:var(--warn)}
+
+/* Try it */
+.tryit{border:2px dashed var(--good);border-radius:var(--radius-lg);padding:16px 18px;margin:18px 0;background:var(--soft-good)}
+.tryit h4{margin:0 0 6px;color:var(--good)}
+textarea{width:100%;min-height:150px;font-family:'JetBrains Mono',monospace;font-size:.88rem;padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);resize:vertical;background:#fff;color:var(--ink)}
+textarea.prose{font-family:'Inter',sans-serif;font-size:.95rem;min-height:120px}
+.btn{font:inherit;font-weight:600;font-size:.93rem;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--user-primary);background:var(--user-primary);color:#fff;cursor:pointer}
+.btn:hover{filter:brightness(1.12)}
+.btn.ghost{background:#fff;color:var(--user-primary)}
+.btn.red{background:var(--user-accent);border-color:var(--user-accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:var(--radius-sm);display:none}
+.feedback.show{display:block}
+.feedback.ok{background:var(--soft-good);border:1px solid #b6e0c8;color:#145c38}
+.feedback.no{background:var(--soft-red);border:1px solid #f1c0c9;color:#8f0b21}
+.feedback.info{background:var(--soft-blue);border:1px solid #c7d6ec;color:var(--user-primary)}
+ul.checklist{list-style:none;padding:0;margin:8px 0}
+ul.checklist li{padding:4px 0}
+ul.checklist li.pass::before{content:"✓ ";color:var(--good);font-weight:800}
+ul.checklist li.fail::before{content:"✗ ";color:var(--user-accent);font-weight:800}
+
+/* Self-check */
+.selfcheck{margin:30px 0 8px;border-top:3px solid var(--user-primary);padding-top:14px}
+.selfcheck h3{margin-top:0;color:var(--user-primary)}
+.sc-q{margin:14px 0 18px}
+.sc-q .qtext{font-weight:600;margin-bottom:8px}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;text-align:left;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--user-primary);background:var(--soft-blue)}
+.opt.correct{border-color:var(--good);background:var(--soft-good);font-weight:600}
+.opt.wrong{border-color:var(--user-accent);background:var(--soft-red)}
+.opt:disabled{cursor:default}
+.opt code{font-size:.88em}
+.sc-summary{font-weight:700;margin-top:8px}
+.next-link{margin-top:14px}
+
+/* Flashcards */
+.fc-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:12px 0 18px}
+.fc-filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:.85rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--user-primary);border-color:var(--user-primary);color:#fff}
+.fc-progress{height:6px;background:var(--soft-blue);border-radius:999px;overflow:hidden;margin-bottom:14px}
+.fc-progress > div{height:100%;background:var(--user-accent);width:0;transition:width .3s}
+.card-wrap{perspective:1400px;max-width:720px;margin:0 auto}
+.card{position:relative;width:100%;min-height:320px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.7,.2,1);cursor:pointer}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--radius-lg);padding:26px 28px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--line);overflow:auto;padding-top:48px;padding-bottom:36px}
+.face.front{background:#fff;border-top:6px solid var(--user-primary)}
+.face.back{background:var(--user-primary);color:#fff;transform:rotateY(180deg);border-top:6px solid var(--user-accent)}
+.face .meta{position:absolute;top:14px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--muted)}
+.face.back .meta{color:#c9d6ee}
+.face.back .bloom{color:#fff}
+.face .term{font-size:clamp(1.15rem,2.6vw,1.5rem);font-weight:700;line-height:1.35;text-align:center}
+.face .term code{font-size:.95em;background:var(--soft-blue);padding:2px 8px;border-radius:6px;color:var(--user-primary)}
+.face .ans{font-size:1.02rem;line-height:1.55}
+.face.back pre{background:rgba(0,0,0,.25);padding:10px 12px;border-radius:6px;overflow-x:auto;font-size:.84rem;margin:10px 0 0}
+.face.back code{background:rgba(255,255,255,.15);padding:1px 5px;border-radius:4px}
+.face .hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:.8rem;color:var(--muted)}
+.face.back .hint{color:#c9d6ee}
+.fc-nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+.fc-count{text-align:center;color:var(--muted);font-size:.9rem}
+.fc-stats{display:flex;justify-content:center;gap:18px;font-size:.9rem;margin-top:8px}
+.fc-stats b{color:var(--user-primary)}
+
+/* Quiz */
+.quiz-card{border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 24px;max-width:780px;margin:0 auto}
+.quiz-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;color:var(--muted);font-size:.9rem}
+.quiz-q{font-size:1.1rem;font-weight:600;margin-bottom:10px}
+.score-big{font-size:2.6rem;font-weight:800;color:var(--user-primary);margin:0}
+.review-list{margin-top:16px}
+.review-list div{padding:8px 0;border-bottom:1px solid var(--line);font-size:.93rem}
+
+/* Matching */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:900px;margin:0 auto}
+@media(max-width:700px){.match-grid{grid-template-columns:1fr}}
+.match-col h4{margin:0 0 8px;color:var(--muted);font-size:.9rem;font-weight:600}
+.m-item{font:inherit;display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;cursor:pointer;color:var(--ink);font-size:.93rem}
+.m-item.code{font-family:'JetBrains Mono',monospace;font-size:.84rem}
+.m-item:hover:not(:disabled){border-color:var(--user-primary)}
+.m-item.sel{border-color:var(--user-primary);background:var(--soft-blue);box-shadow:0 0 0 2px var(--user-primary) inset}
+.m-item.matched{border-color:var(--good);background:var(--soft-good);color:#145c38;cursor:default}
+.m-item.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.match-status{text-align:center;margin:10px 0 16px;color:var(--muted)}
+
+/* Challenges */
+.challenge{border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin:0 0 20px}
+.challenge .chead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.challenge .chead h3{margin:0}
+.challenge details{margin-top:12px}
+.challenge summary{cursor:pointer;font-weight:600;color:var(--user-primary)}
+.rubric label{display:block;padding:4px 0;font-size:.95rem}
+.model{background:var(--soft-blue);border-radius:var(--radius-sm);padding:12px 16px;margin-top:10px}
+
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <p class="course-line">San Joaquin Delta College · CSP31B C++ Programming II · Chapter 14</p>
+    <h1>Operator overloading</h1>
+    <div class="hero-eq" aria-label="r1 plus r2 is really r1 dot operator plus of r2">
+      <span class="box">r1 + r2</span><span class="is">is really</span><span class="box">r1.operator+(r2)</span>
+    </div>
+    <p class="lede">Every operator you use on an object is a function call in disguise. Work through the lessons in order, then drill with flashcards, test yourself with the quiz and matching activity, and finish with the challenges.</p>
+    <nav class="tabs" role="tablist" aria-label="Study tool sections">
+      <button role="tab" aria-selected="true" aria-controls="learn" id="t-learn">Learn</button>
+      <button role="tab" aria-selected="false" aria-controls="flash" id="t-flash">Flashcards</button>
+      <button role="tab" aria-selected="false" aria-controls="quiz" id="t-quiz">Quiz</button>
+      <button role="tab" aria-selected="false" aria-controls="match" id="t-match">Matching</button>
+      <button role="tab" aria-selected="false" aria-controls="challenge" id="t-challenge">Challenges</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ================= LEARN ================= -->
+<section class="panel active" id="learn" role="tabpanel" aria-labelledby="t-learn">
+  <h2>Learn in four steps</h2>
+  <p class="intro">Each lesson ends with a short self-check. Aim for all correct before you move on.</p>
+  <ul class="path" id="path">
+    <li><button data-lesson="L1" class="on">1. Operators are functions</button></li>
+    <li><button data-lesson="L2">2. Worked example: + and *</button></li>
+    <li><button data-lesson="L3">3. Special operators</button></li>
+    <li><button data-lesson="L4">4. Conversions and the Big Three</button></li>
+  </ul>
+
+  <!-- L1 -->
+  <article class="lesson active" id="L1">
+    <div class="lesson-head"><h2>1. Operators are functions</h2><span class="bloom b-remember">Remember</span><span class="bloom b-understand">Understand</span></div>
+    <p>You have used overloaded operators since CSP31A. When you write <code class="inl">s1 + s2</code> with two <code class="inl">string</code> objects, or <code class="inl">v[0]</code> on a <code class="inl">vector</code>, C++ calls a function named <code class="inl">operator+</code> or <code class="inl">operator[]</code>. The operator syntax is just a friendlier way to write the call.</p>
+    <div class="two">
+      <pre class="code"><span class="c">// What you write</span>
+string s1(<span class="s">"Washington"</span>);
+string s2(<span class="s">"California"</span>);
+cout &lt;&lt; s1[0];
+cout &lt;&lt; (s1 + s2);
+cout &lt;&lt; (s1 &lt; s2);</pre>
+      <pre class="code"><span class="c">// What C++ calls</span>
+string s1(<span class="s">"Washington"</span>);
+string s2(<span class="s">"California"</span>);
+cout &lt;&lt; s1.operator[](0);
+cout &lt;&lt; operator+(s1, s2);
+cout &lt;&lt; operator&lt;(s1, s2);</pre>
+    </div>
+    <p>An operator function is named with the keyword <code class="inl">operator</code> followed by the symbol. For a <strong>member</strong> function, the left operand is the calling object (<code class="inl">*this</code>) and the right operand is the parameter.</p>
+    <pre class="code"><span class="k">bool</span> Rational::<span class="k">operator</span>&lt;(<span class="k">const</span> Rational&amp; secondRational) <span class="k">const</span>
+{
+  <span class="k">return</span> compareTo(secondRational) &lt; 0;   <span class="c">// reuse existing logic</span>
+}</pre>
+    <div class="two">
+      <div class="note"><h4>What you can overload</h4><p style="margin:0">Almost everything: arithmetic <code class="inl">+ - * / %</code>, relational <code class="inl">&lt; &lt;= == != &gt;= &gt;</code>, <code class="inl">[]</code>, <code class="inl">()</code>, <code class="inl">=</code>, <code class="inl">+=</code> and friends, <code class="inl">++ --</code>, <code class="inl">&lt;&lt; &gt;&gt;</code>, <code class="inl">! &amp;&amp; ||</code>, <code class="inl">new delete</code>, and more.</p></div>
+      <div class="note"><h4>What you cannot overload</h4><p style="margin:0"><code class="inl">?:</code> (conditional), <code class="inl">.</code> (member access), <code class="inl">.*</code> (pointer-to-member), <code class="inl">::</code> (scope resolution), and <code class="inl">sizeof</code>. You also cannot invent new symbols like <code class="inl">**</code>.</p></div>
+    </div>
+
+    <div class="miscon">
+      <p class="flag">Common misconception: "Overloading lets me change how an operator is evaluated."</p>
+      <p>Students sometimes expect that overloading <code class="inl">+</code> for their class could make it bind tighter than <code class="inl">*</code>, or turn a binary operator into a unary one.</p>
+      <p><strong>Why it's wrong:</strong> overloading only changes <em>what the operator does</em> for your type. Precedence, associativity, and the number of operands (arity) are fixed by the language. <code class="inl">r1 + r2 * r3</code> always computes <code class="inl">r2 * r3</code> first, no matter how you define the functions.</p>
+    </div>
+
+    <div class="selfcheck" data-sc="L1">
+      <h3>Self-check 1</h3>
+      <div class="sc-host"></div>
+    </div>
+  </article>
+
+  <!-- L2 -->
+  <article class="lesson" id="L2">
+    <div class="lesson-head"><h2>2. Worked example: overloading + and *</h2><span class="bloom b-understand">Understand</span><span class="bloom b-apply">Apply</span></div>
+    <p>We'll build <code class="inl">operator+</code> for the <code class="inl">Rational</code> class from scratch, exposing the reasoning at every step. Then you'll write <code class="inl">operator*</code> yourself. Assume the class stores private <code class="inl">numerator</code> and <code class="inl">denominator</code> fields and that its constructor reduces the fraction to lowest terms.</p>
+
+    <div class="worked">
+      <div class="wtitle">Worked example: Rational r3 = r1 + r2;</div>
+      <ol class="steps">
+        <li><strong>Start from the math.</strong> a/b + c/d = (a·d + b·c) / (b·d).
+          <span class="why">Reason: code is just the formula written in C++. If you can't state the math, you can't write the operator.</span></li>
+        <li><strong>Decide member or non-member.</strong> We'll use a member function, so <code class="inl">r1</code> becomes <code class="inl">*this</code> and <code class="inl">r2</code> is the one parameter.
+          <span class="why">Reason: a binary member operator always has exactly one parameter, the right operand.</span></li>
+        <li><strong>Choose the parameter type:</strong> <code class="inl">const Rational&amp;</code>.
+          <span class="why">Reason: the reference avoids copying the object; <code class="inl">const</code> promises we won't change r2 and lets us pass temporaries like <code class="inl">Rational(1, 3)</code>.</span></li>
+        <li><strong>Choose the return type:</strong> <code class="inl">Rational</code> by value.
+          <span class="why">Reason: <code class="inl">+</code> produces a brand-new value. Returning a reference would point at a local object that dies when the function ends.</span></li>
+        <li><strong>Mark the function <code class="inl">const</code>.</strong>
+          <span class="why">Reason: <code class="inl">r1 + r2</code> must not modify r1. Without <code class="inl">const</code>, you couldn't add a <code class="inl">const Rational</code> on the left side.</span></li>
+        <li><strong>Write the body from the formula.</strong></li>
+      </ol>
+      <pre class="code" style="margin:0 20px 16px"><span class="k">Rational</span> Rational::<span class="k">operator</span>+(<span class="k">const</span> Rational&amp; secondRational) <span class="k">const</span>
+{
+  <span class="k">long</span> n = numerator * secondRational.denominator
+         + denominator * secondRational.numerator;   <span class="c">// a·d + b·c</span>
+  <span class="k">long</span> d = denominator * secondRational.denominator; <span class="c">// b·d</span>
+  <span class="k">return</span> Rational(n, d);                          <span class="c">// constructor reduces it</span>
+}</pre>
+      <div style="padding:0 20px 18px">
+        <strong>Trace it</strong> with <code class="inl">Rational(1, 2) + Rational(1, 3)</code>:
+        <div class="trace">n = 1·3 + 2·1 = 5 &nbsp;|&nbsp; d = 2·3 = 6 &nbsp;|&nbsp; result = 5/6 ✓</div>
+        <p style="margin-bottom:0">Notice that <code class="inl">secondRational.denominator</code> is legal even though it's private: member functions can access private data of <em>any</em> object of the same class.</p>
+      </div>
+    </div>
+
+    <div class="tryit">
+      <h4>Your turn: write operator*</h4>
+      <p style="margin-top:0">Use the same six steps. The math is a/b · c/d = (a·c) / (b·d). Write the full definition as it would appear in <code class="inl">Rational.cpp</code>.</p>
+      <textarea id="tryMul" spellcheck="false" aria-label="Your operator* code">Rational Rational::operator*( </textarea>
+      <div class="row">
+        <button class="btn" id="checkMul">Check my code</button>
+        <button class="btn ghost" id="showMul">Show model answer</button>
+      </div>
+      <ul class="checklist" id="mulChecks"></ul>
+      <div class="feedback info" id="mulModel">
+        <pre class="code" style="margin:6px 0"><span class="k">Rational</span> Rational::<span class="k">operator</span>*(<span class="k">const</span> Rational&amp; secondRational) <span class="k">const</span>
+{
+  <span class="k">long</span> n = numerator * secondRational.numerator;     <span class="c">// a·c</span>
+  <span class="k">long</span> d = denominator * secondRational.denominator; <span class="c">// b·d</span>
+  <span class="k">return</span> Rational(n, d);
+}</pre>
+        Trace: <code class="inl">Rational(2, 3) * Rational(3, 4)</code> → n = 6, d = 12 → constructor reduces to <strong>1/2</strong>.
+      </div>
+    </div>
+
+    <div class="selfcheck" data-sc="L2">
+      <h3>Self-check 2</h3>
+      <div class="sc-host"></div>
+    </div>
+  </article>
+
+  <!-- L3 -->
+  <article class="lesson" id="L3">
+    <div class="lesson-head"><h2>3. Special operators</h2><span class="bloom b-understand">Understand</span><span class="bloom b-apply">Apply</span><span class="bloom b-analyze">Analyze</span></div>
+
+    <h3>Subscript [ ]: accessor and mutator</h3>
+    <p>Overloading <code class="inl">[]</code> lets you write <code class="inl">r[0]</code> for the numerator and <code class="inl">r[1]</code> for the denominator. To use it on the <em>left</em> side of an assignment (<code class="inl">r[0] = 5;</code>), it must return a <strong>reference</strong> to the data field.</p>
+    <pre class="code"><span class="k">long</span>&amp; Rational::<span class="k">operator</span>[](<span class="k">int</span> index)      <span class="c">// &amp; belongs to the return type</span>
+{
+  <span class="k">if</span> (index == 0) <span class="k">return</span> numerator;
+  <span class="k">else if</span> (index == 1) <span class="k">return</span> denominator;
+  <span class="k">else throw</span> runtime_error(<span class="s">"subscript out of range"</span>);
+}</pre>
+    <div class="miscon">
+      <p class="flag">Common misconception: "Returning a plain int from operator[] is fine for assignment."</p>
+      <p>If the function returns <span class="wrong">int</span> by value, <code class="inl">r[0] = 5;</code> won't compile, because you'd be assigning to a temporary copy, not to the numerator.</p>
+      <p><strong>Correct reasoning:</strong> returning <code class="inl">int&amp;</code> (or <code class="inl">long&amp;</code>) gives the caller an alias to the real field, so the assignment changes the object. The <code class="inl">&amp;</code> is part of the return type and is written before the class name: <code class="inl">int&amp; Rational::operator[](int index)</code>, not <span class="wrong">int Rational::&amp;operator[]</span>. Also note: once <code class="inl">[]</code> returns a reference, <code class="inl">Rational</code> objects become mutable.</p>
+    </div>
+
+    <h3>Compound assignment: +=, -=, *=, /=</h3>
+    <p>These change the calling object and return a reference to it so they can be chained (<code class="inl">r2 = r1 += x;</code>).</p>
+    <pre class="code">Rational&amp; Rational::<span class="k">operator</span>+=(<span class="k">const</span> Rational&amp; secondRational)
+{
+  *<span class="k">this</span> = *<span class="k">this</span> + secondRational;   <span class="c">// reuse operator+</span>
+  <span class="k">return</span> *<span class="k">this</span>;
+}</pre>
+
+    <h3>Unary operators and ++ / --</h3>
+    <p>A unary member operator works on the calling object only, so it has <strong>no parameters</strong>. To tell the compiler which <code class="inl">++</code> you mean, postfix takes a dummy <code class="inl">int</code> parameter that is never used.</p>
+    <pre class="code">Rational Rational::<span class="k">operator</span>-() <span class="k">const</span>        <span class="c">// unary minus: -r1</span>
+{ <span class="k">return</span> Rational(-numerator, denominator); }
+
+Rational&amp; Rational::<span class="k">operator</span>++()            <span class="c">// prefix: ++r1</span>
+{
+  numerator += denominator;                 <span class="c">// adds 1 (b/b)</span>
+  <span class="k">return</span> *<span class="k">this</span>;                             <span class="c">// the NEW value</span>
+}
+
+Rational Rational::<span class="k">operator</span>++(<span class="k">int</span> dummy)     <span class="c">// postfix: r1++</span>
+{
+  Rational temp(numerator, denominator);    <span class="c">// save the OLD value</span>
+  numerator += denominator;
+  <span class="k">return</span> temp;                              <span class="c">// by value: temp is local</span>
+}</pre>
+    <div class="miscon">
+      <p class="flag">Common misconception: "Prefix and postfix ++ return the same thing."</p>
+      <p>Both add 1 to the object, but <strong>prefix evaluates to the new value</strong> and <strong>postfix evaluates to the old value</strong>. If <code class="inl">r1</code> is 1/2, then <code class="inl">r3 = r1++;</code> sets r3 to 1/2 (and r1 to 3/2), while <code class="inl">r3 = ++r1;</code> sets both to 3/2.</p>
+      <p><strong>Correct reasoning:</strong> postfix has to copy the old state before changing it, which is why it returns a local <code class="inl">temp</code> by value. Prefix can return <code class="inl">*this</code> by reference because the object itself already holds the answer.</p>
+    </div>
+
+    <h3>Friends and the stream operators &lt;&lt; &gt;&gt;</h3>
+    <p>In <code class="inl">cout &lt;&lt; r1</code>, the left operand is an <code class="inl">ostream</code>, not a <code class="inl">Rational</code>. So <code class="inl">operator&lt;&lt;</code> can't be a <code class="inl">Rational</code> member. It's written as a non-member, and declared a <code class="inl">friend</code> inside the class so it can read the private fields.</p>
+    <pre class="code"><span class="c">// In Rational.h, inside the class:</span>
+<span class="k">friend</span> ostream&amp; <span class="k">operator</span>&lt;&lt;(ostream&amp; out, <span class="k">const</span> Rational&amp; rational);
+<span class="k">friend</span> istream&amp; <span class="k">operator</span>&gt;&gt;(istream&amp; in, Rational&amp; rational);
+
+<span class="c">// In Rational.cpp (no Rational:: prefix, no friend keyword):</span>
+ostream&amp; <span class="k">operator</span>&lt;&lt;(ostream&amp; out, <span class="k">const</span> Rational&amp; rational)
+{
+  out &lt;&lt; rational.numerator &lt;&lt; <span class="s">"/"</span> &lt;&lt; rational.denominator;
+  <span class="k">return</span> out;   <span class="c">// returning the stream enables chaining</span>
+}</pre>
+    <p>Returning the stream is what makes <code class="inl">cout &lt;&lt; r1 &lt;&lt; " and " &lt;&lt; r2;</code> work: it is evaluated as <code class="inl">((cout &lt;&lt; r1) &lt;&lt; " and ") &lt;&lt; r2</code>.</p>
+
+    <div class="realworld">
+      <h3>Real-world application: the campus bookstore register</h3>
+      <p>The bookstore's point-of-sale program stores prices in a <code class="inl">Money</code> class that keeps whole cents in a <code class="inl">long</code> to avoid floating-point rounding errors. Overloaded operators make the checkout code read like a receipt:</p>
+      <pre class="code" style="margin-bottom:10px">Money total;                       <span class="c">// $0.00</span>
+total += textbook * 1;             <span class="c">// Money * int  -&gt; operator*</span>
+total += scantron * 3;
+<span class="k">if</span> (total &gt; Money(100, 0))        <span class="c">// operator&gt;</span>
+  total -= total * 10 / 100;       <span class="c">// 10% discount</span>
+cout &lt;&lt; <span class="s">"Amount due: "</span> &lt;&lt; total;   <span class="c">// friend operator&lt;&lt; prints $123.45</span></pre>
+      <p style="margin-bottom:0">Without overloading, the same logic becomes <code class="inl">total.addTo(textbook.times(1))</code>, which is harder to read and easier to get wrong. The same idea powers <code class="inl">std::string</code>, <code class="inl">std::chrono</code> durations, matrix libraries, and 2D vector math in game engines.</p>
+    </div>
+
+    <div class="selfcheck" data-sc="L3">
+      <h3>Self-check 3</h3>
+      <div class="sc-host"></div>
+    </div>
+  </article>
+
+  <!-- L4 -->
+  <article class="lesson" id="L4">
+    <div class="lesson-head"><h2>4. Conversions and the Big Three</h2><span class="bloom b-understand">Understand</span><span class="bloom b-analyze">Analyze</span><span class="bloom b-evaluate">Evaluate</span></div>
+
+    <h3>Object to number: a conversion operator</h3>
+    <p>To let a <code class="inl">Rational</code> act like a <code class="inl">double</code>, define <code class="inl">operator double()</code>. It has <strong>no return type written</strong> because the name already says what it returns.</p>
+    <pre class="code">Rational::<span class="k">operator double</span>() <span class="k">const</span>
+{ <span class="k">return</span> doubleValue(); }
+
+Rational r1(1, 4);
+<span class="k">double</span> d = r1 + 5.1;    <span class="c">// r1 converts to 0.25, d is 5.35</span></pre>
+
+    <h3>Number to object: a conversion constructor</h3>
+    <p>A constructor with one parameter, such as <code class="inl">Rational(int numerator)</code>, lets C++ convert an <code class="inl">int</code> into a <code class="inl">Rational</code> automatically. With it, <code class="inl">Rational(2, 3) + 4</code> yields <strong>14/3</strong>.</p>
+    <p>But here's the puzzle: <code class="inl">r1 + 4</code> works, yet <code class="inl">4 + r1</code> fails when <code class="inl">operator+</code> is a member. A member operator is called on its <em>left</em> operand, <code class="inl">4.operator+(r1)</code>, and an <code class="inl">int</code> has no member functions. The fix is to make <code class="inl">operator+</code> a <strong>non-member</strong> function taking two <code class="inl">const Rational&amp;</code> parameters; then C++ can convert either side.</p>
+    <pre class="code">Rational <span class="k">operator</span>+(<span class="k">const</span> Rational&amp; r1, <span class="k">const</span> Rational&amp; r2)
+{ <span class="k">return</span> r1.add(r2); }      <span class="c">// now 4 + r1 and r1 + 4 both work</span></pre>
+    <div class="note" style="border-left:5px solid var(--warn)">
+      <h4>Watch out: pick one direction</h4>
+      <p style="margin:0">If a class defines <em>both</em> <code class="inl">operator double()</code> and a <code class="inl">Rational(int)</code> conversion constructor, <code class="inl">r1 + 4</code> becomes ambiguous: should C++ turn r1 into a double, or 4 into a Rational? The compiler reports an error. Define one conversion direction, not both.</p>
+    </div>
+
+    <h3>Overloading = for a deep copy</h3>
+    <p>By default, <code class="inl">=</code> performs a <strong>memberwise (shallow) copy</strong>. That's fine for <code class="inl">Rational</code>, whose fields are plain numbers. It's a bug for a class like <code class="inl">Course</code> that holds a pointer to a dynamic array of student names: after <code class="inl">course1 = course2;</code> both objects point to the same array, and the second destructor deletes memory that's already gone.</p>
+    <pre class="code"><span class="k">const</span> Course&amp; Course::<span class="k">operator</span>=(<span class="k">const</span> Course&amp; course)
+{
+  <span class="k">if</span> (<span class="k">this</span> != &amp;course)                <span class="c">// 1. guard against c1 = c1</span>
+  {
+    courseName = course.courseName;
+    numberOfStudents = course.numberOfStudents;
+    capacity = course.capacity;
+    <span class="k">delete</span> [] students;                 <span class="c">// 2. free the old array</span>
+    students = <span class="k">new</span> string[capacity];     <span class="c">// 3. allocate our own</span>
+    <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; numberOfStudents; i++)
+      students[i] = course.students[i]; <span class="c">// 4. copy the contents</span>
+  }
+  <span class="k">return</span> *<span class="k">this</span>;                        <span class="c">// 5. enables c1 = c2 = c3</span>
+}</pre>
+    <div class="miscon">
+      <p class="flag">Common misconception: "operator= can return void since assignment doesn't produce a value."</p>
+      <p>In C++, assignment <em>is</em> an expression with a value. <code class="inl">course1 = course2 = course3;</code> runs right to left: course3 is copied into course2, and the result (course2) is then copied into course1.</p>
+      <p><strong>Correct reasoning:</strong> a <span class="wrong">void</span> return breaks chaining. Return a reference to <code class="inl">*this</code> instead.</p>
+    </div>
+
+    <h3>The Rule of Three</h3>
+    <p>The <strong>copy constructor</strong>, the <strong>assignment operator</strong>, and the <strong>destructor</strong> are the Big Three. The compiler generates all three for you. If your class owns a pointer to dynamic memory, you almost certainly need to write all three; if you customize one, customize the other two.</p>
+
+    <div class="selfcheck" data-sc="L4">
+      <h3>Self-check 4</h3>
+      <div class="sc-host"></div>
+    </div>
+  </article>
+</section>
+
+<!-- ================= FLASHCARDS ================= -->
+<section class="panel" id="flash" role="tabpanel" aria-labelledby="t-flash">
+  <h2>Flashcards</h2>
+  <p class="intro">Cards run from recall to application. Click or press Space to flip; use the arrow keys to move. Mark each card so you can review only what you missed.</p>
+  <div class="fc-toolbar">
+    <div class="fc-filters" id="fcFilters" role="group" aria-label="Filter cards by level"></div>
+    <div class="row" style="margin:0">
+      <button class="btn ghost" id="fcShuffle">Shuffle</button>
+      <button class="btn ghost" id="fcReview">Review missed only</button>
+      <button class="btn ghost" id="fcReset">Reset</button>
+    </div>
+  </div>
+  <div class="fc-progress" aria-hidden="true"><div id="fcBar"></div></div>
+  <div class="card-wrap">
+    <div class="card" id="card" tabindex="0" role="button" aria-label="Flashcard, press Space to flip">
+      <div class="face front"><div class="meta"><span id="fcTopicF"></span><span id="fcLevelF"></span></div><div class="term" id="fcFront"></div><div class="hint">Click to reveal</div></div>
+      <div class="face back"><div class="meta"><span id="fcTopicB"></span><span id="fcLevelB"></span></div><div class="ans" id="fcBack"></div><div class="hint">Click to flip back</div></div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn ghost" id="fcPrev">Previous</button>
+    <button class="btn red" id="fcMiss">Still learning</button>
+    <button class="btn" id="fcGot" style="background:var(--good);border-color:var(--good)">Got it</button>
+    <button class="btn ghost" id="fcNext">Next</button>
+  </div>
+  <p class="fc-count" id="fcCount"></p>
+  <div class="fc-stats"><span>Got it: <b id="fcKnown">0</b></span><span>Still learning: <b id="fcMissed">0</b></span></div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section class="panel" id="quiz" role="tabpanel" aria-labelledby="t-quiz">
+  <h2>Interactive quiz</h2>
+  <p class="intro">Twelve questions that climb from recall to evaluation. You get feedback after every answer.</p>
+  <div class="quiz-card" id="quizBox"></div>
+</section>
+
+<!-- ================= MATCHING ================= -->
+<section class="panel" id="match" role="tabpanel" aria-labelledby="t-match">
+  <h2>Matching activity</h2>
+  <p class="intro">Select a function signature on the left, then the expression it handles on the right.</p>
+  <p class="match-status" id="matchStatus"></p>
+  <div class="match-grid">
+    <div class="match-col"><h4>Operator function signature</h4><div id="mLeft"></div></div>
+    <div class="match-col"><h4>Expression it enables</h4><div id="mRight"></div></div>
+  </div>
+  <div class="row" style="justify-content:center"><button class="btn ghost" id="mReset">New round</button></div>
+</section>
+
+<!-- ================= CHALLENGES ================= -->
+<section class="panel" id="challenge" role="tabpanel" aria-labelledby="t-challenge">
+  <h2>Challenges: analyze, evaluate, create</h2>
+  <p class="intro">These tasks have no single right wording. Write your answer, justify it, then compare against the model answer and score yourself with the rubric.</p>
+  <div id="chHost"></div>
+</section>
+</main>
+<footer>San Joaquin Delta College · Computer Science · CSP31B C++ Programming II · Chapter 14: Operator Overloading</footer>
+<script>
+/* ============ DATA ============ */
+const LEVELS=["Remember","Understand","Apply","Analyze","Evaluate","Create"];
+const bcls=l=>"b-"+l.toLowerCase();
+const badge=l=>`<span class="bloom ${bcls(l)}">${l}</span>`;
+
+const SELF={
+L1:[
+ {q:"What does C++ actually call when you write <code>v[0]</code> on a <code>vector&lt;int&gt;</code>?",o:["<code>v.at(0)</code>","<code>v.operator[](0)</code>","<code>operator[](v)</code>","<code>v.get(0)</code>"],a:1,w:"The subscript is a member operator function; the index is its one argument."},
+ {q:"Which operator can NOT be overloaded?",o:["<code>[]</code>","<code>&lt;&lt;</code>","<code>?:</code>","<code>+=</code>"],a:2,w:"The conditional operator ?: is on the short list with ., .*, ::, and sizeof."},
+ {q:"You overload + and * for Rational. How is <code>r1 + r2 * r3</code> evaluated?",o:["Left to right: (r1 + r2) * r3","r2 * r3 first, because * has higher precedence","It depends on which function you defined first","It won't compile"],a:1,w:"Overloading never changes precedence or associativity."}
+],
+L2:[
+ {q:"Why is the parameter of <code>operator+</code> declared <code>const Rational&amp;</code>?",o:["So the function can change the right operand","To avoid a copy and promise not to modify the argument","Because references are required for all operators","To make the function a friend"],a:1,w:"Pass by reference is efficient; const makes it safe and allows temporaries as arguments."},
+ {q:"Why does <code>operator+</code> return <code>Rational</code> by value instead of <code>Rational&amp;</code>?",o:["References can't be returned from operators","The result is a new local object that would be destroyed on return","Returning by value is faster","The compiler requires it for const functions"],a:1,w:"A reference to a local variable dangles once the function returns."},
+ {q:"Apply it: using the worked-example formula, what is <code>Rational(1, 4) + Rational(1, 6)</code>?",o:["2/10 = 1/5","10/24 = 5/12","2/24 = 1/12","6/24 = 1/4"],a:1,w:"n = 1·6 + 4·1 = 10, d = 4·6 = 24, reduced to 5/12."}
+],
+L3:[
+ {q:"Which signature lets you write <code>r[0] = 7;</code>?",o:["<code>int Rational::operator[](int i)</code>","<code>int&amp; Rational::operator[](int i)</code>","<code>void Rational::operator[](int i, int v)</code>","<code>int Rational::&amp;operator[](int i)</code>"],a:1,w:"The return type must be a reference so the assignment reaches the real field. The last option isn't valid syntax."},
+ {q:"How does the compiler tell postfix <code>r++</code> from prefix <code>++r</code>?",o:["Postfix is declared with a dummy int parameter","Prefix is declared static","Postfix must be a friend","It can't; you can only overload one"],a:0,w:"operator++(int) is postfix; operator++() is prefix."},
+ {q:"Why must <code>operator&lt;&lt;</code> for Rational be a non-member?",o:["Members can't return references","The left operand is an ostream, not a Rational","friend functions run faster","Stream operators can't be overloaded as members of any class"],a:1,w:"A member operator is called on its left operand, and cout is an ostream."}
+],
+L4:[
+ {q:"With a member <code>operator+</code> and a <code>Rational(int)</code> constructor, why does <code>4 + r1</code> fail?",o:["4 can't be converted to Rational at all","It would call 4.operator+(r1), and int has no member functions","Addition isn't commutative in C++","The constructor must be explicit"],a:1,w:"Make operator+ a non-member so conversions apply to both operands."},
+ {q:"A <code>Course</code> class holds <code>string* students</code>. What does the default = do?",o:["Copies the whole array","Copies only the pointer, so both objects share one array","Refuses to compile","Deletes the old array first"],a:1,w:"The default is a shallow, memberwise copy."},
+ {q:"The Rule of Three refers to which functions?",o:["Constructor, destructor, operator==","Copy constructor, operator=, destructor","operator&lt;&lt;, operator&gt;&gt;, operator=","Getter, setter, toString"],a:1,w:"If a class manages a resource, define all three together."}
+]};
+
+const CARDS=[
+ {t:"Basics",l:"Remember",f:"What is operator overloading?",b:"Defining what an existing C++ operator does when its operands are objects of your class, by writing a function named <code>operator</code> followed by the symbol."},
+ {t:"Basics",l:"Remember",f:"<code>r1 + r2</code> as a member function call",b:"<code>r1.operator+(r2)</code><br>The left operand calls the function; the right operand is the argument."},
+ {t:"Basics",l:"Remember",f:"Five operators you cannot overload",b:"<code>?:</code> &nbsp; <code>.</code> &nbsp; <code>.*</code> &nbsp; <code>::</code> &nbsp; <code>sizeof</code>"},
+ {t:"Basics",l:"Remember",f:"Can overloading change precedence or associativity?",b:"No. Precedence, associativity, and the number of operands are fixed by the language."},
+ {t:"Basics",l:"Understand",f:"How many parameters does a binary member operator have?",b:"One: the right operand. The left operand is the calling object, <code>*this</code>."},
+ {t:"Basics",l:"Understand",f:"Why mark <code>operator&lt;</code> as a <code>const</code> member function?",b:"Comparing two objects must not change either one, and <code>const</code> lets you compare <code>const Rational</code> objects."},
+ {t:"Arithmetic",l:"Understand",f:"Why does <code>operator+</code> return by value?",b:"It creates a new result object. Returning a reference to a local variable would leave a dangling reference."},
+ {t:"Arithmetic",l:"Apply",f:"Evaluate <code>Rational(2, 3) + Rational(1, 6)</code>",b:"n = 2·6 + 3·1 = 15, d = 3·6 = 18 → <strong>5/6</strong>"},
+ {t:"Subscript",l:"Understand",f:"What must <code>operator[]</code> return to work as a mutator?",b:"A reference, e.g. <code>int&amp;</code>, so <code>r[0] = 5;</code> writes to the real data field."},
+ {t:"Subscript",l:"Apply",f:"Write the header line for a mutator <code>[]</code> on Rational (int fields)",b:"<pre>int&amp; Rational::operator[](int index)</pre>The <code>&amp;</code> belongs to the return type."},
+ {t:"Compound",l:"Understand",f:"What does <code>operator+=</code> return, and why?",b:"<code>Rational&amp;</code>, a reference to <code>*this</code>, so expressions like <code>r2 = r1 += x;</code> can chain."},
+ {t:"Unary",l:"Remember",f:"How many parameters does unary <code>operator-</code> (member) take?",b:"None. It operates only on the calling object."},
+ {t:"Increment",l:"Remember",f:"Prefix vs postfix <code>++</code> signatures",b:"<pre>Rational&amp; operator++();      // ++r\nRational  operator++(int);   // r++</pre>"},
+ {t:"Increment",l:"Apply",f:"r1 is 1/2. After <code>r3 = r1++;</code> what are r1 and r3?",b:"r1 = <strong>3/2</strong>, r3 = <strong>1/2</strong>. Postfix returns the old value."},
+ {t:"Friends",l:"Remember",f:"What does the <code>friend</code> keyword do?",b:"Grants a non-member function or another class access to a class's private members."},
+ {t:"Streams",l:"Understand",f:"Why is <code>operator&lt;&lt;</code> a non-member friend?",b:"Its left operand is an <code>ostream</code> (like <code>cout</code>), so it can't be a Rational member. It's a friend to read private fields."},
+ {t:"Streams",l:"Apply",f:"Write the declaration of <code>&lt;&lt;</code> for Rational (inside the class)",b:"<pre>friend ostream&amp; operator&lt;&lt;(ostream&amp; out,\n                         const Rational&amp; r);</pre>"},
+ {t:"Streams",l:"Understand",f:"Why does <code>operator&lt;&lt;</code> return <code>ostream&amp;</code>?",b:"So output can chain: <code>((cout &lt;&lt; r1) &lt;&lt; \" \") &lt;&lt; r2</code>."},
+ {t:"Conversion",l:"Remember",f:"Declare a conversion from Rational to double",b:"<pre>operator double() const;</pre>No return type is written; the name states it."},
+ {t:"Conversion",l:"Understand",f:"What makes <code>r1 + 4</code> convert 4 into a Rational?",b:"A one-argument constructor, <code>Rational(int numerator)</code>, which C++ uses as an automatic conversion."},
+ {t:"Conversion",l:"Apply",f:"How do you make both <code>r1 + 4</code> and <code>4 + r1</code> work?",b:"Declare <code>operator+</code> as a non-member taking two <code>const Rational&amp;</code> parameters, plus a <code>Rational(int)</code> constructor."},
+ {t:"Assignment",l:"Remember",f:"What does the default <code>=</code> operator do?",b:"A memberwise (shallow) copy of each data field, including pointers."},
+ {t:"Assignment",l:"Understand",f:"Why check <code>this != &amp;other</code> in <code>operator=</code>?",b:"To handle self-assignment. Otherwise you might delete your own array before copying from it."},
+ {t:"Assignment",l:"Remember",f:"The Rule of Three (Big Three)",b:"Copy constructor, assignment operator <code>=</code>, and destructor. Customize all three if the class owns a pointer to dynamic memory."}
+];
+
+const QUIZ=[
+ {c:1,l:"Remember",q:"Which function name overloads the less-than operator?",o:["less()","operator&lt;","&lt;operator","compareTo"],a:1,w:"The keyword operator followed by the symbol forms the function name."},
+ {c:1,l:"Remember",q:"Which of these can be overloaded?",o:["::","sizeof","[]",".*"],a:2,w:"The subscript operator [] can be overloaded; the others cannot."},
+ {l:"Understand",q:"In the member function <code>Rational Rational::operator-(const Rational&amp; r) const</code>, which object is <code>*this</code> when evaluating <code>a - b</code>?",o:["a","b","A temporary copy of b","Neither"],a:0,w:"a - b becomes a.operator-(b); the left operand is the calling object."},
+ {l:"Understand",q:"Unary <code>operator-</code> as a member has how many parameters?",o:["0","1","2","It depends on the class"],a:0,w:"A unary member operator works on the calling object only."},
+ {l:"Understand",q:"Why does postfix <code>operator++(int)</code> return by value?",o:["Because the int parameter requires it","It returns a local copy of the old value, which can't be returned by reference","Returning by value is required for all increment operators","So it can be chained"],a:1,w:"temp is local; a reference to it would dangle."},
+ {l:"Apply",q:"Given <code>Rational r(3, 4);</code> and a correct mutator <code>operator[]</code>, what does <code>r[1] = 8; cout &lt;&lt; r;</code> print (assume no automatic reduction after the change)?",o:["3/4","8/4","3/8","Compile error"],a:2,w:"Index 1 is the denominator, so the fraction becomes 3/8."},
+ {l:"Apply",q:"r1 is 2/3. What is printed by <code>Rational r3 = ++r1; cout &lt;&lt; r3;</code>?",o:["2/3","5/3","1/3","3/3"],a:1,w:"Prefix adds 1 (3/3) first and evaluates to the new value: 5/3."},
+ {c:1,l:"Apply",q:"Which is a correct definition of <code>operator&lt;&lt;</code> in Rational.cpp?",o:["ostream&amp; Rational::operator&lt;&lt;(ostream&amp; out, const Rational&amp; r)","friend ostream&amp; operator&lt;&lt;(ostream&amp; out, const Rational&amp; r)","ostream&amp; operator&lt;&lt;(ostream&amp; out, const Rational&amp; r)","void operator&lt;&lt;(const Rational&amp; r)"],a:2,w:"It's a non-member: no Rational:: prefix, and friend appears only in the class declaration."},
+ {l:"Analyze",q:"A class defines both <code>operator double()</code> and <code>Rational(int)</code>. What happens with <code>r1 + 4</code>?",o:["It converts 4 to Rational","It converts r1 to double","Compile error: ambiguous conversion","It returns 0"],a:2,w:"Both conversions are viable, so the compiler can't choose. Define only one direction."},
+ {c:1,l:"Analyze",q:"A student's <code>operator=</code> returns <code>void</code>. Which statement breaks?",o:["c1 = c2;","c1 = c2 = c3;","Course c1(c2);","cout &lt;&lt; c1.getName();"],a:1,w:"The inner assignment's result (void) can't be assigned to c1."},
+ {l:"Evaluate",q:"A <code>Playlist</code> class stores <code>Song* songs</code> allocated with new. Which is the best judgment?",o:["The defaults are fine because pointers copy quickly","Write a destructor only; copying is rare","Write the copy constructor, operator=, and destructor together","Make all members public to avoid the issue"],a:2,w:"Owning a dynamic resource triggers the Rule of Three; a missing piece causes double-deletes or leaks."},
+ {l:"Evaluate",q:"Which design for <code>Money + Money</code> is best if you also want <code>5 + price</code> to work?",o:["Member operator+ only","Non-member operator+(const Money&amp;, const Money&amp;) with a Money(int) constructor","Overload + inside the int class","Use operator double() on Money"],a:1,w:"A non-member allows implicit conversion on the left operand; you can't modify int."}
+];
+
+const PAIRS=[
+ ["bool operator<(const Rational&) const","r1 < r2"],
+ ["Rational operator+(const Rational&) const","r1 + r2"],
+ ["int& operator[](int index)","r[0] = 5"],
+ ["Rational& operator+=(const Rational&)","r1 += r2"],
+ ["Rational operator-() const","-r1"],
+ ["Rational& operator++()","++r1"],
+ ["Rational operator++(int dummy)","r1++"],
+ ["friend ostream& operator<<(ostream&, const Rational&)","cout << r1"],
+ ["operator double() const","double d = r1 + 5.1"],
+ ["const Course& operator=(const Course&)","c1 = c2 = c3"]
+];
+
+const CHALLENGES=[
+ {l:"Analyze",title:"Diagnose the broken increment",
+  p:`A classmate writes prefix <code>++</code> like this and says their test <code>++(++r1);</code> only adds 1 instead of 2. Explain <em>why</em>, tracing what happens to r1.<pre class="code">Rational Rational::operator++()
+{
+  numerator += denominator;
+  return *this;
+}</pre>`,
+  m:`The function returns <strong>by value</strong>, so the inner <code>++r1</code> changes r1 and then returns a <em>copy</em>. The outer <code>++</code> increments that temporary copy, not r1. So r1 only goes up by 1. The fix is to return <code>Rational&amp;</code>, which makes the outer call act on r1 itself, matching how <code>++</code> behaves for built-in <code>int</code>.`,
+  r:["Identifies return-by-value as the cause","Explains that the second ++ acts on a temporary copy","Proposes returning Rational& as the fix"]},
+ {l:"Evaluate",title:"Member or non-member?",
+  p:`Your team is adding <code>operator==</code> to a <code>Money</code> class that has a <code>Money(long cents)</code> conversion constructor. One teammate wants a member function; another wants a non-member. Decide which is better and justify it with at least one concrete expression that behaves differently.`,
+  m:`A <strong>non-member</strong> is better. With a member, <code>price == 500</code> works (500 converts to Money) but <code>500 == price</code> fails, because it would need <code>500.operator==(price)</code>. A non-member <code>bool operator==(const Money&amp;, const Money&amp;)</code> lets the conversion apply to either side, so equality stays symmetric. If it needs private fields, declare it a friend or use a public getter.`,
+  r:["Chooses non-member (or clearly argues a position)","Gives a concrete expression like 500 == price","Explains conversion only applies to parameters, not the calling object"]},
+ {l:"Evaluate",title:"Judge two assignment operators",
+  p:`Compare these two versions for a class holding <code>int* data</code> and <code>int size</code>. Which is safer, and what exact problem does the other one have?<pre class="code">// Version A
+Array& Array::operator=(const Array& o) {
+  delete [] data;
+  data = new int[o.size];
+  size = o.size;
+  for (int i = 0; i &lt; size; i++) data[i] = o.data[i];
+  return *this;
+}
+// Version B
+Array& Array::operator=(const Array& o) {
+  if (this != &amp;o) {
+    int* fresh = new int[o.size];
+    for (int i = 0; i &lt; o.size; i++) fresh[i] = o.data[i];
+    delete [] data;
+    data = fresh;
+    size = o.size;
+  }
+  return *this;
+}</pre>`,
+  m:`<strong>Version B</strong> is safer. In Version A, the self-assignment <code>a = a;</code> deletes <code>data</code>, then copies from <code>o.data</code>, which is the same freed memory: undefined behavior. Version B guards against self-assignment, and it also allocates and copies <em>before</em> deleting, so if <code>new</code> throws, the object still holds its old valid data.`,
+  r:["Picks Version B","Identifies the self-assignment bug in Version A","Mentions allocate-before-delete (exception safety) as a bonus"]},
+ {l:"Create",title:"Design a Time class for a bus schedule",
+  p:`A regional transit app stores times as a <code>Time</code> class with private <code>hours</code> and <code>minutes</code>. Design the operator declarations (header only) so that all of these compile: <code>t2 = t1 + 45;</code> (add minutes), <code>if (t1 &lt; t2)</code>, <code>t1 += 15;</code>, <code>cout &lt;&lt; t1;</code> (prints 09:05), and <code>cin &gt;&gt; t1;</code>. For each, justify member vs non-member and the return type.`,
+  m:`<pre class="code">class Time {
+public:
+  Time(int h = 0, int m = 0);
+  Time operator+(int minutes) const;      // new value, by value
+  bool operator&lt;(const Time& other) const; // no change, const
+  Time& operator+=(int minutes);          // modifies *this, chainable
+  friend ostream& operator&lt;&lt;(ostream& out, const Time& t);
+  friend istream& operator&gt;&gt;(istream& in, Time& t); // t not const: it's filled in
+private:
+  int hours, minutes;
+};</pre>+ and &lt; are members because the left operand is always a Time. The stream operators are non-member friends because the left operand is a stream and they need private fields. <code>&gt;&gt;</code> takes a non-const reference because it modifies t. All arithmetic should normalize minutes ≥ 60 into hours.`,
+  r:["All five operators declared with valid syntax","Correct return types (value for +, bool for <, Time& for +=, stream& for << >>)","Stream operators are non-member friends with a justification","Uses const correctly, including non-const Time& for >>"]}
+];
+
+/* ============ UTIL ============ */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+/* ============ TABS ============ */
+const tabs=$$('nav.tabs button');
+function openTab(btn){
+  tabs.forEach(b=>b.setAttribute('aria-selected',b===btn));
+  $$('section.panel').forEach(p=>p.classList.toggle('active',p.id===btn.getAttribute('aria-controls')));
+}
+tabs.forEach((b,i)=>{
+  b.addEventListener('click',()=>openTab(b));
+  b.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+      const n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];n.focus();openTab(n);
+    }
+  });
+});
+
+/* ============ LEARN PATH ============ */
+const pathBtns=$$('#path button');
+function openLesson(id){
+  pathBtns.forEach(b=>b.classList.toggle('on',b.dataset.lesson===id));
+  $$('.lesson').forEach(l=>l.classList.toggle('active',l.id===id));
+  window.scrollTo({top:$('#learn').offsetTop-10,behavior:'smooth'});
+}
+pathBtns.forEach(b=>b.addEventListener('click',()=>openLesson(b.dataset.lesson)));
+
+/* ============ SELF-CHECKS ============ */
+function initSelf(sc){
+  const id=sc.dataset.sc, qs=SELF[id], host=sc.querySelector('.sc-host');
+  let right=0, answered=0;
+  qs.forEach((q,qi)=>{
+    const d=document.createElement('div');d.className='sc-q';
+    d.innerHTML=`<div class="qtext">${qi+1}. ${q.q}</div><div class="opts"></div><div class="feedback"></div>`;
+    const opts=d.querySelector('.opts'), fb=d.querySelector('.feedback');
+    q.o.forEach((o,oi)=>{
+      const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+      b.addEventListener('click',()=>{
+        [...opts.children].forEach((x,xi)=>{x.disabled=true;if(xi===q.a)x.classList.add('correct');});
+        const ok=oi===q.a; if(!ok)b.classList.add('wrong');
+        fb.className='feedback show '+(ok?'ok':'no');
+        fb.innerHTML=(ok?'<strong>Correct.</strong> ':'<strong>Not quite.</strong> ')+q.w;
+        answered++; if(ok)right++;
+        if(answered===qs.length) finish();
+      });
+      opts.appendChild(b);
+    });
+    host.appendChild(d);
+  });
+  const sum=document.createElement('div');host.appendChild(sum);
+  function finish(){
+    const idx=pathBtns.findIndex(b=>b.dataset.lesson===id);
+    const all=right===qs.length;
+    sum.innerHTML=`<p class="sc-summary">${right} of ${qs.length} correct. ${all?'You are ready to move on.':'Review the flagged answers above, then retry.'}</p>
+      <div class="row next-link">${all?'':'<button class="btn ghost" data-act="retry">Retry self-check</button>'}
+      ${idx<pathBtns.length-1?`<button class="btn" data-act="next">Next lesson</button>`:`<button class="btn" data-act="flash">Go to flashcards</button>`}</div>`;
+    if(all && !pathBtns[idx].querySelector('.done')) pathBtns[idx].insertAdjacentHTML('beforeend',' <span class="done" aria-label="completed">✓</span>');
+    sum.querySelector('[data-act="next"]')?.addEventListener('click',()=>openLesson(pathBtns[idx+1].dataset.lesson));
+    sum.querySelector('[data-act="flash"]')?.addEventListener('click',()=>openTab($('#t-flash')));
+    sum.querySelector('[data-act="retry"]')?.addEventListener('click',()=>{
+      rebuild(sc);
+    });
+  }
+}
+$$('.selfcheck').forEach(initSelf);
+function rebuild(sc){
+  // simple re-render by cloning a fresh self-check block
+  const fresh=sc.cloneNode(false);fresh.innerHTML=`<h3>${sc.querySelector('h3')?.textContent||'Self-check'}</h3><div class="sc-host"></div>`;
+  sc.replaceWith(fresh); initSelf(fresh);
+}
+
+/* ============ TRY IT: operator* ============ */
+$('#checkMul').addEventListener('click',()=>{
+  const raw=$('#tryMul').value, s=raw.replace(/\s+/g,'');
+  const checks=[
+    ["Function is named <code>Rational::operator*</code>",/Rational::operator\*\(/.test(s)],
+    ["Returns <code>Rational</code> by value",/^Rational(?!&)Rational::operator\*/.test(s)],
+    ["Parameter is <code>const Rational&amp;</code>",/\(constRational&\w*\)/.test(s)],
+    ["Function is marked <code>const</code>",/\)const\{/.test(s)],
+    ["Multiplies numerators (a·c)",/numerator\*\w+\.numerator|\w+\.numerator\*numerator/.test(s)],
+    ["Multiplies denominators (b·d)",/denominator\*\w+\.denominator|\w+\.denominator\*denominator/.test(s)],
+    ["Returns a new <code>Rational(…)</code>",/returnRational\(/.test(s)]
+  ];
+  $('#mulChecks').innerHTML=checks.map(([t,ok])=>`<li class="${ok?'pass':'fail'}">${t}</li>`).join('');
+  const n=checks.filter(c=>c[1]).length;
+  if(n===checks.length) $('#mulChecks').insertAdjacentHTML('beforeend','<li class="pass"><strong>All checks pass. Nicely done.</strong></li>');
+});
+$('#showMul').addEventListener('click',()=>$('#mulModel').classList.toggle('show'));
+
+/* ============ FLASHCARDS ============ */
+let fcFilter="All", fcDeck=[], fcI=0, fcStatus={}, reviewOnly=false;
+const fcLevels=["All","Remember","Understand","Apply"];
+$('#fcFilters').innerHTML=fcLevels.map(l=>`<button class="chip${l==='All'?' on':''}" data-l="${l}">${l}</button>`).join('');
+$$('#fcFilters .chip').forEach(c=>c.addEventListener('click',()=>{
+  fcFilter=c.dataset.l;$$('#fcFilters .chip').forEach(x=>x.classList.toggle('on',x===c));reviewOnly=false;buildDeck(false);
+}));
+function buildDeck(shuf){
+  let d=CARDS.map((c,i)=>({...c,id:i})).filter(c=>fcFilter==="All"||c.l===fcFilter);
+  if(reviewOnly) d=d.filter(c=>fcStatus[c.id]==='miss');
+  fcDeck=shuf?shuffle(d):d; fcI=0; renderCard();
+  $('#fcReview').textContent=reviewOnly?'Show all cards':'Review missed only';
+}
+function renderCard(){
+  const card=$('#card'); card.classList.remove('flipped');
+  if(!fcDeck.length){
+    $('#fcFront').innerHTML=reviewOnly?'No missed cards. Great work!':'No cards match this filter.';
+    $('#fcBack').innerHTML='';['#fcTopicF','#fcTopicB','#fcLevelF','#fcLevelB'].forEach(s=>$(s).innerHTML='');
+    $('#fcCount').textContent='';$('#fcBar').style.width='0';updStats();return;
+  }
+  const c=fcDeck[fcI];
+  $('#fcFront').innerHTML=c.f; $('#fcBack').innerHTML=c.b;
+  $('#fcTopicF').textContent=$('#fcTopicB').textContent=c.t;
+  $('#fcLevelF').innerHTML=$('#fcLevelB').innerHTML=badge(c.l);
+  $('#fcCount').textContent=`Card ${fcI+1} of ${fcDeck.length}`+(fcStatus[c.id]?` · marked "${fcStatus[c.id]==='got'?'Got it':'Still learning'}"`:'');
+  $('#fcBar').style.width=((fcI+1)/fcDeck.length*100)+'%';
+  updStats();
+}
+function updStats(){
+  const v=Object.values(fcStatus);
+  $('#fcKnown').textContent=v.filter(x=>x==='got').length;
+  $('#fcMissed').textContent=v.filter(x=>x==='miss').length;
+}
+const flip=()=>{ if(fcDeck.length) $('#card').classList.toggle('flipped'); };
+const move=d=>{ if(!fcDeck.length)return; fcI=(fcI+d+fcDeck.length)%fcDeck.length; renderCard(); };
+function mark(st){ if(!fcDeck.length)return; fcStatus[fcDeck[fcI].id]=st; if(fcI<fcDeck.length-1) move(1); else renderCard(); }
+$('#card').addEventListener('click',flip);
+$('#card').addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){e.preventDefault();flip();} });
+document.addEventListener('keydown',e=>{
+  if(!$('#flash').classList.contains('active')||e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowRight')move(1); if(e.key==='ArrowLeft')move(-1);
+});
+$('#fcPrev').addEventListener('click',()=>move(-1));
+$('#fcNext').addEventListener('click',()=>move(1));
+$('#fcGot').addEventListener('click',()=>mark('got'));
+$('#fcMiss').addEventListener('click',()=>mark('miss'));
+$('#fcShuffle').addEventListener('click',()=>buildDeck(true));
+$('#fcReview').addEventListener('click',()=>{reviewOnly=!reviewOnly;buildDeck(false);});
+$('#fcReset').addEventListener('click',()=>{fcStatus={};reviewOnly=false;fcFilter="All";$$('#fcFilters .chip').forEach(x=>x.classList.toggle('on',x.dataset.l==='All'));buildDeck(false);});
+buildDeck(false);
+
+/* ============ QUIZ ============ */
+let qi=0, qScore=0, qLog=[];
+function renderQuiz(){
+  const box=$('#quizBox');
+  if(qi>=QUIZ.length){
+    const pct=Math.round(qScore/QUIZ.length*100);
+    const msg=pct>=90?'Excellent. You are ready for the challenges.':pct>=70?'Solid. Revisit the flashcards for the ones you missed.':'Go back through lessons 3 and 4, then try again.';
+    box.innerHTML=`<p class="score-big">${qScore} / ${QUIZ.length}</p><p><strong>${pct}%</strong>. ${msg}</p>
+      <div class="review-list">${qLog.map((r,i)=>`<div>${r.ok?'✓':'✗'} Q${i+1} ${badge(QUIZ[i].l)} ${r.ok?'':' Correct answer: '+QUIZ[i].o[QUIZ[i].a]}</div>`).join('')}</div>
+      <div class="row"><button class="btn" id="qRestart">Retake quiz</button><button class="btn ghost" id="qCh">Go to challenges</button></div>`;
+    $('#qRestart').onclick=()=>{qi=0;qScore=0;qLog=[];renderQuiz();};
+    $('#qCh').onclick=()=>openTab($('#t-challenge'));
+    return;
+  }
+  const q=QUIZ[qi];
+  box.innerHTML=`<div class="quiz-top"><span>Question ${qi+1} of ${QUIZ.length}</span>${badge(q.l)}<span>Score: ${qScore}</span></div>
+    <div class="fc-progress"><div style="width:${qi/QUIZ.length*100}%"></div></div>
+    <div class="quiz-q">${q.q}</div><div class="opts" id="qOpts"></div><div class="feedback" id="qFb"></div>
+    <div class="row"><button class="btn" id="qNext" disabled>${qi===QUIZ.length-1?'See results':'Next question'}</button></div>`;
+  q.o.forEach((o,oi)=>{
+    const b=document.createElement('button');b.className='opt';b.innerHTML=q.c?`<code>${o}</code>`:o;
+    b.onclick=()=>{
+      $$('#qOpts .opt').forEach((x,xi)=>{x.disabled=true;if(xi===q.a)x.classList.add('correct');});
+      const ok=oi===q.a; if(!ok)b.classList.add('wrong'); else qScore++;
+      qLog.push({ok});
+      const fb=$('#qFb');fb.className='feedback show '+(ok?'ok':'no');
+      fb.innerHTML=(ok?'<strong>Correct.</strong> ':'<strong>Not quite.</strong> ')+q.w;
+      $('#qNext').disabled=false;$('#qNext').focus();
+    };
+    $('#qOpts').appendChild(b);
+  });
+  $('#qNext').onclick=()=>{qi++;renderQuiz();};
+}
+renderQuiz();
+
+/* ============ MATCHING ============ */
+let mSel=null, mDone=0, mTries=0, mRound=[];
+function renderMatch(){
+  mRound=shuffle(PAIRS).slice(0,6).map((p,i)=>({s:p[0],e:p[1],id:i}));
+  mSel=null;mDone=0;mTries=0;
+  $('#mLeft').innerHTML=shuffle(mRound).map(p=>`<button class="m-item code" data-side="L" data-id="${p.id}">${esc(p.s)}</button>`).join('');
+  $('#mRight').innerHTML=shuffle(mRound).map(p=>`<button class="m-item code" data-side="R" data-id="${p.id}">${esc(p.e)}</button>`).join('');
+  $$('.m-item').forEach(b=>b.addEventListener('click',()=>pick(b)));
+  mStatus();
+}
+function mStatus(){
+  $('#matchStatus').innerHTML=mDone===mRound.length
+    ?`<strong style="color:var(--good)">All ${mRound.length} matched in ${mTries} attempts.</strong> Start a new round for different pairs.`
+    :`Matched ${mDone} of ${mRound.length} · Attempts: ${mTries}`;
+}
+function pick(b){
+  if(b.classList.contains('matched'))return;
+  if(!mSel||mSel.dataset.side===b.dataset.side){
+    if(mSel)mSel.classList.remove('sel');
+    mSel=b;b.classList.add('sel');return;
+  }
+  mTries++;
+  if(mSel.dataset.id===b.dataset.id){
+    [mSel,b].forEach(x=>{x.classList.remove('sel');x.classList.add('matched');x.disabled=true;});mDone++;
+  } else {
+    [mSel,b].forEach(x=>{x.classList.remove('sel');x.classList.add('shake');setTimeout(()=>x.classList.remove('shake'),400);});
+  }
+  mSel=null;mStatus();
+}
+$('#mReset').addEventListener('click',renderMatch);
+renderMatch();
+
+/* ============ CHALLENGES ============ */
+$('#chHost').innerHTML=CHALLENGES.map((c,i)=>`
+  <div class="challenge">
+    <div class="chead"><h3>${i+1}. ${c.title}</h3>${badge(c.l)}</div>
+    <div>${c.p}</div>
+    <label for="ch${i}" style="font-weight:600;display:block;margin:8px 0 6px">Your answer and justification</label>
+    <textarea id="ch${i}" class="${c.l==='Create'?'':'prose'}" spellcheck="${c.l!=='Create'}"></textarea>
+    <details><summary>Compare with the model answer</summary><div class="model">${c.m}</div>
+      <div class="rubric" style="margin-top:10px"><strong>Score yourself:</strong>
+        ${c.r.map((r,j)=>`<label><input type="checkbox" data-ch="${i}"> ${r}</label>`).join('')}
+        <p class="sc-summary" id="chs${i}">0 of ${c.r.length} criteria met</p>
+      </div></details>
+  </div>`).join('');
+$$('.rubric input').forEach(cb=>cb.addEventListener('change',()=>{
+  const i=cb.dataset.ch, all=$$(`.rubric input[data-ch="${i}"]`), n=all.filter(x=>x.checked).length;
+  $('#chs'+i).textContent=`${n} of ${all.length} criteria met`+(n===all.length?'. Full marks.':'');
+}));
+</script>
+</body>
+</html>
