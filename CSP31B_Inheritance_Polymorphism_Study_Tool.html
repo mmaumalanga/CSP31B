@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSP31B · Inheritance and Polymorphism Study Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --user-primary:#1a4480;
+  --user-accent:#c8102e;
+  --user-background:#ffffff;
+  --ink:#1b2333;
+  --muted:#5a6477;
+  --line:#d8dee9;
+  --soft-blue:#eef3fa;
+  --soft-red:#fdf1f3;
+  --good:#1d7a4c;
+  --soft-good:#ebf7f0;
+  --warn:#8a5a00;
+  --soft-warn:#fff7e6;
+  --code-bg:#0f2547;
+  --radius-lg:14px;
+  --radius-sm:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--user-background);color:var(--ink);line-height:1.6;font-size:16px}
+code,pre,.mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace}
+a{color:var(--user-primary)}
+:focus-visible{outline:3px solid var(--user-accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Header */
+header.hero{background:var(--user-primary);color:#fff;padding:28px 20px 0}
+.hero-inner{max-width:1080px;margin:0 auto}
+.course-line{font-size:.95rem;opacity:.85;margin:0}
+.hero h1{font-size:clamp(1.7rem,3.6vw,2.5rem);line-height:1.15;margin:.3rem 0 .6rem;font-weight:800;letter-spacing:-.01em}
+.hero-eq{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:14px 0 22px;font-family:'JetBrains Mono',monospace;font-size:clamp(1rem,2.4vw,1.35rem)}
+.hero-eq span.box{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:var(--radius-sm)}
+.hero-eq span.is{color:#ffd3da;font-family:'Inter',sans-serif;font-weight:600;font-size:.95rem}
+.hero p.lede{max-width:70ch;margin:0 0 20px;opacity:.95}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+nav.tabs button{font:inherit;font-weight:600;font-size:.95rem;background:transparent;color:#fff;border:0;padding:12px 16px;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap;opacity:.85}
+nav.tabs button:hover{opacity:1;background:rgba(255,255,255,.1)}
+nav.tabs button[aria-selected="true"]{background:var(--user-background);color:var(--user-primary);opacity:1;box-shadow:inset 0 3px 0 var(--user-accent)}
+
+main{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+section.panel{display:none}
+section.panel.active{display:block}
+h2{color:var(--user-primary);font-size:1.6rem;margin:0 0 .4rem;line-height:1.25}
+h3{font-size:1.2rem;margin:1.8rem 0 .5rem;color:var(--ink)}
+p{max-width:75ch}
+.intro{color:var(--muted);margin-top:0}
+
+/* Bloom badges */
+.bloom{display:inline-block;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid currentColor;vertical-align:middle}
+.b-remember{color:#2f5f9e}.b-understand{color:#1a4480}.b-apply{color:#1d7a4c}
+.b-analyze{color:#8a5a00}.b-evaluate{color:#b0452a}.b-create{color:#c8102e}
+
+/* Learn layout */
+.path{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 26px;padding:0;list-style:none}
+.path li button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:999px;cursor:pointer;color:var(--ink)}
+.path li button.on{background:var(--user-primary);color:#fff;border-color:var(--user-primary)}
+.path li button .done{color:var(--good);font-weight:700}
+.path li button.on .done{color:#bfe8d1}
+.lesson{display:none}.lesson.active{display:block}
+.lesson-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.lesson-head h2{margin:0}
+
+pre.code{background:var(--code-bg);color:#e8eefb;padding:16px 18px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.88rem;line-height:1.55;margin:12px 0 18px;border-left:4px solid var(--user-accent)}
+pre.code .k{color:#8fc1ff}pre.code .c{color:#8a9bb8;font-style:italic}pre.code .s{color:#ffc58a}
+code.inl{background:var(--soft-blue);color:var(--user-primary);padding:1px 6px;border-radius:5px;font-size:.9em}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.note{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;background:#fff}
+.note h4{margin:0 0 6px;font-size:1rem}
+
+/* Worked example */
+.worked{border:2px solid var(--user-primary);border-radius:var(--radius-lg);overflow:hidden;margin:18px 0}
+.worked > .wtitle{background:var(--user-primary);color:#fff;padding:10px 16px;font-weight:700}
+.worked ol.steps{margin:0;padding:16px 20px 16px 44px}
+.worked ol.steps li{margin-bottom:12px}
+.worked ol.steps li .why{display:block;color:var(--muted);font-size:.93rem;margin-top:2px}
+.trace{font-family:'JetBrains Mono',monospace;background:var(--soft-blue);padding:10px 14px;border-radius:var(--radius-sm);font-size:.9rem;overflow-x:auto}
+
+/* Misconception flag */
+.miscon{border-left:5px solid var(--user-accent);background:var(--soft-red);padding:14px 18px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:18px 0}
+.miscon .flag{font-weight:800;color:var(--user-accent);margin:0 0 6px}
+.miscon p{margin:.35rem 0}
+.miscon .wrong{font-family:'JetBrains Mono',monospace;font-size:.88rem;background:#fff;padding:2px 6px;border-radius:4px;text-decoration:line-through;text-decoration-color:var(--user-accent)}
+
+/* Real-world */
+.realworld{background:var(--soft-warn);border:1px solid #f0d9a8;border-radius:var(--radius-lg);padding:18px 20px;margin:20px 0}
+.realworld h3{margin-top:0;color:var(--warn)}
+
+/* Try it */
+.tryit{border:2px dashed var(--good);border-radius:var(--radius-lg);padding:16px 18px;margin:18px 0;background:var(--soft-good)}
+.tryit h4{margin:0 0 6px;color:var(--good)}
+textarea{width:100%;min-height:150px;font-family:'JetBrains Mono',monospace;font-size:.88rem;padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);resize:vertical;background:#fff;color:var(--ink)}
+textarea.prose{font-family:'Inter',sans-serif;font-size:.95rem;min-height:120px}
+.btn{font:inherit;font-weight:600;font-size:.93rem;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--user-primary);background:var(--user-primary);color:#fff;cursor:pointer}
+.btn:hover{filter:brightness(1.12)}
+.btn.ghost{background:#fff;color:var(--user-primary)}
+.btn.red{background:var(--user-accent);border-color:var(--user-accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:var(--radius-sm);display:none}
+.feedback.show{display:block}
+.feedback.ok{background:var(--soft-good);border:1px solid #b6e0c8;color:#145c38}
+.feedback.no{background:var(--soft-red);border:1px solid #f1c0c9;color:#8f0b21}
+.feedback.info{background:var(--soft-blue);border:1px solid #c7d6ec;color:var(--user-primary)}
+ul.checklist{list-style:none;padding:0;margin:8px 0}
+ul.checklist li{padding:4px 0}
+ul.checklist li.pass::before{content:"✓ ";color:var(--good);font-weight:800}
+ul.checklist li.fail::before{content:"✗ ";color:var(--user-accent);font-weight:800}
+
+/* Self-check */
+.selfcheck{margin:30px 0 8px;border-top:3px solid var(--user-primary);padding-top:14px}
+.selfcheck h3{margin-top:0;color:var(--user-primary)}
+.sc-q{margin:14px 0 18px}
+.sc-q .qtext{font-weight:600;margin-bottom:8px}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;text-align:left;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--user-primary);background:var(--soft-blue)}
+.opt.correct{border-color:var(--good);background:var(--soft-good);font-weight:600}
+.opt.wrong{border-color:var(--user-accent);background:var(--soft-red)}
+.opt:disabled{cursor:default}
+.opt code{font-size:.88em}
+.sc-summary{font-weight:700;margin-top:8px}
+.next-link{margin-top:14px}
+
+/* Flashcards */
+.fc-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:12px 0 18px}
+.fc-filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:.85rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--user-primary);border-color:var(--user-primary);color:#fff}
+.fc-progress{height:6px;background:var(--soft-blue);border-radius:999px;overflow:hidden;margin-bottom:14px}
+.fc-progress > div{height:100%;background:var(--user-accent);width:0;transition:width .3s}
+.card-wrap{perspective:1400px;max-width:720px;margin:0 auto}
+.card{position:relative;width:100%;min-height:320px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.7,.2,1);cursor:pointer}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--radius-lg);padding:26px 28px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--line);overflow:auto;padding-top:48px;padding-bottom:36px}
+.face.front{background:#fff;border-top:6px solid var(--user-primary)}
+.face.back{background:var(--user-primary);color:#fff;transform:rotateY(180deg);border-top:6px solid var(--user-accent)}
+.face .meta{position:absolute;top:14px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--muted)}
+.face.back .meta{color:#c9d6ee}
+.face.back .bloom{color:#fff}
+.face .term{font-size:clamp(1.15rem,2.6vw,1.5rem);font-weight:700;line-height:1.35;text-align:center}
+.face .term code{font-size:.95em;background:var(--soft-blue);padding:2px 8px;border-radius:6px;color:var(--user-primary)}
+.face .ans{font-size:1.02rem;line-height:1.55}
+.face.back pre{background:rgba(0,0,0,.25);padding:10px 12px;border-radius:6px;overflow-x:auto;font-size:.84rem;margin:10px 0 0}
+.face.back code{background:rgba(255,255,255,.15);padding:1px 5px;border-radius:4px}
+.face .hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:.8rem;color:var(--muted)}
+.face.back .hint{color:#c9d6ee}
+.fc-nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+.fc-count{text-align:center;color:var(--muted);font-size:.9rem}
+.fc-stats{display:flex;justify-content:center;gap:18px;font-size:.9rem;margin-top:8px}
+.fc-stats b{color:var(--user-primary)}
+
+/* Quiz */
+.quiz-card{border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 24px;max-width:780px;margin:0 auto}
+.quiz-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;color:var(--muted);font-size:.9rem}
+.quiz-q{font-size:1.1rem;font-weight:600;margin-bottom:10px}
+.score-big{font-size:2.6rem;font-weight:800;color:var(--user-primary);margin:0}
+.review-list{margin-top:16px}
+.review-list div{padding:8px 0;border-bottom:1px solid var(--line);font-size:.93rem}
+
+/* Matching */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:900px;margin:0 auto}
+@media(max-width:700px){.match-grid{grid-template-columns:1fr}}
+.match-col h4{margin:0 0 8px;color:var(--muted);font-size:.9rem;font-weight:600}
+.m-item{font:inherit;display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;cursor:pointer;color:var(--ink);font-size:.93rem}
+.m-item.code{font-family:'JetBrains Mono',monospace;font-size:.84rem}
+.m-item:hover:not(:disabled){border-color:var(--user-primary)}
+.m-item.sel{border-color:var(--user-primary);background:var(--soft-blue);box-shadow:0 0 0 2px var(--user-primary) inset}
+.m-item.matched{border-color:var(--good);background:var(--soft-good);color:#145c38;cursor:default}
+.m-item.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.match-status{text-align:center;margin:10px 0 16px;color:var(--muted)}
+
+/* Challenges */
+.challenge{border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin:0 0 20px}
+.challenge .chead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.challenge .chead h3{margin:0}
+.challenge details{margin-top:12px}
+.challenge summary{cursor:pointer;font-weight:600;color:var(--user-primary)}
+.rubric label{display:block;padding:4px 0;font-size:.95rem}
+.model{background:var(--soft-blue);border-radius:var(--radius-sm);padding:12px 16px;margin-top:10px}
+
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;text-align:center;padding:20px}
+/* Binding lab */
+.lab{border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px 18px;margin:18px 0}
+.lab-controls{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:12px}
+.lab-controls fieldset{border:0;padding:0;margin:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lab-controls legend{font-weight:600;font-size:.9rem;margin-bottom:6px;color:var(--muted);padding:0}
+.lab-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+@media(max-width:760px){.lab-grid{grid-template-columns:1fr}}
+.console{background:#0b1a33;color:#b8f5c8;font-family:'JetBrains Mono',monospace;border-radius:var(--radius-sm);padding:14px 16px;font-size:.9rem;min-height:120px}
+.console .line{display:block;padding:2px 0}
+.console .line.base{color:#ffcf8a}
+.console .lbl{color:#7f93b5;font-size:.8rem;display:block;margin-bottom:6px}
+.lab-verdict{margin:12px 0 0;padding:10px 14px;background:var(--soft-blue);border-radius:var(--radius-sm);font-size:.95rem}
+pre.code .hl{background:rgba(200,16,46,.35);border-radius:3px;padding:0 2px}
+.hero-eq span.arrow{font-family:'Inter',sans-serif;color:#ffd3da;font-weight:600;font-size:.95rem}
+table.cmp{border-collapse:collapse;width:100%;margin:12px 0 18px;font-size:.93rem}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+table.cmp th{background:var(--soft-blue);color:var(--user-primary)}
+.tablewrap{overflow-x:auto}
+.uml{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;margin:14px 0}
+.uml .box{border:2px solid var(--user-primary);border-radius:6px;min-width:230px;font-family:'JetBrains Mono',monospace;font-size:.82rem;background:#fff}
+.uml .box div{padding:6px 10px;border-top:1px solid var(--line)}
+.uml .box div:first-child{background:var(--user-primary);color:#fff;font-weight:700;border-top:0;text-align:center}
+.uml .arrow{align-self:center;color:var(--user-primary);font-weight:700;font-size:.9rem}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <p class="course-line">San Joaquin Delta College · CSP31B C++ Programming II · Chapter 15</p>
+    <h1>Inheritance and polymorphism</h1>
+    <div class="hero-eq" aria-label="A GeometricObject pointer to a new Circle calls Circle's toString when toString is virtual">
+      <span class="box">GeometricObject* p = new Circle(5);</span><span class="arrow">then</span><span class="box">p-&gt;toString()</span><span class="arrow">runs</span><span class="box">Circle's version</span>
+    </div>
+    <p class="lede">Inheritance lets a new class reuse and specialize an existing one. Polymorphism lets one piece of code work with many related types and still call the right function for each. Work through the lessons in order, then drill with flashcards, test yourself with the quiz and matching activity, and finish with the challenges.</p>
+    <nav class="tabs" role="tablist" aria-label="Study tool sections">
+      <button role="tab" aria-selected="true" aria-controls="learn" id="t-learn">Learn</button>
+      <button role="tab" aria-selected="false" aria-controls="flash" id="t-flash">Flashcards</button>
+      <button role="tab" aria-selected="false" aria-controls="quiz" id="t-quiz">Quiz</button>
+      <button role="tab" aria-selected="false" aria-controls="match" id="t-match">Matching</button>
+      <button role="tab" aria-selected="false" aria-controls="challenge" id="t-challenge">Challenges</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="panel active" id="learn" role="tabpanel" aria-labelledby="t-learn">
+  <h2>Learn in four steps</h2>
+  <p class="intro">Each lesson ends with a short self-check. Aim for all correct before you move on.</p>
+  <ul class="path" id="path">
+    <li><button data-lesson="L1" class="on">1. Is-a vs has-a</button></li>
+    <li><button data-lesson="L2">2. Worked example: BoxType</button></li>
+    <li><button data-lesson="L3">3. Virtual functions</button></li>
+    <li><button data-lesson="L4">4. Abstract classes and casting</button></li>
+  </ul>
+
+  <!-- L1 -->
+  <article class="lesson active" id="L1">
+    <div class="lesson-head"><h2>1. Relating classes: is-a vs has-a</h2><span class="bloom b-remember">Remember</span><span class="bloom b-understand">Understand</span></div>
+    <p>Suppose you already have a working <code class="inl">RectangleType</code> class and now need a <code class="inl">BoxType</code> with a length, width, and height. Rewriting length and width from scratch wastes time. C++ gives you two ways to reuse the existing class:</p>
+    <div class="tablewrap"><table class="cmp">
+      <tr><th>Relationship</th><th>Meaning</th><th>How it looks in C++</th><th>Test sentence</th></tr>
+      <tr><td><strong>Composition</strong> (aggregation)</td><td>One class contains an object of another as a data member.</td><td><code class="inl">class BoxType { RectangleType base; double height; };</code></td><td>A box <strong>has a</strong> rectangle as its base.</td></tr>
+      <tr><td><strong>Inheritance</strong></td><td>A new (derived) class is a specialized version of an existing (base) class.</td><td><code class="inl">class BoxType : public RectangleType { double height; };</code></td><td>A circle <strong>is a</strong> geometric object.</td></tr>
+    </table></div>
+    <p>With inheritance, the existing class is the <strong>base class</strong> (supertype, parent) and the new class is the <strong>derived class</strong> (subtype, child). The derived class inherits the base class's data members and member functions, then adds or changes what it needs.</p>
+    <div class="uml" aria-label="UML: Circle and Rectangle derive from GeometricObject">
+      <div class="box"><div>GeometricObject</div><div>- color : string<br>- filled : bool</div><div>+ getColor() : string<br>+ isFilled() : bool<br>+ toString() : string</div></div>
+      <span class="arrow">◁── derived from ──</span>
+      <div class="box"><div>Circle</div><div>- radius : double</div><div>+ getRadius() : double<br>+ getArea() : double<br>+ toString() : string</div></div>
+    </div>
+    <pre class="code"><span class="k">class</span> Circle : <span class="k">public</span> GeometricObject     <span class="c">// "Circle is a GeometricObject"</span>
+{
+<span class="k">public</span>:
+  Circle();
+  Circle(<span class="k">double</span> radius, <span class="k">const</span> string&amp; color, <span class="k">bool</span> filled);
+  <span class="k">double</span> getRadius() <span class="k">const</span>;
+  <span class="k">double</span> getArea() <span class="k">const</span>;
+  string toString() <span class="k">const</span>;
+<span class="k">private</span>:
+  <span class="k">double</span> radius;                           <span class="c">// color and filled are inherited</span>
+};</pre>
+
+    <h3>Access: public, protected, private</h3>
+    <div class="tablewrap"><table class="cmp">
+      <tr><th>Base class member is…</th><th>Inside the base class</th><th>Inside a derived class</th><th>Outside code (main)</th></tr>
+      <tr><td><code class="inl">public</code></td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td><code class="inl">protected</code></td><td>Yes</td><td>Yes</td><td>No</td></tr>
+      <tr><td><code class="inl">private</code></td><td>Yes</td><td><strong>No</strong> (use public getters/setters)</td><td>No</td></tr>
+    </table></div>
+    <p>The word <code class="inl">public</code> in <code class="inl">class Circle : public GeometricObject</code> is the <em>member access specifier</em>. It can be <code class="inl">public</code>, <code class="inl">protected</code>, or <code class="inl">private</code>; if you leave it out, it defaults to <code class="inl">private</code>. You'll almost always want <code class="inl">public</code>.</p>
+
+    <div class="miscon">
+      <p class="flag">Common misconception: "A derived class can use the base class's private data directly because it inherited it."</p>
+      <p>A <code class="inl">Circle</code> object does <em>contain</em> <code class="inl">color</code> and <code class="inl">filled</code>, but <code class="inl">Circle</code>'s member functions can't name them. Writing <span class="wrong">color = "red";</span> inside <code class="inl">Circle</code> is a compile error.</p>
+      <p><strong>Correct reasoning:</strong> private means private to the class that declared it, even from its children. Use the base class's public functions (<code class="inl">setColor("red")</code>), or declare the member <code class="inl">protected</code> in the base class if derived classes truly need direct access.</p>
+    </div>
+    <p>Also remember that "is a" only goes one way: every <code class="inl">Circle</code> is a <code class="inl">GeometricObject</code>, but not every <code class="inl">GeometricObject</code> is a <code class="inl">Circle</code>.</p>
+
+    <div class="selfcheck" data-sc="L1"><h3>Self-check 1</h3><div class="sc-host"></div></div>
+  </article>
+
+  <!-- L2 -->
+  <article class="lesson" id="L2">
+    <div class="lesson-head"><h2>2. Worked example: deriving BoxType</h2><span class="bloom b-understand">Understand</span><span class="bloom b-apply">Apply</span></div>
+    <p>We'll derive <code class="inl">BoxType</code> from <code class="inl">RectangleType</code>, exposing the reasoning at each step. <code class="inl">RectangleType</code> already has private <code class="inl">length</code> and <code class="inl">width</code>, a constructor <code class="inl">RectangleType(double l, double w)</code>, and functions <code class="inl">area()</code>, <code class="inl">perimeter()</code>, and <code class="inl">print()</code>.</p>
+
+    <div class="worked">
+      <div class="wtitle">Worked example: class BoxType : public RectangleType</div>
+      <ol class="steps">
+        <li><strong>Check the relationship.</strong> Is a box a rectangle? We treat the box as a rectangle (its base) extended upward, so it has everything a rectangle has plus a height.
+          <span class="why">Reason: inheritance fits when the new class is a specialized version of the old one. Here we reuse length, width, and perimeter() for free.</span></li>
+        <li><strong>Add only what's new.</strong> One data member, <code class="inl">height</code>, and one new function, <code class="inl">volume()</code>.
+          <span class="why">Reason: length and width are already inherited. Declaring them again would create a second, hidden copy.</span></li>
+        <li><strong>Call the base constructor in the initializer list.</strong> <code class="inl">BoxType(double l, double w, double h) : RectangleType(l, w)</code>
+          <span class="why">Reason: constructors are not inherited, and BoxType can't touch the private length and width. The base class must initialize its own part, and it runs first.</span></li>
+        <li><strong>Redefine <code class="inl">area()</code></strong> so it returns the surface area of a box, reusing the rectangle's version with <code class="inl">RectangleType::area()</code>.
+          <span class="why">Reason: same name and parameters as the base version means redefining. The scope resolution operator <code class="inl">::</code> reaches the base version; without it, <code class="inl">area()</code> would call itself forever.</span></li>
+        <li><strong>Use inherited getters for private data.</strong> <code class="inl">getLength()</code> and <code class="inl">getWidth()</code> are public in the base, so BoxType may call them.</li>
+      </ol>
+      <pre class="code" style="margin:0 20px 16px"><span class="k">class</span> BoxType : <span class="k">public</span> RectangleType
+{
+<span class="k">public</span>:
+  BoxType() : RectangleType(), height(0) { }
+  BoxType(<span class="k">double</span> l, <span class="k">double</span> w, <span class="k">double</span> h)
+    : RectangleType(l, w)                  <span class="c">// base part built first</span>
+  { height = (h &gt;= 0) ? h : 0; }
+
+  <span class="k">double</span> area() <span class="k">const</span>                      <span class="c">// REDEFINES RectangleType::area()</span>
+  {
+    <span class="k">return</span> 2 * RectangleType::area()        <span class="c">// top + bottom</span>
+         + height * perimeter();          <span class="c">// four sides (inherited function)</span>
+  }
+  <span class="k">double</span> volume() <span class="k">const</span>                    <span class="c">// new in BoxType</span>
+  { <span class="k">return</span> RectangleType::area() * height; }
+
+<span class="k">private</span>:
+  <span class="k">double</span> height;
+};</pre>
+      <div style="padding:0 20px 18px">
+        <strong>Trace it</strong> with <code class="inl">BoxType box(2, 3, 4);</code>
+        <div class="trace">RectangleType(2, 3) runs first → length=2, width=3 &nbsp;|&nbsp; then BoxType body → height=4<br>
+        box.area() = 2·(2·3) + 4·(2·(2+3)) = 12 + 40 = 52 &nbsp;|&nbsp; box.volume() = 6·4 = 24</div>
+      </div>
+    </div>
+
+    <h3>Constructor and destructor chaining</h3>
+    <p>Building a derived object calls constructors from the top of the chain down: base first, then derived. Destroying it runs destructors in the <strong>reverse</strong> order: derived first, then base. If you add <code class="inl">cout</code> statements to each:</p>
+    <div class="two">
+      <pre class="code"><span class="c">// { BoxType box(2, 3, 4); }  prints:</span>
+RectangleType constructor
+BoxType constructor
+BoxType destructor
+RectangleType destructor</pre>
+      <div class="note"><h4>Why this order?</h4><p style="margin:0">The derived part is built on top of the base part, so the base must exist first. When tearing down, the derived destructor may still use base members, so the base must be destroyed last.</p></div>
+    </div>
+
+    <div class="miscon">
+      <p class="flag">Common misconception: "If I don't call a base constructor, the base part just isn't initialized."</p>
+      <p>A derived constructor <em>always</em> runs a base constructor. If you don't name one in the initializer list, C++ silently calls the base's <strong>no-arg</strong> constructor. If the base has none, you get a compile error:</p>
+      <pre class="code" style="margin:8px 0"><span class="k">class</span> Fruit { <span class="k">public</span>: Fruit(<span class="k">int</span> id) { } };      <span class="c">// no no-arg constructor</span>
+<span class="k">class</span> Apple : <span class="k">public</span> Fruit { <span class="k">public</span>: Apple() { } };  <span class="c">// ERROR: calls Fruit(), which doesn't exist</span></pre>
+      <p><strong>Correct reasoning:</strong> either call <code class="inl">Apple() : Fruit(0) { }</code> explicitly, or give any class designed to be extended a no-arg constructor.</p>
+    </div>
+
+    <div class="tryit">
+      <h4>Your turn: derive Cylinder from Circle</h4>
+      <p style="margin-top:0"><code class="inl">Circle</code> has a constructor <code class="inl">Circle(double radius)</code> and a public <code class="inl">getArea()</code> that returns πr². Write a class <code class="inl">Cylinder</code> that publicly inherits from <code class="inl">Circle</code>, adds a private <code class="inl">height</code>, has a constructor <code class="inl">Cylinder(double r, double h)</code>, and a <code class="inl">getVolume()</code> that returns base area × height.</p>
+      <textarea id="tryCyl" spellcheck="false" aria-label="Your Cylinder class">class Cylinder </textarea>
+      <div class="row">
+        <button class="btn" id="checkCyl">Check my code</button>
+        <button class="btn ghost" id="showCyl">Show model answer</button>
+      </div>
+      <ul class="checklist" id="cylChecks"></ul>
+      <div class="feedback info" id="cylModel">
+        <pre class="code" style="margin:6px 0"><span class="k">class</span> Cylinder : <span class="k">public</span> Circle
+{
+<span class="k">public</span>:
+  Cylinder(<span class="k">double</span> r, <span class="k">double</span> h) : Circle(r), height(h) { }
+  <span class="k">double</span> getVolume() <span class="k">const</span> { <span class="k">return</span> getArea() * height; }
+<span class="k">private</span>:
+  <span class="k">double</span> height;
+};</pre>
+        Trace: <code class="inl">Cylinder c(1, 10);</code> → Circle(1) runs first, then height = 10 → volume = π·1²·10 ≈ <strong>31.42</strong>. <code class="inl">getArea()</code> is inherited, so no <code class="inl">Circle::</code> prefix is needed here because Cylinder didn't redefine it.
+      </div>
+    </div>
+
+    <div class="selfcheck" data-sc="L2"><h3>Self-check 2</h3><div class="sc-host"></div></div>
+  </article>
+
+  <!-- L3 -->
+  <article class="lesson" id="L3">
+    <div class="lesson-head"><h2>3. Polymorphism and virtual functions</h2><span class="bloom b-understand">Understand</span><span class="bloom b-apply">Apply</span><span class="bloom b-analyze">Analyze</span></div>
+    <p><strong>Polymorphism</strong> means a variable of a supertype can refer to a subtype object. Because every <code class="inl">Circle</code> is a <code class="inl">GeometricObject</code>, a function with a <code class="inl">GeometricObject</code> parameter accepts a <code class="inl">Circle</code> or a <code class="inl">Rectangle</code>. Writing one function that works for a whole family of types is called <strong>generic programming</strong>.</p>
+    <p>But <em>which</em> <code class="inl">toString()</code> runs inside that function? That depends on two things. Try them both in the lab below.</p>
+
+    <div class="lab" id="lab">
+      <div class="lab-controls">
+        <fieldset><legend>Base class declares toString() as…</legend>
+          <button class="chip on" data-virt="0">plain function</button>
+          <button class="chip" data-virt="1">virtual function</button>
+        </fieldset>
+        <fieldset><legend>The parameter g is passed…</legend>
+          <button class="chip on" data-pass="ref">by reference</button>
+          <button class="chip" data-pass="val">by value</button>
+        </fieldset>
+      </div>
+      <div class="lab-grid">
+        <pre class="code" id="labCode" style="margin:0"></pre>
+        <div class="console" aria-live="polite"><span class="lbl">Console output</span><div id="labOut"></div></div>
+      </div>
+      <p class="lab-verdict" id="labVerdict"></p>
+    </div>
+
+    <h3>Static binding vs dynamic binding</h3>
+    <p>Matching a function signature and binding its implementation are two separate steps:</p>
+    <div class="two">
+      <div class="note"><h4>Static binding (compile time)</h4><p style="margin:0">For a non-virtual function, the compiler picks the implementation from the <strong>declared type</strong> of the variable. <code class="inl">g</code> is declared <code class="inl">GeometricObject&amp;</code>, so <code class="inl">GeometricObject::toString()</code> runs every time.</p></div>
+      <div class="note"><h4>Dynamic binding (run time)</h4><p style="margin:0">For a <code class="inl">virtual</code> function reached through a <strong>reference or pointer</strong>, C++ picks the implementation from the <strong>actual type</strong> of the object at run time.</p></div>
+    </div>
+    <p>Two requirements for dynamic binding: the function is declared <code class="inl">virtual</code> in the base class, and the variable holds the object's <strong>address</strong> (a reference or pointer). Once a function is virtual in the base, it's automatically virtual in every derived class.</p>
+
+    <div class="miscon">
+      <p class="flag">Common misconception: "Marking a function virtual is enough for polymorphism."</p>
+      <p>If you pass the object <strong>by value</strong>, <span class="wrong">void display(GeometricObject g)</span>, the <code class="inl">Circle</code> is copied into a brand-new <code class="inl">GeometricObject</code>. The Circle-specific part is sliced off, so <code class="inl">g.toString()</code> returns "Geometric Object" even with <code class="inl">virtual</code>.</p>
+      <p><strong>Correct reasoning:</strong> dynamic binding needs the original object, so pass by reference (<code class="inl">const GeometricObject&amp; g</code>) or pointer (<code class="inl">GeometricObject* p</code>).</p>
+    </div>
+
+    <h3>Redefining, overriding, and overloading</h3>
+    <div class="tablewrap"><table class="cmp">
+      <tr><th>Term</th><th>Where</th><th>Signature</th><th>Binding</th></tr>
+      <tr><td><strong>Overloading</strong></td><td>Usually the same class</td><td>Same name, <em>different</em> parameters</td><td>Static</td></tr>
+      <tr><td><strong>Redefining</strong></td><td>Base and derived</td><td>Same signature and return type</td><td>Static (non-virtual)</td></tr>
+      <tr><td><strong>Overriding</strong></td><td>Base and derived</td><td>Same signature, base version is <code class="inl">virtual</code></td><td>Dynamic</td></tr>
+    </table></div>
+    <p>C++11 adds two helpful keywords. Writing <code class="inl">override</code> after a derived function asks the compiler to confirm it really overrides a base virtual function, which catches typos. Writing <code class="inl">final</code> prevents further overriding in classes derived from it.</p>
+    <pre class="code"><span class="k">class</span> Circle : <span class="k">public</span> GeometricObject
+{
+<span class="k">public</span>:
+  string toString() <span class="k">const override</span>;          <span class="c">// compiler checks this</span>
+  string tostring() <span class="k">const override</span>;          <span class="c">// ERROR: nothing to override (typo caught)</span>
+};</pre>
+    <p>Why not make every function virtual? Dynamic binding costs a little extra time at run time. Make a function virtual when derived classes are expected to override it.</p>
+
+    <div class="selfcheck" data-sc="L3"><h3>Self-check 3</h3><div class="sc-host"></div></div>
+  </article>
+
+  <!-- L4 -->
+  <article class="lesson" id="L4">
+    <div class="lesson-head"><h2>4. Abstract classes and casting</h2><span class="bloom b-understand">Understand</span><span class="bloom b-analyze">Analyze</span><span class="bloom b-evaluate">Evaluate</span></div>
+
+    <h3>Abstract classes and pure virtual functions</h3>
+    <p>Every geometric object has an area and a perimeter, so <code class="inl">getArea()</code> and <code class="inl">getPerimeter()</code> belong in <code class="inl">GeometricObject</code>. But the base class can't compute them, because the formula depends on the shape. Declare them as <strong>pure virtual functions</strong> with <code class="inl">= 0</code>:</p>
+    <pre class="code"><span class="k">class</span> GeometricObject
+{
+<span class="k">public</span>:
+  GeometricObject(<span class="k">const</span> string&amp; color, <span class="k">bool</span> filled);   <span class="c">// abstract classes CAN have constructors</span>
+  string getColor() <span class="k">const</span>;                            <span class="c">// and ordinary functions/data</span>
+  <span class="k">virtual double</span> getArea() <span class="k">const</span> = 0;                  <span class="c">// pure virtual: no body here</span>
+  <span class="k">virtual double</span> getPerimeter() <span class="k">const</span> = 0;
+  <span class="k">virtual</span> ~GeometricObject() { }                        <span class="c">// safe cleanup through base pointers</span>
+<span class="k">private</span>:
+  string color;
+  <span class="k">bool</span> filled;
+};</pre>
+    <p>A class with at least one pure virtual function is an <strong>abstract class</strong>. You can't create objects of it, but you can use it as a parameter type, reference, or pointer. A derived class must override every pure virtual function to become concrete; otherwise it's abstract too.</p>
+    <div class="miscon">
+      <p class="flag">Common misconception: "An abstract class is just an empty interface. It can't have data or constructors."</p>
+      <p><code class="inl">GeometricObject</code> above is abstract, yet it stores <code class="inl">color</code> and <code class="inl">filled</code>, has a constructor, and implements <code class="inl">getColor()</code>. What you can't do is write <span class="wrong">GeometricObject g("red", true);</span>.</p>
+      <p><strong>Correct reasoning:</strong> "abstract" means "incomplete," not "empty." The constructor still runs, called from <code class="inl">Circle</code>'s initializer list, to set up the shared part of every shape.</p>
+    </div>
+
+    <div class="realworld">
+      <h3>Real-world application: a grocery store checkout</h3>
+      <p>A supermarket's point-of-sale system handles items priced in different ways: packaged goods at a fixed price, produce by weight, and dairy with a bottle deposit. An abstract base class lets one checkout loop total the whole cart:</p>
+      <pre class="code" style="margin-bottom:10px"><span class="k">class</span> GenericItem {                          <span class="c">// abstract</span>
+<span class="k">public</span>:
+  GenericItem(<span class="k">const</span> string&amp; n) : name(n) { }
+  <span class="k">virtual double</span> getPrice() <span class="k">const</span> = 0;
+  <span class="k">virtual</span> ~GenericItem() { }
+<span class="k">protected</span>:
+  string name;
+};
+<span class="k">class</span> ProduceItem : <span class="k">public</span> GenericItem {     <span class="c">// "produce is a generic item"</span>
+<span class="k">public</span>:
+  ProduceItem(<span class="k">const</span> string&amp; n, <span class="k">double</span> lbs, <span class="k">double</span> perLb)
+    : GenericItem(n), pounds(lbs), pricePerLb(perLb) { }
+  <span class="k">double</span> getPrice() <span class="k">const override</span> { <span class="k">return</span> pounds * pricePerLb; }
+<span class="k">private</span>:
+  <span class="k">double</span> pounds, pricePerLb;
+};
+<span class="c">// DairyItem, PackagedItem ... each override getPrice()</span>
+
+<span class="k">double</span> total = 0;
+<span class="k">for</span> (GenericItem* item : cart)                 <span class="c">// vector&lt;GenericItem*&gt; cart</span>
+  total += item-&gt;getPrice();                   <span class="c">// dynamic binding picks the right formula</span></pre>
+      <p style="margin-bottom:0">When the store adds a new item type, like bakery items sold by the dozen, programmers write one new derived class. The checkout loop doesn't change at all. That's the practical payoff of polymorphism, and the same design shows up in payroll systems (hourly vs salaried employees) and games (every enemy has its own <code class="inl">update()</code>).</p>
+    </div>
+
+    <h3>Upcasting and downcasting</h3>
+    <p><strong>Upcasting</strong> (derived pointer to base pointer) is always safe and happens implicitly: <code class="inl">GeometricObject* p = new Circle(1);</code>. <strong>Downcasting</strong> (base pointer to derived pointer) must be explicit, because the object might not actually be that type.</p>
+    <pre class="code"><span class="k">void</span> displayGeometricObject(GeometricObject&amp; g)
+{
+  GeometricObject* p = &amp;g;
+  Circle* c = <span class="k">dynamic_cast</span>&lt;Circle*&gt;(p);    <span class="c">// checked at run time</span>
+  <span class="k">if</span> (c != <span class="k">nullptr</span>)                          <span class="c">// nullptr means "not a Circle"</span>
+    cout &lt;&lt; <span class="s">"The radius is "</span> &lt;&lt; c-&gt;getRadius() &lt;&lt; endl;
+  cout &lt;&lt; <span class="s">"The area is "</span> &lt;&lt; g.getArea() &lt;&lt; endl;
+}</pre>
+    <div class="two">
+      <div class="note"><h4>static_cast</h4><p style="margin:0">Converts at compile time with <strong>no check</strong>. <code class="inl">static_cast&lt;Circle*&gt;(p)</code> on a Rectangle compiles and then produces garbage or a crash.</p></div>
+      <div class="note"><h4>dynamic_cast</h4><p style="margin:0">Checks the actual type at run time and returns <code class="inl">nullptr</code> if the cast is invalid. It requires the class to have at least one virtual function.</p></div>
+    </div>
+
+    <div class="selfcheck" data-sc="L4"><h3>Self-check 4</h3><div class="sc-host"></div></div>
+  </article>
+</section>
+<!-- ================= FLASHCARDS ================= -->
+<section class="panel" id="flash" role="tabpanel" aria-labelledby="t-flash">
+  <h2>Flashcards</h2>
+  <p class="intro">Cards run from recall to application. Click or press Space to flip; use the arrow keys to move. Mark each card so you can review only what you missed.</p>
+  <div class="fc-toolbar">
+    <div class="fc-filters" id="fcFilters" role="group" aria-label="Filter cards by level"></div>
+    <div class="row" style="margin:0">
+      <button class="btn ghost" id="fcShuffle">Shuffle</button>
+      <button class="btn ghost" id="fcReview">Review missed only</button>
+      <button class="btn ghost" id="fcReset">Reset</button>
+    </div>
+  </div>
+  <div class="fc-progress" aria-hidden="true"><div id="fcBar"></div></div>
+  <div class="card-wrap">
+    <div class="card" id="card" tabindex="0" role="button" aria-label="Flashcard, press Space to flip">
+      <div class="face front"><div class="meta"><span id="fcTopicF"></span><span id="fcLevelF"></span></div><div class="term" id="fcFront"></div><div class="hint">Click to reveal</div></div>
+      <div class="face back"><div class="meta"><span id="fcTopicB"></span><span id="fcLevelB"></span></div><div class="ans" id="fcBack"></div><div class="hint">Click to flip back</div></div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn ghost" id="fcPrev">Previous</button>
+    <button class="btn red" id="fcMiss">Still learning</button>
+    <button class="btn" id="fcGot" style="background:var(--good);border-color:var(--good)">Got it</button>
+    <button class="btn ghost" id="fcNext">Next</button>
+  </div>
+  <p class="fc-count" id="fcCount"></p>
+  <div class="fc-stats"><span>Got it: <b id="fcKnown">0</b></span><span>Still learning: <b id="fcMissed">0</b></span></div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section class="panel" id="quiz" role="tabpanel" aria-labelledby="t-quiz">
+  <h2>Interactive quiz</h2>
+  <p class="intro">Twelve questions that climb from recall to evaluation. You get feedback after every answer.</p>
+  <div class="quiz-card" id="quizBox"></div>
+</section>
+
+<!-- ================= MATCHING ================= -->
+<section class="panel" id="match" role="tabpanel" aria-labelledby="t-match">
+  <h2>Matching activity</h2>
+  <p class="intro">Select a term on the left, then the description that fits it on the right.</p>
+  <p class="match-status" id="matchStatus"></p>
+  <div class="match-grid">
+    <div class="match-col"><h4>Term or code</h4><div id="mLeft"></div></div>
+    <div class="match-col"><h4>What it means</h4><div id="mRight"></div></div>
+  </div>
+  <div class="row" style="justify-content:center"><button class="btn ghost" id="mReset">New round</button></div>
+</section>
+
+<!-- ================= CHALLENGES ================= -->
+<section class="panel" id="challenge" role="tabpanel" aria-labelledby="t-challenge">
+  <h2>Challenges: analyze, evaluate, create</h2>
+  <p class="intro">These tasks have no single right wording. Write your answer, justify it, then compare against the model answer and score yourself with the rubric.</p>
+  <div id="chHost"></div>
+</section>
+</main>
+<footer>San Joaquin Delta College · Computer Science · CSP31B C++ Programming II · Chapter 15: Inheritance and Polymorphism</footer>
+<script>
+/* ============ DATA ============ */
+const bcls=l=>"b-"+l.toLowerCase();
+const badge=l=>`<span class="bloom ${bcls(l)}">${l}</span>`;
+
+const SELF={
+L1:[
+ {q:"Which relationship fits inheritance?",o:["A car <strong>has an</strong> engine","A textbook <strong>is a</strong> book","A playlist <strong>has</strong> songs","A student <strong>has a</strong> schedule"],a:1,w:"Inheritance models is-a. The others are has-a, which suggests composition."},
+ {q:"In <code>class Circle : public GeometricObject</code>, which is the base class?",o:["Circle","GeometricObject","public","Both"],a:1,w:"The class after the colon is the base (supertype); Circle is derived (subtype)."},
+ {q:"A base class member is declared <code>protected</code>. Who can access it by name?",o:["Only the base class","The base class and its derived classes","Any code, including main()","Only main()"],a:1,w:"protected gives access to derived classes but not to outside code."}
+],
+L2:[
+ {q:"<code>BoxType b(1,2,3);</code> is created and then goes out of scope. In what order do the four functions run?",o:["BoxType ctor, RectangleType ctor, RectangleType dtor, BoxType dtor","RectangleType ctor, BoxType ctor, BoxType dtor, RectangleType dtor","RectangleType ctor, BoxType ctor, RectangleType dtor, BoxType dtor","BoxType ctor, BoxType dtor only"],a:1,w:"Constructors run base-first; destructors run in reverse, derived-first."},
+ {q:"Inside BoxType, how do you call the base class's version of <code>area()</code> that BoxType redefined?",o:["<code>base.area()</code>","<code>RectangleType::area()</code>","<code>super.area()</code>","<code>area()</code>"],a:1,w:"Use the base class name with the scope resolution operator."},
+ {q:"Apply it: using the worked example, what is <code>BoxType(1, 1, 5).volume()</code>?",o:["5","22","7","25"],a:0,w:"Base area 1·1 = 1, times height 5 = 5. (Its surface area would be 22.)"}
+],
+L3:[
+ {q:"<code>toString()</code> is NOT virtual. <code>void show(const GeometricObject&amp; g){ cout &lt;&lt; g.toString(); }</code> is called with a Circle. Which version runs?",o:["Circle::toString()","GeometricObject::toString()","Neither; it won't compile","It depends on the run-time type"],a:1,w:"Without virtual, the declared type of g decides at compile time (static binding)."},
+ {q:"What two things does dynamic binding need?",o:["A virtual function in the base class, and a reference or pointer to the object","A pure virtual function and a static_cast","The override keyword and pass by value","A protected data member and a destructor"],a:0,w:"virtual in the base, and access through the object's address."},
+ {q:"A derived function has the same signature as a <code>virtual</code> base function. This is called:",o:["Overloading","Overriding","Redefining a non-virtual function","Upcasting"],a:1,w:"Redefining a virtual function is overriding, which enables dynamic binding."}
+],
+L4:[
+ {q:"What makes a class abstract in C++?",o:["It has no data members","It has at least one pure virtual function (= 0)","It is declared with the keyword abstract","It has a protected constructor only"],a:1,w:"C++ has no abstract keyword; one pure virtual function is enough."},
+ {q:"<code>GeometricObject</code> is abstract. Which line compiles?",o:["<code>GeometricObject g;</code>","<code>GeometricObject* p = new Circle(2);</code>","<code>GeometricObject g(\"red\", true);</code>","<code>GeometricObject* p = new GeometricObject();</code>"],a:1,w:"You can't instantiate an abstract class, but you can point to a concrete derived object."},
+ {q:"<code>dynamic_cast&lt;Circle*&gt;(p)</code> is applied to a pointer that actually points to a Rectangle. What happens?",o:["It returns nullptr","It crashes immediately","It converts the Rectangle into a Circle","It won't compile"],a:0,w:"dynamic_cast checks at run time; always test the result before using it."}
+]};
+
+const CARDS=[
+ {t:"Basics",l:"Remember",f:"What is inheritance?",b:"Creating a new (derived) class from an existing (base) class. The derived class inherits the base class's members and can add or change them."},
+ {t:"Basics",l:"Remember",f:"Base class vs derived class",b:"<strong>Base</strong> (supertype, parent): the existing class.<br><strong>Derived</strong> (subtype, child): the new, specialized class."},
+ {t:"Basics",l:"Understand",f:"Inheritance vs composition",b:"Inheritance models <strong>is-a</strong> (a Circle is a GeometricObject).<br>Composition models <strong>has-a</strong> (a Box has a Rectangle base)."},
+ {t:"Basics",l:"Remember",f:"Syntax: Circle derives from GeometricObject",b:"<pre>class Circle : public GeometricObject { ... };</pre>"},
+ {t:"Basics",l:"Remember",f:"Default member access specifier if you omit it",b:"<code>private</code>. <code>class D : B</code> means private inheritance."},
+ {t:"Access",l:"Understand",f:"<code>protected</code> members",b:"Accessible inside the class and its derived classes, but not from outside code like <code>main()</code>."},
+ {t:"Access",l:"Understand",f:"Can a derived class access base private members?",b:"No. It must use the base class's public (or protected) functions."},
+ {t:"Constructors",l:"Remember",f:"Are constructors inherited?",b:"No. They are invoked from the derived class constructor, explicitly or implicitly."},
+ {t:"Constructors",l:"Apply",f:"Call the base constructor from Circle's constructor",b:"<pre>Circle(double r, const string&amp; c, bool f)\n  : GeometricObject(c, f) { radius = r; }</pre>"},
+ {t:"Constructors",l:"Understand",f:"What if you don't call a base constructor explicitly?",b:"The base class's no-arg constructor is called automatically. If it doesn't exist, it's a compile error."},
+ {t:"Constructors",l:"Understand",f:"Constructor and destructor chaining",b:"Constructors: base first, then derived.<br>Destructors: reverse order, derived first, then base."},
+ {t:"Functions",l:"Remember",f:"Redefining a function",b:"Defining a function in the derived class with the same signature and return type as in the base class."},
+ {t:"Functions",l:"Apply",f:"Call GeometricObject's toString() on a Circle object named circle",b:"<pre>circle.GeometricObject::toString()</pre>"},
+ {t:"Functions",l:"Understand",f:"Redefining vs overloading",b:"Redefining: <strong>same</strong> signature in a derived class.<br>Overloading: same name, <strong>different</strong> parameters."},
+ {t:"Polymorphism",l:"Remember",f:"Polymorphism",b:"A variable of a supertype can refer to a subtype object. One of the three pillars of OOP, with encapsulation and inheritance."},
+ {t:"Polymorphism",l:"Understand",f:"Generic programming",b:"Writing a function with a base-class parameter so it works with objects of any derived class."},
+ {t:"Binding",l:"Understand",f:"Static binding vs dynamic binding",b:"<strong>Static</strong>: chosen at compile time from the declared type.<br><strong>Dynamic</strong>: chosen at run time from the actual object type (virtual functions)."},
+ {t:"Binding",l:"Remember",f:"Two requirements for dynamic binding",b:"1. The function is <code>virtual</code> in the base class.<br>2. The object is accessed through a reference or pointer."},
+ {t:"Binding",l:"Understand",f:"Overriding",b:"Redefining a <strong>virtual</strong> function in a derived class. Overriding enables dynamic binding."},
+ {t:"Binding",l:"Remember",f:"C++11 <code>override</code> and <code>final</code>",b:"<code>override</code>: compiler verifies the function overrides a base virtual function.<br><code>final</code>: prevents further overriding."},
+ {t:"Abstract",l:"Apply",f:"Declare a pure virtual getArea()",b:"<pre>virtual double getArea() const = 0;</pre>"},
+ {t:"Abstract",l:"Understand",f:"Abstract class",b:"A class with at least one pure virtual function. It can't be instantiated but can have data, constructors, and regular functions."},
+ {t:"Casting",l:"Understand",f:"Upcasting vs downcasting",b:"<strong>Upcasting</strong>: derived → base pointer, implicit and safe.<br><strong>Downcasting</strong>: base → derived pointer, must be explicit."},
+ {t:"Casting",l:"Understand",f:"static_cast vs dynamic_cast for downcasting",b:"<code>static_cast</code>: no run-time check.<br><code>dynamic_cast</code>: checks at run time and returns <code>nullptr</code> if the cast is invalid."}
+];
+
+const QUIZ=[
+ {l:"Remember",q:"The three pillars of object-oriented programming are:",o:["Encapsulation, inheritance, and polymorphism","Classes, objects, and functions","Overloading, overriding, and redefining","Constructors, destructors, and operators"],a:0,w:"Encapsulation combines data and operations; inheritance reuses; polymorphism lets one expression mean different operations."},
+ {l:"Remember",q:"A type defined by a derived class is called a:",o:["Supertype","Subtype","Abstract type","Base type"],a:1,w:"Circle is a subtype of GeometricObject; GeometricObject is its supertype."},
+ {l:"Understand",q:"Which is best modeled with composition rather than inheritance?",o:["A DairyItem and a GenericItem","A Circle and a GeometricObject","A Car and its Engine","A TextbookItem and a BookItem"],a:2,w:"A car has an engine; it is not an engine."},
+ {l:"Understand",q:"Why can't a derived class constructor simply assign to the base class's private data members?",o:["Private members are not stored in derived objects","Private members are accessible only inside the class that declares them","Constructors can't assign values","The compiler forbids assignments in constructors"],a:1,w:"The data is there, but only the base class can touch it, so the base constructor initializes it."},
+ {c:1,l:"Apply",q:"Which correctly calls the base constructor?",o:["Circle(double r) { GeometricObject(); radius = r; }","Circle(double r) : GeometricObject() { radius = r; }","Circle(double r) : Circle() { GeometricObject(); }","Circle(double r) { super(); radius = r; }"],a:1,w:"The base constructor call goes in the initializer list after the colon."},
+ {l:"Apply",q:"Classes A → B → C each print their name in the constructor and destructor. What does <code>{ C obj; }</code> print?",o:["A B C C B A","C B A A B C","A B C A B C","C B A C B A"],a:0,w:"Constructors run from the top of the chain down; destructors run in reverse."},
+ {l:"Apply",q:"toString() is virtual. <code>GeometricObject* p = new Rectangle(2, 3); cout &lt;&lt; p-&gt;toString();</code> prints the result of:",o:["GeometricObject::toString()","Rectangle::toString()","Both, one after the other","Nothing; it won't compile"],a:1,w:"Dynamic binding uses the actual object type: Rectangle."},
+ {l:"Analyze",q:"toString() is virtual, but <code>void show(GeometricObject g)</code> prints \"Geometric Object\" for a Circle. What's the cause?",o:["The function is missing the override keyword","g is passed by value, so the Circle part is sliced off","Circle didn't include GeometricObject.h","virtual only works with pure virtual functions"],a:1,w:"Pass by reference or pointer to keep the actual object."},
+ {l:"Analyze",q:"In Circle, a student writes <code>string toString(int precision) const override;</code> and gets a compile error. Why?",o:["override can't be used with const functions","The different parameter list means it doesn't override the base toString()","toString must be pure virtual","Circle must also be declared final"],a:1,w:"A different signature is an overload, not an override; the override keyword caught the mistake."},
+ {l:"Analyze",q:"Shape has <code>virtual double area() const = 0;</code> and Triangle derives from Shape but doesn't define area(). What happens with <code>Triangle t;</code>?",o:["It compiles and area() returns 0","Compile error: Triangle is still abstract","Run-time error when area() is called","It uses Shape's area()"],a:1,w:"A derived class that doesn't override every pure virtual function is also abstract."},
+ {l:"Evaluate",q:"A function receives <code>GeometricObject* p</code> and must print the radius only if the object is a Circle. Which approach is safest?",o:["<code>static_cast&lt;Circle*&gt;(p)-&gt;getRadius()</code> for every object","<code>dynamic_cast&lt;Circle*&gt;(p)</code>, then check for nullptr before using it","Assume every object is a Circle","Make getRadius() a pure virtual function in GeometricObject"],a:1,w:"dynamic_cast checks the actual type; static_cast would misread a Rectangle."},
+ {l:"Evaluate",q:"A payroll base class Employee will have a pay() function that every subclass calculates differently, and Employee itself should never be created. Which design is best?",o:["Make pay() a pure virtual function in Employee","Make pay() a non-virtual function and redefine it in each subclass","Give Employee a pay() that returns 0 and make it public","Use static_cast to choose the right pay() in main()"],a:0,w:"Pure virtual forces every concrete subclass to implement pay(), prevents Employee objects, and enables dynamic binding."}
+];
+
+const PAIRS=[
+ ["class Circle : public GeometricObject","Circle is derived from GeometricObject"],
+ ["protected","Accessible in the class and its derived classes only"],
+ ["Circle(...) : GeometricObject(c, f)","Calls the base class constructor"],
+ ["circle.GeometricObject::toString()","Calls the base version of a redefined function"],
+ ["virtual string toString() const;","Enables dynamic binding for this function"],
+ ["virtual double getArea() const = 0;","Pure virtual function; makes the class abstract"],
+ ["string toString() const override;","Compiler verifies it overrides a base virtual function"],
+ ["void f() final;","Prevents further overriding"],
+ ["GeometricObject* p = new Circle(1);","Upcasting: implicit and safe"],
+ ["dynamic_cast<Circle*>(p)","Checked downcast; nullptr if invalid"],
+ ["static_cast<Circle*>(p)","Unchecked downcast at compile time"],
+ ["virtual ~GeometricObject()","Ensures derived destructors run through base pointers"]
+];
+
+const CHALLENGES=[
+ {l:"Analyze",title:"Why does it always print the base version?",
+  p:`A classmate expects this program to print "Circle object" then "Rectangle object", but it prints "Geometric Object" twice. Find <strong>both</strong> problems and explain each in terms of static vs dynamic binding.<pre class="code">class GeometricObject {
+public:
+  string toString() const { return "Geometric Object"; }
+};
+// Circle and Rectangle each redefine toString()
+
+void display(GeometricObject g) { cout &lt;&lt; g.toString() &lt;&lt; endl; }
+
+int main() {
+  display(Circle(5));
+  display(Rectangle(2, 3));
+}</pre>`,
+  m:`<strong>Problem 1:</strong> <code>toString()</code> isn't <code>virtual</code>, so the call is bound at compile time from the declared type of <code>g</code> (GeometricObject). <strong>Problem 2:</strong> <code>g</code> is passed <em>by value</em>, so each Circle or Rectangle is copied into a plain GeometricObject and its derived part is sliced off. Even with <code>virtual</code>, the copy really is a GeometricObject. Fix both: <code>virtual string toString() const</code> in the base, and <code>void display(const GeometricObject&amp; g)</code>.`,
+  r:["Identifies the missing virtual keyword","Explains static binding uses the declared type","Identifies pass by value (object slicing)","Gives both fixes: virtual + pass by reference or pointer"]},
+ {l:"Evaluate",title:"Inheritance or composition?",
+  p:`For each pair, decide whether to use inheritance or composition and justify it with an is-a / has-a sentence. Then pick the one that's most debatable and argue both sides.<br>(1) <code>Student</code> and <code>Person</code> &nbsp; (2) <code>Car</code> and <code>Engine</code> &nbsp; (3) <code>Square</code> and <code>Rectangle</code> &nbsp; (4) <code>Stack</code> and <code>vector</code>`,
+  m:`(1) Inheritance: a student <em>is a</em> person. (2) Composition: a car <em>has an</em> engine. (4) Composition: a stack <em>has a</em> vector for storage; inheriting would expose vector functions like <code>insert()</code> that break stack rules. (3) is the classic debate: mathematically a square <em>is a</em> rectangle, but if Rectangle has <code>setWidth()</code> and <code>setHeight()</code>, a Square could be put into an invalid state (width ≠ height) by code expecting a Rectangle. Many designers avoid inheritance here, or make both derive from an abstract Shape.`,
+  r:["Correct choice with an is-a/has-a sentence for each pair","Recognizes Stack/vector as composition and explains why","Discusses the Square/Rectangle problem (setters break the rule)"]},
+ {l:"Evaluate",title:"static_cast or dynamic_cast?",
+  p:`Compare these two versions. Which should the team ship, and why? Describe exactly what happens in each when the object passed in is a Rectangle.<pre class="code">// Version A
+void describe(GeometricObject&amp; g) {
+  Circle* c = static_cast&lt;Circle*&gt;(&amp;g);
+  cout &lt;&lt; "Radius: " &lt;&lt; c-&gt;getRadius() &lt;&lt; endl;
+}
+// Version B
+void describe(GeometricObject&amp; g) {
+  Circle* c = dynamic_cast&lt;Circle*&gt;(&amp;g);
+  if (c != nullptr)
+    cout &lt;&lt; "Radius: " &lt;&lt; c-&gt;getRadius() &lt;&lt; endl;
+}</pre>`,
+  m:`Ship <strong>Version B</strong>. In Version A, <code>static_cast</code> performs no run-time check, so a Rectangle's memory is read as if it were a Circle. <code>getRadius()</code> returns garbage (often the width) or the program crashes: undefined behavior. In Version B, <code>dynamic_cast</code> checks the actual type, returns <code>nullptr</code> for the Rectangle, and the <code>if</code> skips the radius line safely. The trade-off is a small run-time cost, and the class must have a virtual function, which GeometricObject does.`,
+  r:["Picks Version B","Explains static_cast does no check (undefined behavior)","Explains dynamic_cast returns nullptr and the check prevents misuse"]},
+ {l:"Create",title:"Design a campus parking fee system",
+  p:`Campus parking charges differ by permit type: <strong>students</strong> pay a flat semester fee, <strong>staff</strong> pay monthly for 10 months, and <strong>visitors</strong> pay per hour. Design a class hierarchy. Write the base class declaration and one complete derived class, plus a function that totals the fees for a <code>vector</code> of mixed permits. Justify which functions are virtual, pure virtual, or neither.`,
+  m:`<pre class="code">class ParkingPermit {                          // abstract base
+public:
+  ParkingPermit(const string&amp; id) : permitId(id) { }
+  string getId() const { return permitId; }     // same for all: not virtual
+  virtual double getFee() const = 0;            // differs by type: pure virtual
+  virtual string toString() const               // default, may be overridden
+  { return "Permit " + permitId; }
+  virtual ~ParkingPermit() { }                  // deleting through base pointers
+private:
+  string permitId;
+};
+
+class VisitorPermit : public ParkingPermit {
+public:
+  VisitorPermit(const string&amp; id, double hrs, double rate)
+    : ParkingPermit(id), hours(hrs), hourlyRate(rate) { }
+  double getFee() const override { return hours * hourlyRate; }
+private:
+  double hours, hourlyRate;
+};
+
+double totalFees(const vector&lt;ParkingPermit*&gt;&amp; permits) {
+  double total = 0;
+  for (ParkingPermit* p : permits) total += p-&gt;getFee();  // dynamic binding
+  return total;
+}</pre>getFee() is pure virtual because the base can't compute a fee and every permit must provide one, which also stops anyone from creating a generic permit. getId() isn't virtual because it never changes. The virtual destructor matters because permits are deleted through base pointers.`,
+  r:["Abstract base with a pure virtual fee function","Derived class calls the base constructor in its initializer list","Uses override on the derived function","Total function uses base pointers/references and dynamic binding","Justifies virtual vs non-virtual choices (and the virtual destructor)"]}
+];
+/* ============ UTIL ============ */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+/* ============ TABS ============ */
+const tabs=$$('nav.tabs button');
+function openTab(btn){
+  tabs.forEach(b=>b.setAttribute('aria-selected',b===btn));
+  $$('section.panel').forEach(p=>p.classList.toggle('active',p.id===btn.getAttribute('aria-controls')));
+}
+tabs.forEach((b,i)=>{
+  b.addEventListener('click',()=>openTab(b));
+  b.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+      const n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];n.focus();openTab(n);
+    }
+  });
+});
+
+/* ============ LEARN PATH ============ */
+const pathBtns=$$('#path button');
+function openLesson(id){
+  pathBtns.forEach(b=>b.classList.toggle('on',b.dataset.lesson===id));
+  $$('.lesson').forEach(l=>l.classList.toggle('active',l.id===id));
+  window.scrollTo({top:$('#learn').offsetTop-10,behavior:'smooth'});
+}
+pathBtns.forEach(b=>b.addEventListener('click',()=>openLesson(b.dataset.lesson)));
+
+/* ============ SELF-CHECKS ============ */
+function initSelf(sc){
+  const id=sc.dataset.sc, qs=SELF[id], host=sc.querySelector('.sc-host');
+  let right=0, answered=0;
+  qs.forEach((q,qi)=>{
+    const d=document.createElement('div');d.className='sc-q';
+    d.innerHTML=`<div class="qtext">${qi+1}. ${q.q}</div><div class="opts"></div><div class="feedback"></div>`;
+    const opts=d.querySelector('.opts'), fb=d.querySelector('.feedback');
+    q.o.forEach((o,oi)=>{
+      const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+      b.addEventListener('click',()=>{
+        [...opts.children].forEach((x,xi)=>{x.disabled=true;if(xi===q.a)x.classList.add('correct');});
+        const ok=oi===q.a; if(!ok)b.classList.add('wrong');
+        fb.className='feedback show '+(ok?'ok':'no');
+        fb.innerHTML=(ok?'<strong>Correct.</strong> ':'<strong>Not quite.</strong> ')+q.w;
+        answered++; if(ok)right++;
+        if(answered===qs.length) finish();
+      });
+      opts.appendChild(b);
+    });
+    host.appendChild(d);
+  });
+  const sum=document.createElement('div');host.appendChild(sum);
+  function finish(){
+    const idx=pathBtns.findIndex(b=>b.dataset.lesson===id);
+    const all=right===qs.length;
+    sum.innerHTML=`<p class="sc-summary">${right} of ${qs.length} correct. ${all?'You are ready to move on.':'Review the flagged answers above, then retry.'}</p>
+      <div class="row next-link">${all?'':'<button class="btn ghost" data-act="retry">Retry self-check</button>'}
+      ${idx<pathBtns.length-1?`<button class="btn" data-act="next">Next lesson</button>`:`<button class="btn" data-act="flash">Go to flashcards</button>`}</div>`;
+    if(all && !pathBtns[idx].querySelector('.done')) pathBtns[idx].insertAdjacentHTML('beforeend',' <span class="done" aria-label="completed">✓</span>');
+    sum.querySelector('[data-act="next"]')?.addEventListener('click',()=>openLesson(pathBtns[idx+1].dataset.lesson));
+    sum.querySelector('[data-act="flash"]')?.addEventListener('click',()=>openTab($('#t-flash')));
+    sum.querySelector('[data-act="retry"]')?.addEventListener('click',()=>{
+      rebuild(sc);
+    });
+  }
+}
+$$('.selfcheck').forEach(initSelf);
+function rebuild(sc){
+  // simple re-render by cloning a fresh self-check block
+  const fresh=sc.cloneNode(false);fresh.innerHTML=`<h3>${sc.querySelector('h3')?.textContent||'Self-check'}</h3><div class="sc-host"></div>`;
+  sc.replaceWith(fresh); initSelf(fresh);
+}
+
+/* ============ TRY IT: Cylinder ============ */
+$('#checkCyl').addEventListener('click',()=>{
+  const s=$('#tryCyl').value.replace(/\/\/.*$/gm,'');
+  const checks=[
+    ["Publicly inherits: <code>class Cylinder : public Circle</code>",/class\s+Cylinder\s*:\s*public\s+Circle\b/.test(s)],
+    ["Declares a <code>double height</code> data member",/double\s+height\s*;/.test(s)],
+    ["Constructor takes <code>(double, double)</code>",/Cylinder\s*\(\s*double\s+\w+\s*,\s*double\s+\w+\s*\)/.test(s)],
+    ["Calls the base constructor in the initializer list: <code>: Circle(r)</code>",/\)\s*:\s*Circle\s*\(\s*\w+\s*\)/.test(s)],
+    ["Defines <code>getVolume()</code>",/double\s+getVolume\s*\(\s*\)/.test(s)],
+    ["Volume uses the inherited area × height",/(Circle::)?getArea\s*\(\s*\)\s*\*\s*height|height\s*\*\s*(Circle::)?getArea\s*\(\s*\)/.test(s)],
+    ["Ends the class with <code>};</code>",/\}\s*;\s*$/.test(s.trim())]
+  ];
+  $('#cylChecks').innerHTML=checks.map(([t,ok])=>`<li class="${ok?'pass':'fail'}">${t}</li>`).join('');
+  if(checks.every(c=>c[1])) $('#cylChecks').insertAdjacentHTML('beforeend','<li class="pass"><strong>All checks pass. Nicely done.</strong></li>');
+});
+$('#showCyl').addEventListener('click',()=>$('#cylModel').classList.toggle('show'));
+
+/* ============ BINDING LAB ============ */
+let virt=false, pass='ref';
+function renderLab(){
+  const kw=virt?'<span class="hl"><span class="k">virtual</span></span> ':'';
+  const param=pass==='ref'?'<span class="hl"><span class="k">const</span> GeometricObject&amp; g</span>':'<span class="hl">GeometricObject g</span>';
+  $('#labCode').innerHTML=`<span class="k">class</span> GeometricObject {
+<span class="k">public</span>:
+  ${kw}string toString() <span class="k">const</span>
+  { <span class="k">return</span> <span class="s">"Geometric Object"</span>; }
+};
+<span class="c">// Circle and Rectangle redefine toString()</span>
+<span class="c">// to return "Circle object" / "Rectangle object"</span>
+
+<span class="k">void</span> display(${param})
+{ cout &lt;&lt; g.toString() &lt;&lt; endl; }
+
+display(GeometricObject());
+display(Circle(5));
+display(Rectangle(4, 6));`;
+  const dyn=virt&&pass==='ref';
+  const out=[["Geometric Object",true],[dyn?"Circle object":"Geometric Object",!dyn],[dyn?"Rectangle object":"Geometric Object",!dyn]];
+  $('#labOut').innerHTML=out.map(([t,b],i)=>`<span class="line${b&&i>0?' base':''}">${t}</span>`).join('');
+  let v;
+  if(dyn) v="Dynamic binding: toString() is virtual and g refers to the original object, so C++ picks each object's own version at run time.";
+  else if(virt) v="Still the base version. The function is virtual, but passing by value copies each object into a new GeometricObject, slicing off the Circle or Rectangle part.";
+  else if(pass==='ref') v="Static binding: toString() isn't virtual, so the compiler picks GeometricObject::toString() from g's declared type, even though g refers to a Circle or Rectangle.";
+  else v="Static binding and slicing: no virtual, and the objects are copied into plain GeometricObjects. Two reasons you only see the base version.";
+  $('#labVerdict').textContent=v;
+}
+$$('#lab [data-virt]').forEach(b=>b.addEventListener('click',()=>{virt=b.dataset.virt==='1';$$('#lab [data-virt]').forEach(x=>x.classList.toggle('on',x===b));renderLab();}));
+$$('#lab [data-pass]').forEach(b=>b.addEventListener('click',()=>{pass=b.dataset.pass;$$('#lab [data-pass]').forEach(x=>x.classList.toggle('on',x===b));renderLab();}));
+renderLab();
+
+/* ============ FLASHCARDS ============ */
+let fcFilter="All", fcDeck=[], fcI=0, fcStatus={}, reviewOnly=false;
+const fcLevels=["All","Remember","Understand","Apply"];
+$('#fcFilters').innerHTML=fcLevels.map(l=>`<button class="chip${l==='All'?' on':''}" data-l="${l}">${l}</button>`).join('');
+$$('#fcFilters .chip').forEach(c=>c.addEventListener('click',()=>{
+  fcFilter=c.dataset.l;$$('#fcFilters .chip').forEach(x=>x.classList.toggle('on',x===c));reviewOnly=false;buildDeck(false);
+}));
+function buildDeck(shuf){
+  let d=CARDS.map((c,i)=>({...c,id:i})).filter(c=>fcFilter==="All"||c.l===fcFilter);
+  if(reviewOnly) d=d.filter(c=>fcStatus[c.id]==='miss');
+  fcDeck=shuf?shuffle(d):d; fcI=0; renderCard();
+  $('#fcReview').textContent=reviewOnly?'Show all cards':'Review missed only';
+}
+function renderCard(){
+  const card=$('#card'); card.classList.remove('flipped');
+  if(!fcDeck.length){
+    $('#fcFront').innerHTML=reviewOnly?'No missed cards. Great work!':'No cards match this filter.';
+    $('#fcBack').innerHTML='';['#fcTopicF','#fcTopicB','#fcLevelF','#fcLevelB'].forEach(s=>$(s).innerHTML='');
+    $('#fcCount').textContent='';$('#fcBar').style.width='0';updStats();return;
+  }
+  const c=fcDeck[fcI];
+  $('#fcFront').innerHTML=c.f; $('#fcBack').innerHTML=c.b;
+  $('#fcTopicF').textContent=$('#fcTopicB').textContent=c.t;
+  $('#fcLevelF').innerHTML=$('#fcLevelB').innerHTML=badge(c.l);
+  $('#fcCount').textContent=`Card ${fcI+1} of ${fcDeck.length}`+(fcStatus[c.id]?` · marked "${fcStatus[c.id]==='got'?'Got it':'Still learning'}"`:'');
+  $('#fcBar').style.width=((fcI+1)/fcDeck.length*100)+'%';
+  updStats();
+}
+function updStats(){
+  const v=Object.values(fcStatus);
+  $('#fcKnown').textContent=v.filter(x=>x==='got').length;
+  $('#fcMissed').textContent=v.filter(x=>x==='miss').length;
+}
+const flip=()=>{ if(fcDeck.length) $('#card').classList.toggle('flipped'); };
+const move=d=>{ if(!fcDeck.length)return; fcI=(fcI+d+fcDeck.length)%fcDeck.length; renderCard(); };
+function mark(st){ if(!fcDeck.length)return; fcStatus[fcDeck[fcI].id]=st; if(fcI<fcDeck.length-1) move(1); else renderCard(); }
+$('#card').addEventListener('click',flip);
+$('#card').addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){e.preventDefault();flip();} });
+document.addEventListener('keydown',e=>{
+  if(!$('#flash').classList.contains('active')||e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowRight')move(1); if(e.key==='ArrowLeft')move(-1);
+});
+$('#fcPrev').addEventListener('click',()=>move(-1));
+$('#fcNext').addEventListener('click',()=>move(1));
+$('#fcGot').addEventListener('click',()=>mark('got'));
+$('#fcMiss').addEventListener('click',()=>mark('miss'));
+$('#fcShuffle').addEventListener('click',()=>buildDeck(true));
+$('#fcReview').addEventListener('click',()=>{reviewOnly=!reviewOnly;buildDeck(false);});
+$('#fcReset').addEventListener('click',()=>{fcStatus={};reviewOnly=false;fcFilter="All";$$('#fcFilters .chip').forEach(x=>x.classList.toggle('on',x.dataset.l==='All'));buildDeck(false);});
+buildDeck(false);
+
+/* ============ QUIZ ============ */
+let qi=0, qScore=0, qLog=[];
+function renderQuiz(){
+  const box=$('#quizBox');
+  if(qi>=QUIZ.length){
+    const pct=Math.round(qScore/QUIZ.length*100);
+    const msg=pct>=90?'Excellent. You are ready for the challenges.':pct>=70?'Solid. Revisit the flashcards for the ones you missed.':'Go back through lessons 3 and 4, then try again.';
+    box.innerHTML=`<p class="score-big">${qScore} / ${QUIZ.length}</p><p><strong>${pct}%</strong>. ${msg}</p>
+      <div class="review-list">${qLog.map((r,i)=>`<div>${r.ok?'✓':'✗'} Q${i+1} ${badge(QUIZ[i].l)} ${r.ok?'':' Correct answer: '+QUIZ[i].o[QUIZ[i].a]}</div>`).join('')}</div>
+      <div class="row"><button class="btn" id="qRestart">Retake quiz</button><button class="btn ghost" id="qCh">Go to challenges</button></div>`;
+    $('#qRestart').onclick=()=>{qi=0;qScore=0;qLog=[];renderQuiz();};
+    $('#qCh').onclick=()=>openTab($('#t-challenge'));
+    return;
+  }
+  const q=QUIZ[qi];
+  box.innerHTML=`<div class="quiz-top"><span>Question ${qi+1} of ${QUIZ.length}</span>${badge(q.l)}<span>Score: ${qScore}</span></div>
+    <div class="fc-progress"><div style="width:${qi/QUIZ.length*100}%"></div></div>
+    <div class="quiz-q">${q.q}</div><div class="opts" id="qOpts"></div><div class="feedback" id="qFb"></div>
+    <div class="row"><button class="btn" id="qNext" disabled>${qi===QUIZ.length-1?'See results':'Next question'}</button></div>`;
+  q.o.forEach((o,oi)=>{
+    const b=document.createElement('button');b.className='opt';b.innerHTML=q.c?`<code>${o}</code>`:o;
+    b.onclick=()=>{
+      $$('#qOpts .opt').forEach((x,xi)=>{x.disabled=true;if(xi===q.a)x.classList.add('correct');});
+      const ok=oi===q.a; if(!ok)b.classList.add('wrong'); else qScore++;
+      qLog.push({ok});
+      const fb=$('#qFb');fb.className='feedback show '+(ok?'ok':'no');
+      fb.innerHTML=(ok?'<strong>Correct.</strong> ':'<strong>Not quite.</strong> ')+q.w;
+      $('#qNext').disabled=false;$('#qNext').focus();
+    };
+    $('#qOpts').appendChild(b);
+  });
+  $('#qNext').onclick=()=>{qi++;renderQuiz();};
+}
+renderQuiz();
+
+/* ============ MATCHING ============ */
+let mSel=null, mDone=0, mTries=0, mRound=[];
+function renderMatch(){
+  mRound=shuffle(PAIRS).slice(0,6).map((p,i)=>({s:p[0],e:p[1],id:i}));
+  mSel=null;mDone=0;mTries=0;
+  $('#mLeft').innerHTML=shuffle(mRound).map(p=>`<button class="m-item code" data-side="L" data-id="${p.id}">${esc(p.s)}</button>`).join('');
+  $('#mRight').innerHTML=shuffle(mRound).map(p=>`<button class="m-item" data-side="R" data-id="${p.id}">${esc(p.e)}</button>`).join('');
+  $$('.m-item').forEach(b=>b.addEventListener('click',()=>pick(b)));
+  mStatus();
+}
+function mStatus(){
+  $('#matchStatus').innerHTML=mDone===mRound.length
+    ?`<strong style="color:var(--good)">All ${mRound.length} matched in ${mTries} attempts.</strong> Start a new round for different pairs.`
+    :`Matched ${mDone} of ${mRound.length} · Attempts: ${mTries}`;
+}
+function pick(b){
+  if(b.classList.contains('matched'))return;
+  if(!mSel||mSel.dataset.side===b.dataset.side){
+    if(mSel)mSel.classList.remove('sel');
+    mSel=b;b.classList.add('sel');return;
+  }
+  mTries++;
+  if(mSel.dataset.id===b.dataset.id){
+    [mSel,b].forEach(x=>{x.classList.remove('sel');x.classList.add('matched');x.disabled=true;});mDone++;
+  } else {
+    [mSel,b].forEach(x=>{x.classList.remove('sel');x.classList.add('shake');setTimeout(()=>x.classList.remove('shake'),400);});
+  }
+  mSel=null;mStatus();
+}
+$('#mReset').addEventListener('click',renderMatch);
+renderMatch();
+
+/* ============ CHALLENGES ============ */
+$('#chHost').innerHTML=CHALLENGES.map((c,i)=>`
+  <div class="challenge">
+    <div class="chead"><h3>${i+1}. ${c.title}</h3>${badge(c.l)}</div>
+    <div>${c.p}</div>
+    <label for="ch${i}" style="font-weight:600;display:block;margin:8px 0 6px">Your answer and justification</label>
+    <textarea id="ch${i}" class="${c.l==='Create'?'':'prose'}" spellcheck="${c.l!=='Create'}"></textarea>
+    <details><summary>Compare with the model answer</summary><div class="model">${c.m}</div>
+      <div class="rubric" style="margin-top:10px"><strong>Score yourself:</strong>
+        ${c.r.map((r,j)=>`<label><input type="checkbox" data-ch="${i}"> ${r}</label>`).join('')}
+        <p class="sc-summary" id="chs${i}">0 of ${c.r.length} criteria met</p>
+      </div></details>
+  </div>`).join('');
+$$('.rubric input').forEach(cb=>cb.addEventListener('change',()=>{
+  const i=cb.dataset.ch, all=$$(`.rubric input[data-ch="${i}"]`), n=all.filter(x=>x.checked).length;
+  $('#chs'+i).textContent=`${n} of ${all.length} criteria met`+(n===all.length?'. Full marks.':'');
+}));
+</script>
+</body>
+</html>
