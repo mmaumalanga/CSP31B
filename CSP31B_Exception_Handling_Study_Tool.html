@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSP31B · Exception Handling Study Tool</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --user-primary:#1a4480;
+  --user-accent:#c8102e;
+  --user-background:#ffffff;
+  --ink:#1b2533;
+  --muted:#5b6472;
+  --line:#dbe2ec;
+  --tint:#eef3fa;
+  --tint-2:#f6f8fb;
+  --accent-tint:#fdeef0;
+  --ok:#1f7a3d;
+  --ok-tint:#e7f5ec;
+  --bad:#b3261e;
+  --bad-tint:#fdecea;
+  --warn:#8a5a00;
+  --warn-tint:#fff6e0;
+  --code-bg:#0f1b2d;
+  --code-ink:#dbe4f0;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(16,32,64,.06),0 4px 14px rgba(16,32,64,.06);
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  /* Bloom's tiers */
+  --b-R:#2f5d9e;--b-U:#1f7c74;--b-Ap:#3f7a2c;--b-An:#9a6400;--b-E:#b4501a;--b-C:#c8102e;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--user-background);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+a{color:var(--user-primary)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--user-accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+
+/* Header */
+header.top{background:var(--user-primary);color:#fff}
+header.top .wrap{padding-top:22px;padding-bottom:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.logo{width:52px;height:52px;border-radius:50%;background:#fff;color:var(--user-primary);display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:.5px;flex:none}
+.titles{flex:1;min-width:240px}
+.kicker{font-size:12px;letter-spacing:2px;text-transform:uppercase;opacity:.85;font-weight:600}
+h1{margin:2px 0 0;font-size:clamp(22px,3.2vw,30px);line-height:1.2}
+.overall{min-width:200px;flex:none}
+.overall .bar{height:8px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-top:6px}
+.overall .bar span{display:block;height:100%;width:0;background:#fff;border-radius:99px;transition:width .4s}
+.overall small{font-size:13px;opacity:.9}
+
+/* Tabs */
+nav.tabs{position:sticky;top:0;z-index:20;background:var(--user-background);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+.tab{border:0;background:none;padding:14px 14px 12px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--user-primary);border-bottom-color:var(--user-accent)}
+.tab .pill{font-size:11px;font-weight:700;background:var(--tint);color:var(--user-primary);padding:1px 7px;border-radius:99px;margin-left:6px}
+main{padding:26px 0 60px}
+section.panel{display:none}
+section.panel.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2{font-size:24px;margin:0 0 6px;color:var(--user-primary)}
+h3{font-size:19px;margin:28px 0 8px}
+h4{font-size:16px;margin:18px 0 6px}
+p{margin:8px 0}
+.lead{color:var(--muted);margin-top:0;max-width:760px}
+.muted{color:var(--muted)}
+code{font-family:var(--mono);font-size:.9em;background:var(--tint);color:var(--user-primary);padding:1px 5px;border-radius:5px}
+
+/* Cards + grids */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card.soft{background:var(--tint-2);box-shadow:none}
+.card h4{margin-top:0}
+
+/* Bloom chips */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid currentColor;background:#fff;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.b-R{color:var(--b-R)}.b-U{color:var(--b-U)}.b-Ap{color:var(--b-Ap)}.b-An{color:var(--b-An)}.b-E{color:var(--b-E)}.b-C{color:var(--b-C)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+
+/* Buttons */
+.btn{border:1px solid var(--user-primary);background:var(--user-primary);color:#fff;padding:9px 16px;border-radius:9px;font-weight:600;font-size:15px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:#fff;color:var(--user-primary)}
+.btn.accent{background:var(--user-accent);border-color:var(--user-accent)}
+.btn.small{padding:6px 11px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.spacer{flex:1}
+
+/* Code */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);font-size:14px;line-height:1.55;padding:16px 18px;border-radius:10px;overflow-x:auto;margin:10px 0;tab-size:4}
+pre.code .k{color:#ff9ac1}pre.code .t{color:#7fd3ff}pre.code .s{color:#ffd28a}pre.code .c{color:#7f93ad;font-style:italic}pre.code .n{color:#b7f0a8}pre.code .p{color:#c7a6ff}
+.out{background:var(--tint-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-family:var(--mono);font-size:13.5px;white-space:pre-wrap;margin:-2px 0 12px}
+.out::before{content:"OUTPUT";display:block;font-family:var(--font);font-size:11px;letter-spacing:1.5px;font-weight:700;color:var(--user-accent);margin-bottom:4px}
+.codepair{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:760px){.codepair{grid-template-columns:1fr}}
+.codepair .out{margin-top:10px}
+
+/* Learn layout */
+.learn{display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px}
+@media (max-width:860px){.learn{grid-template-columns:minmax(0,1fr)}}
+.toc{position:sticky;top:64px;align-self:start}
+@media (max-width:860px){.toc{position:static}}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.toc button{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center;color:var(--ink)}
+.toc button[aria-current="true"]{border-color:var(--user-primary);background:var(--tint);color:var(--user-primary);font-weight:600}
+.toc .num{width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--user-primary);display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.toc button[aria-current="true"] .num{background:var(--user-primary);color:#fff}
+.toc .done .num{background:var(--ok);color:#fff}
+.lsec{display:none}
+.lsec.active{display:block}
+.secnav{margin-top:30px;border-top:1px solid var(--line);padding-top:16px}
+
+/* Callouts */
+.callout{border-radius:var(--radius);padding:14px 16px;margin:16px 0;border:1px solid}
+.callout .ctitle{font-weight:700;display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.misc{background:var(--accent-tint);border-color:#f2c3ca}
+.misc .ctitle{color:var(--user-accent)}
+.misc .wrong{font-weight:600}
+.note{background:var(--tint);border-color:#c9d7ec}
+.note .ctitle{color:var(--user-primary)}
+.real{background:var(--ok-tint);border-color:#bfe2cc}
+.real .ctitle{color:var(--ok)}
+.ico{width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-size:13px;color:#fff;flex:none}
+.misc .ico{background:var(--user-accent)}.note .ico{background:var(--user-primary)}.real .ico{background:var(--ok)}
+
+/* Worked example */
+.worked{border:2px solid var(--user-primary);border-radius:var(--radius);padding:18px;margin:18px 0;background:#fff}
+.worked .wtag{display:inline-block;background:var(--user-primary);color:#fff;font-size:12px;letter-spacing:1.5px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:6px}
+.steps{list-style:none;padding:0;margin:12px 0 0;counter-reset:st}
+.steps li{counter-increment:st;position:relative;padding:10px 12px 10px 48px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--tint-2)}
+.steps li::before{content:counter(st);position:absolute;left:12px;top:10px;width:26px;height:26px;border-radius:50%;background:var(--user-primary);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+.steps li[hidden]{display:none}
+.steps .why{display:block;color:var(--muted);font-size:14.5px;margin-top:2px}
+.attempt{border:2px dashed var(--user-accent);border-radius:var(--radius);padding:18px;margin:18px 0}
+.attempt .wtag{background:var(--user-accent)}
+input.blank{font-family:var(--mono);font-size:14px;border:none;border-bottom:2px solid #8fb4ff;background:#1b2b45;color:#fff;padding:1px 6px;border-radius:4px 4px 0 0;width:9.5em}
+input.blank.ok{border-bottom-color:#5fd38a;background:#163a2a}
+input.blank.no{border-bottom-color:#ff7b72;background:#45201f}
+
+/* Feedback */
+.fb{margin-top:10px;padding:10px 12px;border-radius:9px;font-size:15px;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--ok-tint);color:#14532d;border:1px solid #bfe2cc}
+.fb.no{background:var(--bad-tint);color:#7f1d1d;border:1px solid #f5c2bd}
+.fb.info{background:var(--tint);color:var(--ink);border:1px solid #c9d7ec}
+
+/* MCQ */
+.mcq{margin:14px 0}
+.mcq .q{font-weight:600;margin-bottom:8px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--user-primary);background:var(--tint-2)}
+.opt .L{width:24px;height:24px;border-radius:50%;background:var(--tint);color:var(--user-primary);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.opt.correct{border-color:var(--ok);background:var(--ok-tint)}
+.opt.correct .L{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.opt.wrong .L{background:var(--bad);color:#fff}
+.opt:disabled{cursor:default}
+.selfcheck{background:var(--tint-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-top:28px}
+.selfcheck h3{margin-top:0;display:flex;gap:8px;align-items:center}
+.scscore{font-weight:700}
+
+/* Hierarchy */
+.tree{font-family:var(--mono);font-size:14px;line-height:1.75;background:var(--tint-2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;overflow-x:auto;white-space:pre}
+.tree b{color:var(--user-primary)}
+.tree i{color:var(--muted);font-style:normal;font-family:var(--font);font-size:13px}
+
+/* Flashcards */
+.fc-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:8px 12px;font-size:14px;font-weight:600;color:var(--muted);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--user-primary);color:#fff}
+.fc-stage{perspective:1400px;margin:10px 0}
+.flash{position:relative;width:100%;min-height:340px;transform-style:preserve-3d;transition:transform .5s;cursor:pointer;border:0;padding:0;background:none;text-align:left;display:block;color:inherit}
+.flash.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:26px 28px;display:flex;flex-direction:column;border:1px solid var(--line);box-shadow:var(--shadow);overflow:auto}
+.front{background:#fff}
+.back{background:var(--tint);transform:rotateY(180deg)}
+.face .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.face .sec{font-size:12px;color:var(--muted);font-weight:600}
+.face .big{font-size:clamp(18px,2.4vw,22px);font-weight:600;line-height:1.4}
+.face .hint{margin-top:auto;padding-top:14px;font-size:13px;color:var(--muted)}
+.face pre.code{font-size:13px}
+.fc-progress{height:6px;background:var(--tint);border-radius:99px;overflow:hidden;margin-top:8px}
+.fc-progress span{display:block;height:100%;background:var(--user-primary);width:0;transition:width .3s}
+.fc-counts{font-size:14px;color:var(--muted)}
+.btn.know{background:var(--ok);border-color:var(--ok)}
+.btn.again{background:#fff;color:var(--user-accent);border-color:var(--user-accent)}
+
+/* Quiz */
+.qhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.qbar{height:6px;background:var(--tint);border-radius:99px;overflow:hidden;margin:10px 0 18px}
+.qbar span{display:block;height:100%;background:var(--user-accent);width:0;transition:width .3s}
+.result{text-align:center;padding:26px}
+.result .big{font-size:46px;font-weight:700;color:var(--user-primary)}
+.review li{margin-bottom:10px}
+
+/* Matching */
+.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:700px){.match-wrap{grid-template-columns:1fr}}
+.mcol{display:grid;gap:8px;align-content:start}
+.mitem{text-align:left;border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:#fff;color:var(--ink);font-size:15px;min-height:48px}
+.mitem:hover:not(:disabled){border-color:var(--user-primary)}
+.mitem.sel{border-color:var(--user-primary);background:var(--tint);box-shadow:0 0 0 2px var(--user-primary) inset}
+.mitem.done{border-color:var(--ok);background:var(--ok-tint);color:#14532d;cursor:default}
+.mitem.shake{animation:shake .35s;border-color:var(--bad);background:var(--bad-tint)}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.mitem code{background:transparent;padding:0}
+
+/* Challenge */
+textarea{width:100%;min-height:120px;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical}
+textarea:focus{border-color:var(--user-primary);outline:none;box-shadow:0 0 0 3px #c9d7ec}
+select{font:inherit;font-size:15px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;max-width:100%}
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;background:#fff}
+.check input{margin-top:4px;width:18px;height:18px;accent-color:var(--user-primary)}
+.check.right{border-color:var(--ok);background:var(--ok-tint)}
+.check.missed{border-color:var(--warn);background:var(--warn-tint)}
+.check.falsepos{border-color:var(--bad);background:var(--bad-tint)}
+.model{display:none;border-left:4px solid var(--user-primary);background:var(--tint-2);padding:12px 16px;border-radius:0 10px 10px 0;margin-top:12px}
+.model.show{display:block}
+.task{margin-bottom:22px}
+.task-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.task-head h3{margin:0}
+.order-pool,.order-built{display:flex;flex-direction:column;gap:6px;min-height:52px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:var(--tint-2)}
+.order-line{font-family:var(--mono);font-size:14px;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px;color:var(--ink)}
+.order-line:hover{border-color:var(--user-primary)}
+.order-built .order-line{border-color:var(--user-primary)}
+.order-line.ok{border-color:var(--ok);background:var(--ok-tint)}
+.order-line.no{border-color:var(--bad);background:var(--bad-tint)}
+.scen{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff}
+@media (max-width:640px){.scen{grid-template-columns:1fr}}
+.scen.ok{border-color:var(--ok);background:var(--ok-tint)}
+.scen.no{border-color:var(--bad);background:var(--bad-tint)}
+.scen .why{grid-column:1/-1;font-size:14.5px;display:none}
+.scen.revealed .why{display:block}
+
+/* Start */
+.hero-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
+@media (max-width:820px){.hero-grid{grid-template-columns:1fr}}
+.objs{counter-reset:o;list-style:none;padding:0;margin:8px 0}
+.objs li{counter-increment:o;position:relative;padding:8px 0 8px 40px;border-bottom:1px solid var(--line)}
+.objs li:last-child{border-bottom:0}
+.objs li::before{content:counter(o);position:absolute;left:0;top:8px;width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--user-primary);font-weight:700;font-size:13px;display:grid;place-items:center}
+.ladder{display:grid;gap:6px}
+.rung{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;font-size:14.5px;padding:8px 10px;border-radius:9px;background:var(--tint-2)}
+.stat{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.stat:last-child{border-bottom:0}
+.stat b{color:var(--user-primary)}
+.path{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}
+.path button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px;text-align:left;color:var(--ink)}
+.path button:hover{border-color:var(--user-primary);background:var(--tint-2)}
+.path .st{font-size:12px;color:var(--user-accent);font-weight:700;letter-spacing:1px}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:18px 0 30px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:#fff}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="logo" aria-hidden="true">SJDC</div>
+    <div class="titles">
+      <div class="kicker">CSP31B · C++ Programming II · San Joaquin Delta College</div>
+      <h1>Chapter 16: Exception Handling</h1>
+    </div>
+    <div class="overall" aria-live="polite">
+      <small id="overallText">Progress: 0%</small>
+      <div class="bar"><span id="overallBar"></span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Study tool sections">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" data-tab="start" aria-selected="true">Start</button>
+    <button class="tab" role="tab" data-tab="learn" aria-selected="false">Learn <span class="pill">5 parts</span></button>
+    <button class="tab" role="tab" data-tab="flash" aria-selected="false">Flashcards <span class="pill" id="fcPill">0/0</span></button>
+    <button class="tab" role="tab" data-tab="quiz" aria-selected="false">Quiz</button>
+    <button class="tab" role="tab" data-tab="match" aria-selected="false">Matching</button>
+    <button class="tab" role="tab" data-tab="challenge" aria-selected="false">Challenge</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============ START ============ -->
+<section class="panel active" id="panel-start" role="tabpanel">
+  <div class="hero-grid">
+    <div>
+      <h2>Learn it, then prove it</h2>
+      <p class="lead">This tool follows Chapter 16 of the lecture slides. Work through the five Learn sections in order, drill with flashcards, then test yourself with the quiz, the matching activity, and the higher-level challenges.</p>
+      <h3>Learning objectives</h3>
+      <ol class="objs">
+        <li>Explain what an exception is and trace how <code>try</code>, <code>throw</code>, and <code>catch</code> change the flow of a program.</li>
+        <li>Use the standard exception classes (<code>logic_error</code>, <code>runtime_error</code>, and their subclasses) and the <code>what()</code> function.</li>
+        <li>Define custom exception classes that derive from a standard exception class.</li>
+        <li>Order multiple <code>catch</code> blocks correctly and predict how an exception propagates through the call stack.</li>
+        <li>Rethrow exceptions and choose between terminating, recovering, and logging.</li>
+        <li>Judge when exceptions are the right tool and when a simple <code>if</code> is better.</li>
+      </ol>
+      <h3>Suggested path</h3>
+      <div class="path">
+        <button data-go="learn"><span class="st">STEP 1</span><br><b>Learn</b><br><span class="muted">5 parts, each ending in a self-check</span></button>
+        <button data-go="flash"><span class="st">STEP 2</span><br><b>Flashcards</b><br><span class="muted">Easy cards first, harder later</span></button>
+        <button data-go="quiz"><span class="st">STEP 3</span><br><b>Quiz</b><br><span class="muted">15 questions, scaffolded</span></button>
+        <button data-go="match"><span class="st">STEP 4</span><br><b>Matching</b><br><span class="muted">Classes, scenarios, terms</span></button>
+        <button data-go="challenge"><span class="st">STEP 5</span><br><b>Challenge</b><br><span class="muted">Analyze, evaluate, create</span></button>
+      </div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card">
+        <h4>Bloom's Taxonomy ladder</h4>
+        <p class="muted" style="margin-top:0">Every item is tagged with the thinking level it targets. Items get harder as you go.</p>
+        <div class="ladder">
+          <div class="rung"><span class="chip b-R">Remember</span><span>Recall terms and syntax</span></div>
+          <div class="rung"><span class="chip b-U">Understand</span><span>Explain what code does and why</span></div>
+          <div class="rung"><span class="chip b-Ap">Apply</span><span>Write and use the syntax</span></div>
+          <div class="rung"><span class="chip b-An">Analyze</span><span>Trace, debug, and compare</span></div>
+          <div class="rung"><span class="chip b-E">Evaluate</span><span>Judge designs and justify choices</span></div>
+          <div class="rung"><span class="chip b-C">Create</span><span>Design your own solution</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Your progress</h4>
+        <div id="dash"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn ghost small" id="resetAll">Reset all progress</button>
+        </div>
+        <p class="muted" style="font-size:13px;margin-bottom:0">Progress is saved in this browser only.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LEARN ============ -->
+<section class="panel" id="panel-learn" role="tabpanel">
+  <div class="learn">
+    <aside class="toc" aria-label="Learn sections">
+      <ol id="toc"></ol>
+    </aside>
+    <div>
+
+<!-- Section 1 -->
+<article class="lsec active" id="s1" data-title="Exception Basics">
+  <h2>1. Exception Basics: try, throw, catch</h2>
+  <div class="chips"><span class="chip b-R">Remember</span><span class="chip b-U">Understand</span><span class="chip b-Ap">Apply</span></div>
+  <p>An <b>exception</b> is an undesirable event detected while a program runs, such as a bad argument, a missing file, or an index that is out of range. Exception handling lets the code that <i>detects</i> a problem be separate from the code that <i>decides what to do about it</i>.</p>
+
+  <h3>The problem: dividing by zero</h3>
+  <p>The first quotient program from the slides crashes when the divisor is 0. The program ends with exit code 136 instead of printing a message.</p>
+  <div class="codepair"><pre class="code" data-code="quotient1"></pre><div class="out">Enter two integers: 5 0
+
+...Program finished with exit code 136</div></div>
+
+  <div class="callout misc" role="note">
+    <div class="ctitle"><span class="ico">!</span>Common misconception #1</div>
+    <p class="wrong">"Integer division by zero throws a C++ exception, so a <code>try/catch</code> around <code>a / b</code> will catch it."</p>
+    <p><b>Why it's wrong:</b> C++ does not throw anything for integer division by zero. It is <i>undefined behavior</i>; on most systems the operating system kills the program (the exit code 136 above is the SIGFPE signal). A <code>catch</code> block never runs. <b>Correct reasoning:</b> you must <i>check</i> the divisor yourself and <code>throw</code> an exception explicitly. Only then is there something to catch.</p>
+  </div>
+
+  <h3>The template</h3>
+  <pre class="code" data-code="template"></pre>
+  <div class="grid g3">
+    <div class="card soft"><h4><code>try</code></h4><p>Wraps code that <i>might</i> fail. If nothing is thrown, every <code>catch</code> block is skipped.</p></div>
+    <div class="card soft"><h4><code>throw</code></h4><p>Signals the problem by sending an object (an <code>int</code>, a string, or an exception object) out of the current code.</p></div>
+    <div class="card soft"><h4><code>catch</code></h4><p>Handles one <i>type</i> of exception. The parameter type decides what it catches. The parameter name may be omitted.</p></div>
+  </div>
+
+  <div class="worked">
+    <span class="wtag">WORKED EXAMPLE</span>
+    <h3 style="margin-top:4px">Making <code>quotient()</code> report the error to its caller</h3>
+    <p>Goal: the function should not decide how to handle the error. It should report it, and let <code>main()</code> decide. Follow the reasoning one step at a time.</p>
+    <div class="codepair"><pre class="code" data-code="quotient2"></pre><div class="out">5
+Error: Divisor cannot be zero
+Execution continues</div></div>
+    <ol class="steps" id="we1">
+      <li><b>Find the failure condition.</b> <code>number2 == 0</code> is the only input that makes the division impossible.<span class="why">Always name the exact condition before writing any exception code.</span></li>
+      <li><b>Detect it where it happens.</b> The check goes inside <code>quotient()</code>, right before the division.<span class="why">The function knows the rule ("divisor can't be zero") but not how the program wants to respond.</span></li>
+      <li><b>Throw an object that describes the problem.</b> <code>throw invalid_argument("Divisor cannot be zero");</code><span class="why"><code>invalid_argument</code> (from <code>&lt;stdexcept&gt;</code>) fits: the caller passed an illegal argument. Its message is available later through <code>what()</code>.</span></li>
+      <li><b>Wrap the risky call in <code>try</code>.</b> In <code>main()</code>, both calls to <code>quotient()</code> go inside the <code>try</code> block.<span class="why">Only exceptions thrown from inside a <code>try</code> block (directly or from functions it calls) can be caught by its handlers.</span></li>
+      <li><b>Catch by <code>const</code> reference.</b> <code>catch (const invalid_argument&amp; ex)</code><span class="why">A reference avoids copying the object and keeps the real derived type (see Section 4).</span></li>
+      <li><b>Trace the control flow.</b> <code>quotient(45, 9)</code> prints 5. <code>quotient(5, 0)</code> throws, so the rest of the <code>try</code> block (including "never") is skipped, the handler prints the message, and execution continues after the last <code>catch</code>.<span class="why">After a throw, control never returns to the line after the throw.</span></li>
+    </ol>
+    <div class="row"><button class="btn small" data-reveal="we1">Show next step</button><button class="btn ghost small" data-revealall="we1">Show all steps</button></div>
+  </div>
+
+  <div class="attempt" id="att1">
+    <span class="wtag" style="display:inline-block;color:#fff;font-size:12px;letter-spacing:1.5px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:6px">YOUR TURN</span>
+    <span class="chip b-Ap">Apply</span>
+    <h3 style="margin-top:4px">Write <code>safeSqrt()</code> the same way</h3>
+    <p><code>sqrt()</code> of a negative number is not a real number. Fill in the blanks so <code>safeSqrt(-4)</code> reports the problem to <code>main()</code>, which prints <code>Error: negative input</code>.</p>
+<pre class="code"><span class="t">double</span> safeSqrt(<span class="t">double</span> x) {
+    <span class="k">if</span> (x &lt; <span class="n">0</span>)
+        <input class="blank" data-b="1" aria-label="blank 1: keyword" placeholder="①"> <input class="blank" data-b="2" aria-label="blank 2: exception class" placeholder="②">(<span class="s">"negative input"</span>);
+    <span class="k">return</span> sqrt(x);
+}
+
+<span class="t">int</span> main() {
+    <input class="blank" data-b="3" aria-label="blank 3: keyword" placeholder="③" style="width:5em"> {
+        cout &lt;&lt; safeSqrt(<span class="n">49</span>) &lt;&lt; endl;
+        cout &lt;&lt; safeSqrt(-<span class="n">4</span>) &lt;&lt; endl;
+    } <span class="k">catch</span> (<span class="k">const</span> <input class="blank" data-b="4" aria-label="blank 4: type to catch" placeholder="④">&amp; e) {
+        cout &lt;&lt; <span class="s">"Error: "</span> &lt;&lt; e.<input class="blank" data-b="5" aria-label="blank 5: member function" placeholder="⑤" style="width:5em">() &lt;&lt; endl;
+    }
+}</pre>
+    <div class="row"><button class="btn small" id="att1check">Check my answers</button><button class="btn ghost small" id="att1hint">Hint</button><button class="btn ghost small" id="att1show">Show solution</button></div>
+    <div class="fb" id="att1fb" aria-live="polite"></div>
+  </div>
+
+  <div class="callout note">
+    <div class="ctitle"><span class="ico">i</span>You can throw any type</div>
+    <p>The slides' first version used <code>throw number1;</code> and <code>catch (int ex)</code>. That is legal: any type can be thrown. Throwing a class from <code>&lt;stdexcept&gt;</code> is better practice because it carries a readable message through <code>what()</code>.</p>
+  </div>
+
+  <div class="selfcheck" data-sc="s1"></div>
+</article>
+
+<!-- Section 2 -->
+<article class="lsec" id="s2" data-title="Standard Exception Classes">
+  <h2>2. Standard Exception Classes</h2>
+  <div class="chips"><span class="chip b-R">Remember</span><span class="chip b-U">Understand</span><span class="chip b-Ap">Apply</span></div>
+  <p>C++ supplies a hierarchy of exception classes. The base class is <code>exception</code> (header <code>&lt;exception&gt;</code>). Every class in the hierarchy overrides the virtual function <code>what()</code>, which returns a C-string describing the error.</p>
+  <div class="tree" aria-label="Exception class hierarchy"><b>exception</b>                      <i>base class; what()</i>
+├── <b>logic_error</b>                <i>errors the program could have prevented</i>
+│   ├── invalid_argument       <i>illegal argument, e.g. stoi("abc")</i>
+│   ├── out_of_range           <i>bad index or position, e.g. v.at(99)</i>
+│   ├── length_error           <i>exceeds a maximum allowed size</i>
+│   └── domain_error           <i>input outside a math function's domain</i>
+├── <b>runtime_error</b>              <i>errors detectable only while running</i>
+│   ├── overflow_error
+│   ├── underflow_error
+│   └── range_error
+├── <b>bad_alloc</b>                  <i>new cannot allocate memory</i>
+└── <b>bad_cast</b>                   <i>failed dynamic_cast to a reference</i></div>
+  <p class="muted" style="font-size:14px"><code>logic_error</code>, <code>runtime_error</code> and their subclasses are in <code>&lt;stdexcept&gt;</code>; <code>bad_alloc</code> is in <code>&lt;new&gt;</code>; <code>bad_cast</code> is in <code>&lt;typeinfo&gt;</code>.</p>
+
+  <h3>Example from the slides: <code>substr()</code></h3>
+  <div class="codepair"><pre class="code" data-code="substr"></pre><div class="out">25
+s1 = Joaquin Delta College
+out_of_range caught</div></div>
+
+  <div class="callout misc" role="note">
+    <div class="ctitle"><span class="ico">!</span>Common misconception #2</div>
+    <p class="wrong">"<code>sentence.substr(4, 30)</code> goes past the end of the string, so it throws <code>length_error</code>."</p>
+    <p><b>Why it's wrong:</b> the second argument is a <i>maximum</i> count. If it runs past the end, <code>substr()</code> simply stops at the end, so <code>substr(4, 30)</code> returns <code>"Joaquin Delta College"</code> with no exception. <b>Correct reasoning:</b> only a <i>starting position</i> greater than <code>length()</code> is an error, and it throws <code>out_of_range</code>, not <code>length_error</code>. That is why <code>substr(31, 10)</code> on a 25-character string lands in the <code>out_of_range</code> handler.</p>
+  </div>
+
+  <h3>More library functions that throw</h3>
+  <div class="codepair"><pre class="code" data-code="library"></pre><div class="out">20
+out_of_range
+invalid_argument from stoi</div></div>
+  <div class="grid g2">
+    <div class="card soft"><h4><code>v.at(i)</code> vs <code>v[i]</code></h4><p><code>at()</code> checks the index and throws <code>out_of_range</code>. The <code>[]</code> operator does <b>not</b> check: a bad index is undefined behavior.</p></div>
+    <div class="card soft"><h4><code>new</code> and <code>bad_alloc</code></h4><p>The slides' BadAllocExceptionDemo allocates huge arrays in a loop until <code>new</code> fails and throws <code>bad_alloc</code>.</p></div>
+  </div>
+
+  <div class="selfcheck" data-sc="s2"></div>
+</article>
+
+<!-- Section 3 -->
+<article class="lsec" id="s3" data-title="Custom Exception Classes">
+  <h2>3. Creating Your Own Exception Classes</h2>
+  <div class="chips"><span class="chip b-U">Understand</span><span class="chip b-Ap">Apply</span><span class="chip b-An">Analyze</span></div>
+  <p>Use the standard classes whenever they describe the problem. When they don't, write your own. <b>Any class can be thrown</b>, but the best practice from the slides is to <b>derive from <code>exception</code> or one of its subclasses</b> so your class gets <code>what()</code> and can be caught by general handlers.</p>
+  <div class="grid g3">
+    <div class="card soft"><h4>1. Choose a base</h4><p><code>logic_error</code> for preventable errors, <code>runtime_error</code> for conditions known only at run time.</p></div>
+    <div class="card soft"><h4>2. Pass a message up</h4><p>The constructor calls the base constructor with a message: <code>: logic_error("Invalid triangle")</code>.</p></div>
+    <div class="card soft"><h4>3. Add useful data</h4><p>Store the values that caused the problem and provide getters, like <code>getSide1()</code> in <code>TriangleException</code>.</p></div>
+  </div>
+
+  <div class="callout real">
+    <div class="ctitle"><span class="ico">$</span>Real-world application: a bank account</div>
+    <p>An ATM must never let a withdrawal make the balance negative, and it must tell the customer <i>how much</i> they are short. A custom exception can carry that extra data.</p>
+  </div>
+
+  <div class="worked">
+    <span class="wtag">WORKED EXAMPLE</span>
+    <h3 style="margin-top:4px">Designing <code>InsufficientFunds</code></h3>
+    <pre class="code" data-code="bank"></pre>
+    <div class="out">Withdrew 40, balance 60
+Rejected: Amount must be positive
+Insufficient funds: short by 30</div>
+    <ol class="steps" id="we3">
+      <li><b>Pick the base class.</b> Not having enough money depends on the balance at run time, so derive from <code>runtime_error</code>.<span class="why">A negative amount is different: the caller could have prevented it, so it uses the standard <code>invalid_argument</code> (a <code>logic_error</code>).</span></li>
+      <li><b>Pass a message to the base constructor.</b> <code>: runtime_error("Insufficient funds")</code> in the initializer list.<span class="why">Now <code>what()</code> works without writing it yourself.</span></li>
+      <li><b>Store the data the handler will need.</b> <code>balance</code> and <code>amount</code> become private members, with <code>getShortfall()</code> as a <code>const</code> getter.<span class="why">The catch block can report "short by 30" instead of a vague message.</span></li>
+      <li><b>Throw at the point of detection.</b> <code>withdraw()</code> checks the two rules and throws a different type for each.<span class="why">Different types let the caller respond differently to each problem.</span></li>
+      <li><b>Catch each type separately.</b> One handler per type, each by <code>const</code> reference, inside the loop.<span class="why">Because the try/catch is inside the loop, one failed withdrawal doesn't stop the rest: this is <i>recover and continue</i>.</span></li>
+    </ol>
+    <div class="row"><button class="btn small" data-reveal="we3">Show next step</button><button class="btn ghost small" data-revealall="we3">Show all steps</button></div>
+  </div>
+
+  <div class="attempt" id="att3">
+    <span class="wtag" style="display:inline-block;color:#fff;font-size:12px;letter-spacing:1.5px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:6px">YOUR TURN</span>
+    <span class="chip b-Ap">Apply</span>
+    <h3 style="margin-top:4px">Complete <code>TriangleException</code></h3>
+    <p>A triangle is invalid when one side is not shorter than the sum of the other two. The program could have prevented this, so pick a matching base class.</p>
+<pre class="code"><span class="k">class</span> TriangleException : <span class="k">public</span> <input class="blank" data-b="1" aria-label="blank 1: base class" placeholder="①"> {
+<span class="k">public</span>:
+    TriangleException(<span class="t">double</span> s1, <span class="t">double</span> s2, <span class="t">double</span> s3)
+        : <input class="blank" data-b="2" aria-label="blank 2: base constructor" placeholder="②">(<span class="s">"Invalid triangle"</span>),
+          side1(s1), side2(s2), side3(s3) {}
+    <span class="t">double</span> getSide1() <input class="blank" data-b="3" aria-label="blank 3: qualifier" placeholder="③" style="width:5em"> { <span class="k">return</span> side1; }
+<span class="k">private</span>:
+    <span class="t">double</span> side1, side2, side3;
+};
+
+<span class="c">// inside the Triangle constructor:</span>
+<span class="k">if</span> (!isValid(side1, side2, side3))
+    <input class="blank" data-b="4" aria-label="blank 4: keyword" placeholder="④" style="width:5em"> TriangleException(side1, side2, side3);</pre>
+    <div class="row"><button class="btn small" id="att3check">Check my answers</button><button class="btn ghost small" id="att3hint">Hint</button><button class="btn ghost small" id="att3show">Show solution</button></div>
+    <div class="fb" id="att3fb" aria-live="polite"></div>
+  </div>
+
+  <div class="callout note">
+    <div class="ctitle"><span class="ico">i</span>About writing your own <code>what()</code></div>
+    <p>The slides' first <code>divByZero</code> class defined <code>string what()</code>. That works when you catch <code>divByZero</code> directly, but it does <b>not</b> override <code>exception::what()</code>, whose exact signature is <code>const char* what() const noexcept</code>. If you want <code>catch (const exception&amp; e)</code> to show your message, either derive from <code>logic_error</code>/<code>runtime_error</code> and pass the message to its constructor (easiest), or override with that exact signature.</p>
+  </div>
+
+  <div class="selfcheck" data-sc="s3"></div>
+</article>
+
+<!-- Section 4 -->
+<article class="lsec" id="s4" data-title="Multiple Catches & Propagation">
+  <h2>4. Multiple Catches, Propagation, and Rethrowing</h2>
+  <div class="chips"><span class="chip b-U">Understand</span><span class="chip b-Ap">Apply</span><span class="chip b-An">Analyze</span></div>
+  <h3>Multiple catch blocks</h3>
+  <p>One <code>try</code> block can be followed by several handlers. C++ checks them <b>top to bottom</b> and runs the <b>first</b> one whose type matches. A handler for a base class also matches every derived class.</p>
+  <div class="codepair"><pre class="code" data-code="order"></pre><div class="out">logic_error handler</div></div>
+
+  <div class="callout misc" role="note">
+    <div class="ctitle"><span class="ico">!</span>Common misconception #3</div>
+    <p class="wrong">"C++ picks the catch block that matches the exception <i>best</i>, so the order doesn't matter."</p>
+    <p><b>Why it's wrong:</b> C++ takes the <i>first</i> match, not the best. Since <code>invalid_argument</code> <i>is a</i> <code>logic_error</code>, the base-class handler above grabs it and the specific handler can never run (g++ even warns about it). <b>Correct reasoning:</b> list handlers from <b>most derived to most general</b>: <code>TriangleException</code> before <code>logic_error</code> before <code>exception</code>, and <code>catch (...)</code> (catch anything) last.</p>
+  </div>
+
+  <div class="callout misc" role="note">
+    <div class="ctitle"><span class="ico">!</span>Common misconception #4</div>
+    <p class="wrong">"Catching by value, like <code>catch (exception e)</code>, works the same as catching by reference."</p>
+    <p><b>Why it's wrong:</b> catching a derived object by base-class value copies only the base part (called <i>slicing</i>), so the overridden <code>what()</code> is lost.</p>
+    <div class="codepair"><pre class="code" data-code="slicing"></pre><div class="out">by value: Base
+by reference: Derived</div></div>
+    <p><b>Correct reasoning:</b> catch by <code>const</code> reference: <code>catch (const Base&amp; e)</code>.</p>
+  </div>
+
+  <h3>Propagation and stack unwinding</h3>
+  <p>If a function doesn't catch an exception, it ends immediately and the exception moves to its caller. This is <b>stack unwinding</b>: each exited function's local variables are destroyed on the way out. It continues until a matching handler is found. If none is found, <code>std::terminate</code> ends the program.</p>
+  <div class="codepair"><pre class="code" data-code="unwind"></pre><div class="out">destroy inner local
+destroy outer local
+caught 42</div></div>
+
+  <div class="worked">
+    <span class="wtag">WORKED EXAMPLE</span>
+    <h3 style="margin-top:4px">Tracing an exception through three functions</h3>
+    <div class="codepair"><pre class="code" data-code="trace"></pre><div class="out">a start
+b start
+c start
+main caught: disk full
+done</div></div>
+    <ol class="steps" id="we4">
+      <li><b>Follow the calls down.</b> <code>main</code> calls <code>a</code>, which calls <code>b</code>, which calls <code>c</code>. Each prints its "start" line.<span class="why">Nothing unusual happens until the throw.</span></li>
+      <li><b>Find the throw.</b> <code>c()</code> throws a <code>runtime_error</code>. "c end" is skipped.<span class="why">Code after a <code>throw</code> in the same block never runs.</span></li>
+      <li><b>Look for a handler in <code>c</code>, then <code>b</code>.</b> Neither has a <code>try</code> block, so both end immediately. "b end" is skipped.<span class="why">This is stack unwinding: <code>c</code>'s and <code>b</code>'s frames are destroyed.</span></li>
+      <li><b>Check <code>a</code>'s handler.</b> <code>a</code> catches <code>logic_error</code>. Is a <code>runtime_error</code> a <code>logic_error</code>? No, they are sibling classes. No match, so <code>a</code> ends too, and "a end" is skipped.<span class="why">A try block only helps if one of its handlers matches the type.</span></li>
+      <li><b>Reach <code>main</code>.</b> <code>catch (const exception&amp; e)</code> matches, because <code>runtime_error</code> derives from <code>exception</code>. "main after a" is skipped, the handler prints, then "done" prints.<span class="why">Execution resumes after the handler that caught it, never back inside <code>c</code>.</span></li>
+    </ol>
+    <div class="row"><button class="btn small" data-reveal="we4">Show next step</button><button class="btn ghost small" data-revealall="we4">Show all steps</button></div>
+  </div>
+
+  <div class="attempt" id="att4">
+    <span class="wtag" style="display:inline-block;color:#fff;font-size:12px;letter-spacing:1.5px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:6px">YOUR TURN</span>
+    <span class="chip b-An">Analyze</span>
+    <h3 style="margin-top:4px">Predict the output</h3>
+    <p>Use the same reasoning. Click the lines that print, <b>in order</b>. Some lines never print. Click a chosen line to remove it.</p>
+    <pre class="code" data-code="yourtrace"></pre>
+    <div class="grid g2">
+      <div><h4>Possible lines</h4><div class="order-pool" id="ordPool"></div></div>
+      <div><h4>Your predicted output</h4><div class="order-built" id="ordBuilt"></div></div>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn small" id="ordCheck">Check order</button><button class="btn ghost small" id="ordReset">Start over</button></div>
+    <div class="fb" id="ordFb" aria-live="polite"></div>
+  </div>
+
+  <h3>Rethrowing</h3>
+  <p>A handler can do part of the work (like logging) and then pass the <i>same</i> exception up with <code>throw;</code>, or throw a <i>different</i> one with <code>throw expression;</code>.</p>
+  <div class="codepair"><pre class="code" data-code="rethrow"></pre><div class="out">logging: index 9
+main: index 9</div></div>
+
+  <div class="callout misc" role="note">
+    <div class="ctitle"><span class="ico">!</span>Common misconception #5</div>
+    <p class="wrong">"A function must list the exceptions it throws in its heading, like <code>void f(int x) throw(int, string)</code>."</p>
+    <p><b>Why it's wrong:</b> these <i>dynamic exception specifications</i> appear in older textbooks, but they were deprecated in C++11 and <b>removed in C++17</b>. Under <code>-std=c++17</code>, g++ reports "ISO C++17 does not allow dynamic exception specifications." <b>Correct reasoning:</b> modern C++ only marks functions that <i>never</i> throw, with <code>noexcept</code>. Document what a function may throw in a comment instead.</p>
+  </div>
+
+  <div class="selfcheck" data-sc="s4"></div>
+</article>
+
+<!-- Section 5 -->
+<article class="lsec" id="s5" data-title="Using Exceptions Well">
+  <h2>5. Using Exceptions Well</h2>
+  <div class="chips"><span class="chip b-U">Understand</span><span class="chip b-An">Analyze</span><span class="chip b-E">Evaluate</span></div>
+  <h3>Three choices when an exception occurs</h3>
+  <div class="grid g3">
+    <div class="card"><h4>Terminate the program</h4><p>When there is no point continuing.</p><p class="muted"><b>Example:</b> a payroll program starts and its required input file does not exist. Print a clear message and exit.</p></div>
+    <div class="card"><h4>Fix the error and continue</h4><p>When the user or program can correct the problem.</p><p class="muted"><b>Example:</b> a user types a letter instead of a number. Clear the input and prompt again until the entry is valid.</p></div>
+    <div class="card"><h4>Log the error and continue</h4><p>When the program must keep running.</p><p class="muted"><b>Example:</b> software monitoring a satellite or a nuclear reactor writes the exception to a log file and keeps working.</p></div>
+  </div>
+
+  <div class="callout real">
+    <div class="ctitle"><span class="ico">✓</span>Real-world application: importing grades</div>
+    <p>Imagine a tool that imports a CSV of scores into a gradebook. One bad row (a score of 104) should not stop the whole import. The program should skip it, record why, and keep going. That is "log and continue."</p>
+  </div>
+
+  <h3>Exceptions vs. a simple <code>if</code></h3>
+  <div class="grid g2">
+    <div class="card soft"><h4>Use exceptions for...</h4><ul><li>Unexpected errors that are <b>detected in one place but handled in another</b> (often across function calls)</li><li>Errors a constructor can't report through a return value</li><li>Problems common to several classes in a project</li></ul></div>
+    <div class="card soft"><h4>Use <code>if</code> / validation for...</h4><ul><li><b>Expected</b> situations, such as a user typing a menu choice out of range</li><li>Simple checks handled in the same function</li><li>Normal control flow: never use <code>throw</code> as a fancy <code>break</code></li></ul></div>
+  </div>
+  <p>The slides' QuotientWithFunction example shows why exceptions matter: without them, <code>quotient()</code> could only print a message and call <code>exit(0)</code>, killing the program. With <code>throw</code>, the <i>caller</i> chooses whether to terminate, recover, or log.</p>
+
+  <h3>General paradigm</h3>
+  <pre class="code" data-code="paradigm"></pre>
+
+  <div class="selfcheck" data-sc="s5"></div>
+</article>
+
+      <div class="secnav row">
+        <button class="btn ghost" id="prevSec">← Previous</button>
+        <span class="spacer"></span>
+        <span class="muted" id="secPos"></span>
+        <span class="spacer"></span>
+        <button class="btn" id="nextSec">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS ============ -->
+<section class="panel" id="panel-flash" role="tabpanel">
+  <h2>Flashcards</h2>
+  <p class="lead">Cards run from recall (Remember) to design (Create). Click or press <kbd>Space</kbd> to flip, <kbd>←</kbd>/<kbd>→</kbd> to move. Mark each card so you can review only the ones you missed.</p>
+  <div class="fc-toolbar">
+    <div class="seg" role="group" aria-label="Filter by Bloom's tier">
+      <button data-fl="all" aria-pressed="true">All</button>
+      <button data-fl="lower" aria-pressed="false">Lower tiers</button>
+      <button data-fl="higher" aria-pressed="false">Higher tiers</button>
+      <button data-fl="review" aria-pressed="false">Needs review</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn ghost small" id="fcShuffle">Shuffle</button>
+    <button class="btn ghost small" id="fcOrder">Easy → hard order</button>
+  </div>
+  <div class="fc-stage">
+    <button class="flash" id="flash" aria-live="polite" aria-label="Flashcard, press to flip">
+      <div class="face front" id="fcFront"></div>
+      <div class="face back" id="fcBack"></div>
+    </button>
+  </div>
+  <div class="row">
+    <button class="btn ghost" id="fcPrev" aria-label="Previous card">←</button>
+    <span class="fc-counts" id="fcPos"></span>
+    <button class="btn ghost" id="fcNext" aria-label="Next card">→</button>
+    <span class="spacer"></span>
+    <button class="btn again" id="fcAgain">Review again</button>
+    <button class="btn know" id="fcKnow">Got it ✓</button>
+  </div>
+  <div class="fc-progress" aria-hidden="true"><span id="fcBar"></span></div>
+  <p class="fc-counts" id="fcStats"></p>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="panel" id="panel-quiz" role="tabpanel">
+  <h2>Interactive Quiz</h2>
+  <p class="lead">15 questions that start with recall and build to tracing and judgment. You get feedback after each answer.</p>
+  <div id="quizBox" class="card"></div>
+</section>
+
+<!-- ============ MATCHING ============ -->
+<section class="panel" id="panel-match" role="tabpanel">
+  <h2>Matching Activity</h2>
+  <p class="lead">Select an item on the left, then its match on the right. Correct pairs lock in green.</p>
+  <div class="seg" role="group" aria-label="Choose a matching set" style="margin-bottom:14px">
+    <button data-ms="0" aria-pressed="true">Set A · Terms</button>
+    <button data-ms="1" aria-pressed="false">Set B · Which exception?</button>
+  </div>
+  <div class="row" style="margin-bottom:10px"><span id="mInfo" class="chips"></span><span class="spacer"></span><span class="muted" id="mScore"></span><button class="btn ghost small" id="mReset">Reset set</button></div>
+  <div class="match-wrap">
+    <div class="mcol" id="mLeft"></div>
+    <div class="mcol" id="mRight"></div>
+  </div>
+  <div class="fb" id="mFb" aria-live="polite"></div>
+</section>
+
+<!-- ============ CHALLENGE ============ -->
+<section class="panel" id="panel-challenge" role="tabpanel">
+  <h2>Challenge: Analyze, Evaluate, Create</h2>
+  <p class="lead">These tasks need justification, comparison, or original code. Write your answer first, then compare it to the model answer and the checklist.</p>
+
+  <div class="card task" id="ch1">
+    <div class="task-head"><span class="chip b-An">Analyze</span><h3>1. Debug the handlers</h3></div>
+    <p>A gradebook program loads a file. <code>FileNotFound</code> derives from <code>runtime_error</code>. Select <b>every</b> real problem with this code, then check.</p>
+    <pre class="code" data-code="buggy"></pre>
+    <div id="ch1list"></div>
+    <div class="row"><button class="btn small" id="ch1check">Check</button></div>
+    <div class="fb" id="ch1fb" aria-live="polite"></div>
+    <div class="model" id="ch1model"><b>Corrected order:</b><pre class="code" data-code="buggyFixed"></pre></div>
+  </div>
+
+  <div class="card task" id="ch2">
+    <div class="task-head"><span class="chip b-E">Evaluate</span><h3>2. Terminate, recover, or log?</h3></div>
+    <p>For each real-world scenario, choose the best strategy. Then check to see the reasoning.</p>
+    <div id="ch2list"></div>
+    <div class="row"><button class="btn small" id="ch2check">Check my choices</button></div>
+    <div class="fb" id="ch2fb" aria-live="polite"></div>
+  </div>
+
+  <div class="card task" id="ch3">
+    <div class="task-head"><span class="chip b-E">Evaluate</span><h3>3. Compare two designs</h3></div>
+    <p>A menu loop asks the user to pick 1 to 4. Two students wrote the validation differently. Which design is better? <b>Justify your choice</b> using at least two ideas from Section 5.</p>
+    <div class="grid g2"><div><h4>Design A</h4><pre class="code" data-code="designA"></pre></div><div><h4>Design B</h4><pre class="code" data-code="designB"></pre></div></div>
+    <div class="row" style="margin:8px 0"><label for="ch3pick"><b>I choose:</b></label>
+      <select id="ch3pick"><option value="">Select…</option><option value="A">Design A (exceptions)</option><option value="B">Design B (if / else)</option></select></div>
+    <label for="ch3why" class="sr">Your justification</label>
+    <textarea id="ch3why" placeholder="My reasoning..."></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn small" id="ch3check">Compare with model answer</button></div>
+    <div class="fb" id="ch3fb" aria-live="polite"></div>
+    <div class="model" id="ch3model">
+      <p><b>Model answer: Design B is better here.</b></p>
+      <ul>
+        <li><b>The situation is expected, not exceptional.</b> Users mistype menu choices all the time, so it's normal control flow.</li>
+        <li><b>It is detected and handled in the same function.</b> Exceptions earn their cost when the code that detects a problem is far from the code that can handle it. Here, they're the same few lines.</li>
+        <li><b>Design A uses <code>throw</code> as a jump.</b> Throwing and catching inside the same loop is harder to read and slower than an <code>if</code>.</li>
+        <li><b>When would A be right?</b> If <code>getChoice()</code> were a library function used by many programs that each handle bad input differently, throwing <code>out_of_range</code> to the caller would make sense.</li>
+      </ul>
+      <p class="muted">Self-check: did your justification mention <i>expected vs. unexpected</i> and <i>where the error is handled</i>?</p>
+    </div>
+  </div>
+
+  <div class="card task" id="ch4">
+    <div class="task-head"><span class="chip b-C">Create</span><h3>4. Design <code>GradeOutOfRange</code></h3></div>
+    <p>The gradebook import from Section 5 needs its own exception. Write a class <code>GradeOutOfRange</code> and a function <code>recordScore(name, score)</code> that throws it when a score is outside 0 to 100. Then write a loop in <code>main()</code> that <b>skips bad rows and keeps going</b>, printing the student's name and score for each skipped row.</p>
+    <label for="ch4code" class="sr">Your code</label>
+    <textarea id="ch4code" style="font-family:var(--mono);font-size:14px;min-height:220px" placeholder="class GradeOutOfRange : public ... {"></textarea>
+    <h4>Self-assessment checklist</h4>
+    <div id="ch4list"></div>
+    <div class="row" style="margin-top:8px"><button class="btn small" id="ch4check">Show model solution</button><span class="muted" id="ch4score"></span></div>
+    <div class="model" id="ch4model">
+      <div class="codepair"><pre class="code" data-code="create"></pre><div class="out">Recorded Ana: 91
+Skipped Ben (104): Score out of range for Ben
+Recorded Chen: 78</div></div>
+      <p><b>Design decisions:</b> <code>out_of_range</code> is the closest standard class (a value outside its allowed range), so the class inherits <code>what()</code> and can still be caught by <code>catch (const logic_error&amp;)</code> or <code>catch (const exception&amp;)</code>. Storing <code>student</code> and <code>score</code> lets the handler print a useful message. The <code>try</code> is <i>inside</i> the loop, so one bad row is skipped instead of ending the import.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">CSP31B · C++ Programming II · San Joaquin Delta College, Stockton, California · Chapter 16 Exception Handling. All code examples compile with g++ <code>-std=c++17</code>.</div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- storage ---------------- */
+const KEY = "csp31b-ch16-progress-v1";
+let state = {sc:{}, fc:{}, quiz:null, match:[false,false], ch:{}, att:{}};
+try { const raw = localStorage.getItem(KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} updateProgress(); }
+
+/* ---------------- helpers ---------------- */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const BLOOM = {R:"Remember",U:"Understand",Ap:"Apply",An:"Analyze",E:"Evaluate",C:"Create"};
+const RANK = {R:0,U:1,Ap:2,An:3,E:4,C:5};
+const chip = b => `<span class="chip b-${b}">${BLOOM[b]}</span>`;
+const inline = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+function shuffle(a){ a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ---------------- C++ highlighter ---------------- */
+const KW = new Set("if else for while do return try catch throw class struct public private protected const noexcept virtual override new delete using namespace include define ifndef endif this true false static_cast auto operator".split(" "));
+const TY = new Set("int double float char bool void string vector size_t exception logic_error runtime_error invalid_argument out_of_range length_error domain_error overflow_error underflow_error range_error bad_alloc bad_cast std cout cin endl".split(" "));
+function hl(code){
+  const re = /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)')|(#\w+)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)|(\s+)|(.)/g;
+  let out = "", m;
+  while ((m = re.exec(code))){
+    if (m[1]) out += `<span class="c">${esc(m[1])}</span>`;
+    else if (m[2] || m[3]) out += `<span class="s">${esc(m[2]||m[3])}</span>`;
+    else if (m[4]) out += `<span class="p">${esc(m[4])}</span>`;
+    else if (m[5]) out += `<span class="n">${m[5]}</span>`;
+    else if (m[6]) out += KW.has(m[6]) ? `<span class="k">${m[6]}</span>` : TY.has(m[6]) ? `<span class="t">${m[6]}</span>` : m[6];
+    else out += esc(m[7] || m[8]);
+  }
+  return out;
+}
+
+/* ---------------- code samples (all verified with g++ -std=c++17) ---------------- */
+const CODE = {
+quotient1:
+`int main() {
+    cout << "Enter two integers: ";
+    int number1, number2;
+    cin >> number1 >> number2;
+
+    cout << number1 << " / " << number2 << " is "
+         << (number1 / number2) << endl;
+    return 0;
+}`,
+template:
+`try {
+    // Code to try
+    // Throw an exception with a throw statement,
+    // or call a function that may throw
+    // More code to try (skipped if something is thrown)
+}
+catch (type e) {
+    // Code to process the exception
+}`,
+quotient2:
+`#include <stdexcept>
+
+int quotient(int number1, int number2) {
+    if (number2 == 0)
+        throw invalid_argument("Divisor cannot be zero");
+    return number1 / number2;
+}
+
+int main() {
+    try {
+        cout << quotient(45, 9) << endl;
+        cout << quotient(5, 0) << endl;
+        cout << "never" << endl;
+    } catch (const invalid_argument& ex) {
+        cout << "Error: " << ex.what() << endl;
+    }
+    cout << "Execution continues" << endl;
+}`,
+substr:
+`string sentence = "San Joaquin Delta College";
+cout << sentence.length() << endl;
+try {
+    string s1 = sentence.substr(4, 30);
+    cout << "s1 = " << s1 << endl;
+    string s2 = sentence.substr(31, 10);
+    cout << "s2 = " << s2 << endl;
+} catch (out_of_range& e) {
+    cout << "out_of_range caught" << endl;
+} catch (length_error& e) {
+    cout << "length_error caught" << endl;
+}`,
+library:
+`vector<int> v = {10, 20, 30};
+try {
+    cout << v.at(1) << endl;
+    cout << v.at(5) << endl;
+} catch (const out_of_range& e) {
+    cout << "out_of_range" << endl;
+}
+
+try {
+    int n = stoi("abc");
+    cout << n;
+} catch (const invalid_argument& e) {
+    cout << "invalid_argument from stoi" << endl;
+}`,
+bank:
+`class InsufficientFunds : public runtime_error {
+public:
+    InsufficientFunds(double balance, double amount)
+        : runtime_error("Insufficient funds"),
+          balance(balance), amount(amount) {}
+    double getShortfall() const { return amount - balance; }
+private:
+    double balance, amount;
+};
+
+class Account {
+public:
+    Account(double b) : balance(b) {}
+    void withdraw(double amount) {
+        if (amount <= 0)
+            throw invalid_argument("Amount must be positive");
+        if (amount > balance)
+            throw InsufficientFunds(balance, amount);
+        balance -= amount;
+    }
+    double getBalance() const { return balance; }
+private:
+    double balance;
+};
+
+int main() {
+    Account acct(100);
+    double tries[] = {40, -5, 90};
+    for (double t : tries) {
+        try {
+            acct.withdraw(t);
+            cout << "Withdrew " << t << ", balance "
+                 << acct.getBalance() << endl;
+        } catch (const InsufficientFunds& e) {
+            cout << e.what() << ": short by "
+                 << e.getShortfall() << endl;
+        } catch (const invalid_argument& e) {
+            cout << "Rejected: " << e.what() << endl;
+        }
+    }
+}`,
+order:
+`try {
+    throw invalid_argument("bad");
+}
+catch (const logic_error& e) {        // base class first
+    cout << "logic_error handler" << endl;
+}
+catch (const invalid_argument& e) {   // never reached!
+    cout << "invalid_argument handler" << endl;
+}`,
+slicing:
+`class Base : public exception {
+public:
+    const char* what() const noexcept override { return "Base"; }
+};
+class Derived : public Base {
+public:
+    const char* what() const noexcept override { return "Derived"; }
+};
+
+try { throw Derived(); }
+catch (Base e) { cout << "by value: " << e.what() << endl; }
+
+try { throw Derived(); }
+catch (const Base& e) { cout << "by reference: " << e.what() << endl; }`,
+unwind:
+`struct Tracker {
+    const char* n;
+    Tracker(const char* n) : n(n) {}
+    ~Tracker() { cout << "destroy " << n << endl; }
+};
+
+void inner() { Tracker t("inner local"); throw 42; }
+void outer() { Tracker t("outer local"); inner(); }
+
+int main() {
+    try { outer(); }
+    catch (int code) { cout << "caught " << code << endl; }
+}`,
+trace:
+`void c() {
+    cout << "c start" << endl;
+    throw runtime_error("disk full");
+    cout << "c end" << endl;
+}
+void b() {
+    cout << "b start" << endl;
+    c();
+    cout << "b end" << endl;
+}
+void a() {
+    cout << "a start" << endl;
+    try { b(); }
+    catch (const logic_error& e) { cout << "a caught logic" << endl; }
+    cout << "a end" << endl;
+}
+int main() {
+    try { a(); cout << "main after a" << endl; }
+    catch (const exception& e) {
+        cout << "main caught: " << e.what() << endl;
+    }
+    cout << "done" << endl;
+}`,
+yourtrace:
+`void level3(int x) {
+    cout << "L3 start" << endl;
+    if (x < 0) throw invalid_argument("negative");
+    cout << "L3 end" << endl;
+}
+void level2(int x) {
+    cout << "L2 start" << endl;
+    try { level3(x); }
+    catch (const out_of_range& e) { cout << "L2 caught" << endl; }
+    cout << "L2 end" << endl;
+}
+int main() {
+    try {
+        level2(-1);
+        cout << "main after" << endl;
+    } catch (const logic_error& e) {
+        cout << "main caught " << e.what() << endl;
+    }
+    cout << "done" << endl;
+}`,
+rethrow:
+`void process() {
+    try {
+        throw out_of_range("index 9");
+    } catch (const out_of_range& e) {
+        cout << "logging: " << e.what() << endl;
+        throw;                  // rethrow the same exception
+    }
+}
+
+int main() {
+    try { process(); }
+    catch (const exception& e) { cout << "main: " << e.what() << endl; }
+}`,
+paradigm:
+`// (a) The function detects the problem and throws
+returnType function1(parameterList) {
+    if (anExceptionCondition)
+        throw AnException(arguments);
+    // normal work
+}
+
+// (b) The caller decides how to handle it
+returnType function2(parameterList) {
+    try {
+        function1(arguments);
+    } catch (const AnException& ex) {
+        // handler: terminate, recover, or log
+    }
+}`,
+buggy:
+`try {
+    loadGrades("grades.csv");
+}
+catch (exception e) {
+    cout << "Error: " << e.what() << endl;
+}
+catch (const runtime_error& e) {
+    cout << "Runtime problem: " << e.what() << endl;
+}
+catch (const FileNotFound& e) {
+    cout << "Missing file: " << e.getName() << endl;
+}`,
+buggyFixed:
+`try {
+    loadGrades("grades.csv");
+}
+catch (const FileNotFound& e) {        // most derived first
+    cout << "Missing file: " << e.getName() << endl;
+}
+catch (const runtime_error& e) {
+    cout << "Runtime problem: " << e.what() << endl;
+}
+catch (const exception& e) {           // most general last, by reference
+    cout << "Error: " << e.what() << endl;
+}`,
+designA:
+`int getChoice() {
+    while (true) {
+        int choice;
+        cin >> choice;
+        try {
+            if (choice < 1 || choice > 4)
+                throw out_of_range("bad choice");
+            return choice;
+        } catch (const out_of_range& e) {
+            cout << "Pick 1 to 4: ";
+        }
+    }
+}`,
+designB:
+`int getChoice() {
+    int choice;
+    cin >> choice;
+    while (choice < 1 || choice > 4) {
+        cout << "Pick 1 to 4: ";
+        cin >> choice;
+    }
+    return choice;
+}`,
+create:
+`class GradeOutOfRange : public out_of_range {
+public:
+    GradeOutOfRange(const string& student, double score)
+        : out_of_range("Score out of range for " + student),
+          student(student), score(score) {}
+    string getStudent() const { return student; }
+    double getScore() const { return score; }
+private:
+    string student;
+    double score;
+};
+
+void recordScore(const string& name, double score) {
+    if (score < 0 || score > 100)
+        throw GradeOutOfRange(name, score);
+    cout << "Recorded " << name << ": " << score << endl;
+}
+
+int main() {
+    string names[] = {"Ana", "Ben", "Chen"};
+    double scores[] = {91, 104, 78};
+    for (int i = 0; i < 3; i++) {
+        try {
+            recordScore(names[i], scores[i]);
+        } catch (const GradeOutOfRange& e) {
+            cout << "Skipped " << e.getStudent() << " ("
+                 << e.getScore() << "): " << e.what() << endl;
+        }
+    }
+}`
+};
+$$("pre[data-code]").forEach(p => { p.innerHTML = hl(CODE[p.dataset.code]); });
+
+/* ---------------- tabs ---------------- */
+function openTab(name){
+  $$(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab === name ? "true" : "false"));
+  $$(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + name));
+  window.scrollTo({top:0});
+}
+$$(".tab").forEach(t => t.addEventListener("click", () => openTab(t.dataset.tab)));
+$$("[data-go]").forEach(b => b.addEventListener("click", () => openTab(b.dataset.go)));
+
+/* ---------------- learn: section nav ---------------- */
+const SECS = $$(".lsec");
+let cur = 0;
+function renderToc(){
+  $("#toc").innerHTML = SECS.map((s,i) => {
+    const done = state.sc[s.id] && state.sc[s.id].done;
+    return `<li class="${done?"done":""}"><button data-si="${i}" aria-current="${i===cur}"><span class="num">${done?"✓":i+1}</span><span>${esc(s.dataset.title)}</span></button></li>`;
+  }).join("");
+  $$("#toc button").forEach(b => b.addEventListener("click", () => showSec(+b.dataset.si)));
+}
+function showSec(i){
+  cur = Math.max(0, Math.min(SECS.length-1, i));
+  SECS.forEach((s,k) => s.classList.toggle("active", k===cur));
+  $("#prevSec").disabled = cur === 0;
+  $("#nextSec").textContent = cur === SECS.length-1 ? "Go to Flashcards →" : "Next →";
+  $("#secPos").textContent = `Part ${cur+1} of ${SECS.length}`;
+  renderToc();
+  const top = $("#panel-learn").getBoundingClientRect().top + window.scrollY - 60;
+  if (window.scrollY > top) window.scrollTo({top});
+}
+$("#prevSec").addEventListener("click", () => showSec(cur-1));
+$("#nextSec").addEventListener("click", () => cur === SECS.length-1 ? openTab("flash") : showSec(cur+1));
+
+/* worked example step reveal */
+$$(".steps").forEach(ol => $$("li", ol).forEach((li,i) => { if (i>0) li.hidden = true; }));
+$$("[data-reveal]").forEach(b => b.addEventListener("click", () => {
+  const next = $$("#"+b.dataset.reveal+" li").find(li => li.hidden);
+  if (next) next.hidden = false;
+  if (!$$("#"+b.dataset.reveal+" li").some(li => li.hidden)) b.disabled = true;
+}));
+$$("[data-revealall]").forEach(b => b.addEventListener("click", () => {
+  $$("#"+b.dataset.revealall+" li").forEach(li => li.hidden = false);
+  $(`[data-reveal="${b.dataset.revealall}"]`).disabled = true;
+}));
+
+/* ---------------- fill-in-the-blank attempts ---------------- */
+function norm(s){ return s.trim().replace(/^std::/, "").replace(/\s+/g, ""); }
+function setupBlanks(id, rules, hint, solution){
+  const box = $("#"+id), fb = $("#"+id+"fb");
+  const inputs = $$("input.blank", box);
+  $("#"+id+"check").addEventListener("click", () => {
+    const vals = inputs.map(i => norm(i.value));
+    let right = 0; const msgs = [];
+    inputs.forEach((inp, k) => {
+      const r = rules[k](vals[k], vals);
+      inp.classList.toggle("ok", r === true); inp.classList.toggle("no", r !== true);
+      if (r === true) right++; else msgs.push(`Blank ${k+1}: ${r}`);
+    });
+    fb.className = "fb show " + (right === inputs.length ? "ok" : "no");
+    fb.innerHTML = right === inputs.length
+      ? "All correct. This matches the worked example's pattern: detect, throw, try, catch by const reference, read <code>what()</code>."
+      : `${right} of ${inputs.length} correct.<br>` + msgs.map(inline).join("<br>");
+    if (right === inputs.length){ state.att[id] = true; save(); }
+  });
+  $("#"+id+"hint").addEventListener("click", () => { fb.className = "fb show info"; fb.innerHTML = hint; });
+  $("#"+id+"show").addEventListener("click", () => {
+    inputs.forEach((inp,k) => { inp.value = solution[k]; inp.classList.add("ok"); inp.classList.remove("no"); });
+    fb.className = "fb show info"; fb.innerHTML = "Solution filled in. Re-read the worked example steps and explain each blank in your own words.";
+  });
+}
+setupBlanks("att1", [
+  v => v === "throw" || "the keyword that sends an exception out is `throw`.",
+  v => ["invalid_argument","domain_error"].includes(v) || (v === "logic_error" || v === "runtime_error" || v === "exception" ? "that works, but a more specific `<stdexcept>` class fits better: the caller passed an illegal argument." : "use a class from `<stdexcept>` that means 'illegal argument'."),
+  v => v === "try" || "the risky calls must be inside a `try` block.",
+  (v, all) => {
+    const ok = {invalid_argument:["invalid_argument","logic_error","exception"], domain_error:["domain_error","logic_error","exception"]};
+    const allowed = ok[all[1]] || ["invalid_argument","domain_error","logic_error","exception"];
+    return allowed.includes(v) || "catch the type you threw, or one of its base classes.";
+  },
+  v => v === "what" || "the member function that returns the message is `what()`."
+], "Look at steps 3 to 5 of the worked example. Blank ② is the same kind of error as a zero divisor: an illegal argument.",
+["throw","invalid_argument","try","invalid_argument","what"]);
+
+setupBlanks("att3", [
+  v => ["logic_error","invalid_argument","domain_error"].includes(v) || (v === "runtime_error" ? "an invalid triangle is something the program could have prevented, so `logic_error` fits better than `runtime_error`." : v === "exception" ? "`exception` has no constructor that takes a message; use `logic_error`." : "use the `<stdexcept>` class for preventable errors."),
+  (v, all) => v === all[0] && v !== "" || "the initializer list must call the constructor of the base class you chose in blank 1.",
+  v => v === "const" || "a getter that doesn't change the object should be `const`.",
+  v => v === "throw" || "the keyword that raises the exception is `throw`."
+], "Blank ① is the base class for errors the program could have prevented. Blank ② calls that same class's constructor.",
+["logic_error","logic_error","const","throw"]);
+
+/* ---------------- ordering task ---------------- */
+const ORDER_ANS = ["L2 start","L3 start","main caught negative","done"];
+const ORDER_POOL = ["L2 start","L3 start","L3 end","L2 caught","L2 end","main after","main caught negative","done"];
+let built = [];
+function renderOrder(){
+  $("#ordPool").innerHTML = shuffledPool.filter(l => !built.includes(l)).map(l => `<button class="order-line" data-l="${esc(l)}">${esc(l)}</button>`).join("") || '<span class="muted">All lines used.</span>';
+  $("#ordBuilt").innerHTML = built.map(l => `<button class="order-line" data-l="${esc(l)}">${esc(l)}</button>`).join("") || '<span class="muted">Click lines on the left.</span>';
+  $$("#ordPool .order-line").forEach(b => b.addEventListener("click", () => { built.push(b.dataset.l); renderOrder(); }));
+  $$("#ordBuilt .order-line").forEach(b => b.addEventListener("click", () => { built = built.filter(x => x !== b.dataset.l); renderOrder(); }));
+}
+let shuffledPool = shuffle(ORDER_POOL);
+renderOrder();
+$("#ordReset").addEventListener("click", () => { built = []; shuffledPool = shuffle(ORDER_POOL); $("#ordFb").className = "fb"; renderOrder(); });
+$("#ordCheck").addEventListener("click", () => {
+  const fb = $("#ordFb");
+  $$("#ordBuilt .order-line").forEach((b,i) => b.classList.add(ORDER_ANS[i] === built[i] ? "ok" : "no"));
+  const ok = built.length === ORDER_ANS.length && built.every((l,i) => l === ORDER_ANS[i]);
+  fb.className = "fb show " + (ok ? "ok" : "no");
+  fb.innerHTML = ok
+    ? "Correct! <code>level3</code> throws <code>invalid_argument</code>. <code>level2</code>'s handler only catches <code>out_of_range</code>, a sibling class, so it doesn't match: \"L3 end\", \"L2 end\" and \"main after\" are all skipped. <code>main</code>'s <code>logic_error</code> handler matches because <code>invalid_argument</code> derives from it."
+    : "Not yet. Ask at each function: does it have a handler whose type matches <code>invalid_argument</code>? Remember that <code>out_of_range</code> and <code>invalid_argument</code> are siblings; neither is a base of the other.";
+  if (ok){ state.att.att4 = true; save(); }
+});
+
+/* ---------------- self-checks ---------------- */
+const SELF = {
+s1:[
+ {b:"R", q:"Which keyword signals that an error has occurred?", o:["`try`","`catch`","`throw`","`except`"], a:2, w:"`throw` sends an exception object out of the current code. `except` is Python, not C++."},
+ {b:"U", q:"An exception is thrown on the 2nd of 4 statements in a `try` block. What happens to statements 3 and 4?", o:["They run after the catch block finishes","They are skipped","They run before the catch block","Only statement 3 runs"], a:1, w:"Control jumps straight to a matching handler and never comes back into the try block."},
+ {b:"Ap", q:"Given `int quotient(int a, int b)` that throws `invalid_argument` when `b == 0`, which call site is correct?", o:["`quotient(5, 0); catch (invalid_argument e) {}`","`try { quotient(5, 0); } catch (const invalid_argument& e) { cout << e.what(); }`","`try (quotient(5, 0)) catch { }`","`if (quotient(5, 0)) throw;`"], a:1, w:"The call goes in a `try` block, followed by a handler for the thrown type, caught by const reference."}
+],
+s2:[
+ {b:"R", q:"Which header declares `logic_error`, `runtime_error`, and `out_of_range`?", o:["`<exception>`","`<stdexcept>`","`<iostream>`","`<error>`"], a:1, w:"`<exception>` has only the base class; the standard subclasses are in `<stdexcept>`."},
+ {b:"U", q:"`string s = \"Delta\";` (length 5). What does `s.substr(2, 50)` do?", o:["Throws `length_error`","Throws `out_of_range`","Returns \"lta\"","Returns an empty string"], a:2, w:"The count is a maximum; it is clamped at the end. Only a starting position greater than 5 would throw `out_of_range`."},
+ {b:"Ap", q:"Which expression throws `out_of_range` for `vector<int> v(3);`?", o:["`v[10]`","`v.at(10)`","`v.size()`","`v.at(2)`"], a:1, w:"`at()` checks bounds and throws. `v[10]` does not check; it is undefined behavior. `v.at(2)` is valid."}
+],
+s3:[
+ {b:"U", q:"Why derive a custom exception from `logic_error` instead of writing an unrelated class?", o:["Unrelated classes cannot be thrown","It inherits `what()` and can be caught by handlers for `logic_error` or `exception`","It makes the program run faster","The compiler requires it"], a:1, w:"Any class can be thrown, but deriving from the standard hierarchy gives you `what()` and lets general handlers catch it."},
+ {b:"Ap", q:"How does `TriangleException` pass its message to the base class?", o:["`what() = \"Invalid triangle\";`","`: logic_error(\"Invalid triangle\")` in the constructor's initializer list","`message = \"Invalid triangle\";` in `main`","`throw logic_error;` in the constructor"], a:1, w:"The base class constructor is called in the initializer list; `what()` then returns that message."},
+ {b:"An", q:"A withdrawal fails because the balance is too low. Which base class best fits `InsufficientFunds`?", o:["`runtime_error`: it depends on data known only while running","`invalid_argument`: the amount is an illegal argument","`length_error`","`bad_alloc`"], a:0, w:"The amount itself is valid; whether it can be paid depends on the current balance at run time."}
+],
+s4:[
+ {b:"U", q:"Handlers are listed in this order: `exception`, `logic_error`, `invalid_argument`. An `invalid_argument` is thrown. Which handler runs?", o:["`exception`","`logic_error`","`invalid_argument`","All three"], a:0, w:"The first matching handler wins, and `invalid_argument` is an `exception`. The other two are unreachable."},
+ {b:"Ap", q:"Inside a catch block, which statement rethrows the same exception to the caller?", o:["`throw e.what();`","`throw;`","`return;`","`catch;`"], a:1, w:"A bare `throw;` rethrows the current exception unchanged. `throw e.what();` would throw a new `const char*`."},
+ {b:"An", q:"An exception is thrown in function `g`, called by `f`, called by `main`. Only `main` has a matching handler. What happens to `g`'s and `f`'s local variables?", o:["They stay in memory until main ends","They are destroyed as the stack unwinds","Only `f`'s are destroyed","They are copied into the exception"], a:1, w:"Stack unwinding ends each function without a matching handler and destroys its local objects."}
+],
+s5:[
+ {b:"U", q:"A program monitoring a satellite gets one corrupted sensor reading. What should it do?", o:["Terminate immediately","Log the error and continue","Ignore it silently","Restart the computer"], a:1, w:"Systems that must keep running write the problem to a log and continue."},
+ {b:"An", q:"Which situation is the BEST fit for throwing an exception?", o:["A user types 7 in a 1 to 4 menu","A loop counter reaches its limit","A class's constructor receives values that would create an invalid object","Checking whether a number is even"], a:2, w:"A constructor can't return an error code, and the caller must know the object wasn't created. The others are expected, local checks."},
+ {b:"E", q:"A teammate wraps every single function call in its own try/catch that just prints \"error\". Best judgment?", o:["Good: more handlers means safer code","Poor: it hides useful information and handles errors where nothing can be done; catch where you can actually respond","Good, as long as it uses catch(...)","It doesn't matter"], a:1, w:"Handle an exception where you have enough context to terminate, recover, or log meaningfully, and keep the exception's details."}
+]
+};
+function renderSelfCheck(el){
+  const id = el.dataset.sc, items = SELF[id];
+  const prev = state.sc[id] || {};
+  el.innerHTML = `<h3>✎ Self-check: ${esc(SECS.find(s=>s.id===id).dataset.title)}</h3>
+    <p class="muted" style="margin-top:0">Answer all ${items.length} questions before moving on. <span class="scscore" id="${id}-score"></span></p>` +
+    items.map((it,qi) => `<div class="mcq" data-qi="${qi}"><div class="q">${chip(it.b)} &nbsp;${qi+1}. ${inline(it.q)}</div>
+      <div class="opts">${it.o.map((o,oi) => `<button class="opt" data-oi="${oi}"><span class="L">${"ABCD"[oi]}</span><span>${inline(o)}</span></button>`).join("")}</div>
+      <div class="fb" aria-live="polite"></div></div>`).join("") +
+    `<div class="row"><button class="btn ghost small" data-retry="${id}">Try again</button></div>`;
+  const answers = {};
+  $$(".mcq", el).forEach(m => {
+    const it = items[+m.dataset.qi];
+    $$(".opt", m).forEach(b => b.addEventListener("click", () => {
+      const oi = +b.dataset.oi, ok = oi === it.a;
+      $$(".opt", m).forEach(x => { x.disabled = true; if (+x.dataset.oi === it.a) x.classList.add("correct"); });
+      if (!ok) b.classList.add("wrong");
+      const fb = $(".fb", m); fb.className = "fb show " + (ok ? "ok" : "no");
+      fb.innerHTML = (ok ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + inline(it.w);
+      answers[m.dataset.qi] = ok;
+      const n = Object.keys(answers).length;
+      if (n === items.length){
+        const right = Object.values(answers).filter(Boolean).length;
+        const msg = right === items.length ? "Ready to move on!" : right >= items.length-1 ? "Almost there. Review the one you missed." : "Re-read this section before moving on.";
+        $("#"+id+"-score").textContent = `Score: ${right}/${items.length}. ${msg}`;
+        state.sc[id] = {done:true, score:right, of:items.length}; save(); renderToc();
+      }
+    }));
+  });
+  if (prev.done) $("#"+id+"-score").textContent = `Last score: ${prev.score}/${prev.of}`;
+  $(`[data-retry="${id}"]`, el).addEventListener("click", () => renderSelfCheck(el));
+}
+$$(".selfcheck").forEach(renderSelfCheck);
+
+/* ---------------- flashcards ---------------- */
+const CARDS = [
+ {s:1,b:"R",f:"What is an exception?",k:"An undesirable event detected while a program is running, such as a bad argument, a missing file, or an index out of range."},
+ {s:1,b:"R",f:"What are the three keywords of C++ exception handling?",k:"`try` wraps code that might fail, `throw` signals an error, and `catch` handles a specific type of exception."},
+ {s:1,b:"R",f:"Can the catch block parameter name be omitted?",k:"Yes. `catch (int) { ... }` is legal when you don't need the exception object's contents."},
+ {s:2,b:"R",f:"What is the base class of all standard exception classes?",k:"`exception`, declared in `<exception>`."},
+ {s:2,b:"R",f:"Which function returns an exception's message?",k:"`what()`, which returns a `const char*`. Every standard exception class overrides it."},
+ {s:2,b:"R",f:"Name the four main subclasses of `logic_error`.",k:"`invalid_argument`, `out_of_range`, `length_error`, and `domain_error`."},
+ {s:2,b:"R",f:"Name subclasses of `runtime_error`.",k:"`overflow_error`, `underflow_error`, and `range_error`."},
+ {s:4,b:"R",f:"What syntax rethrows the exception currently being handled?",k:"A bare `throw;` inside a catch block."},
+ {s:1,b:"U",f:"What happens to the rest of a try block after an exception is thrown?",k:"It is skipped. Control jumps to the first matching catch block, then continues after the last catch block."},
+ {s:1,b:"U",f:"If no exception is thrown in a try block, what happens to its catch blocks?",k:"They are all ignored, and execution continues after the last catch block."},
+ {s:1,b:"U",f:"Does integer division by zero throw a C++ exception?",k:"No. It is undefined behavior; usually the OS kills the program (exit code 136, SIGFPE). You must check the divisor and `throw` yourself."},
+ {s:2,b:"U",f:"Difference between `logic_error` and `runtime_error`?",k:"`logic_error`: mistakes the program could have prevented (bad arguments, bad indexes). `runtime_error`: conditions that can only be detected while running."},
+ {s:2,b:"U",f:"Does `\"Delta\".substr(2, 50)` throw?",k:"No. The count is clamped, giving \"lta\". Only a start position greater than `length()` throws, and it throws `out_of_range`."},
+ {s:4,b:"U",f:"What is stack unwinding?",k:"When a function doesn't catch an exception, it ends immediately, its local variables are destroyed, and the exception moves to the caller. This repeats until a handler matches."},
+ {s:4,b:"U",f:"What happens if no handler ever catches an exception?",k:"`std::terminate` is called and the program ends."},
+ {s:3,b:"U",f:"Can any class be used as an exception?",k:"Yes. How you use a class makes it an exception class. Deriving from a standard class is recommended so you inherit `what()`."},
+ {s:1,b:"Ap",f:"Write a statement that throws `invalid_argument` with the message \"Age must be positive\".",k:"`throw invalid_argument(\"Age must be positive\");`"},
+ {s:1,b:"Ap",f:"Write a handler that catches `out_of_range` correctly and prints its message.",k:"`catch (const out_of_range& e) { cout << e.what() << endl; }`",code:"catch (const out_of_range& e) {\n    cout << e.what() << endl;\n}"},
+ {s:3,b:"Ap",f:"Write the constructor for `class BadId : public logic_error` that takes an `int id` and stores it.",k:"Call the base constructor with a message in the initializer list, then store the data.",code:"BadId(int id)\n    : logic_error(\"Invalid ID\"), id(id) {}"},
+ {s:4,b:"Ap",f:"Write a catch-all handler. Where must it go?",k:"`catch (...)`. It must be the last handler, because it matches every type.",code:"catch (...) {\n    cout << \"Unknown error\" << endl;\n}"},
+ {s:2,b:"Ap",f:"Which call throws for `vector<int> v(3);`: `v[5]` or `v.at(5)`?",k:"`v.at(5)` throws `out_of_range`. `v[5]` doesn't check; it is undefined behavior."},
+ {s:4,b:"An",f:"Handlers are ordered `logic_error` then `invalid_argument`. What goes wrong?",k:"The `invalid_argument` handler is unreachable: an `invalid_argument` is a `logic_error`, and the first match wins. Put the derived class first."},
+ {s:4,b:"An",f:"Why does `catch (exception e)` print the wrong message for a derived exception?",k:"Catching by value slices the object to its base part, so the base `what()` runs. Catch by `const exception&` instead."},
+ {s:4,b:"An",f:"`c()` throws `runtime_error`; `a()` catches only `logic_error`; `main` catches `exception`. Who handles it?",k:"`main`. `runtime_error` and `logic_error` are siblings, so `a`'s handler doesn't match, and `a` unwinds too."},
+ {s:5,b:"An",f:"Compare the slides' `quotient()` that calls `exit(0)` with one that throws.",k:"`exit(0)` lets the function decide to kill the whole program. Throwing reports the problem and lets the caller choose to terminate, recover, or log, so the function is reusable."},
+ {s:4,b:"E",f:"Is `void f(int x) throw(int, string)` good modern C++?",k:"No. Dynamic exception specifications were deprecated in C++11 and removed in C++17. Use `noexcept` only for functions that never throw, and document possible exceptions in comments."},
+ {s:5,b:"E",f:"A user types 9 in a 1 to 4 menu. Throw an exception or use an `if`? Justify.",k:"Use an `if`. It is an expected, local situation handled in the same function; exceptions are for unexpected errors handled somewhere else."},
+ {s:5,b:"E",f:"An input file is missing when a batch payroll job starts. Which strategy and why?",k:"Terminate with a clear message. Without the data there is nothing useful the program can do, and continuing could produce wrong paychecks."},
+ {s:3,b:"E",f:"Should you write a custom class for \"index past the end of my list\"?",k:"Usually no. `out_of_range` already describes it exactly. Create custom classes only when no standard class fits, or you need extra data."},
+ {s:3,b:"C",f:"Design an exception for a parking app when a car exceeds the time limit. Name, base class, data?",k:"For example `ParkingExpired : public runtime_error` (it depends on the clock at run time), storing `plate` and `minutesOver` with const getters.",code:"class ParkingExpired : public runtime_error {\npublic:\n    ParkingExpired(string plate, int over)\n        : runtime_error(\"Parking time expired\"),\n          plate(plate), minutesOver(over) {}\n    int getMinutesOver() const { return minutesOver; }\nprivate:\n    string plate;\n    int minutesOver;\n};"},
+ {s:5,b:"C",f:"Sketch a loop that imports 100 grade rows and skips bad ones without stopping.",k:"Put the try/catch inside the loop so each row is handled independently.",code:"for (const Row& r : rows) {\n    try {\n        recordScore(r.name, r.score);\n    } catch (const GradeOutOfRange& e) {\n        log << \"Skipped \" << e.getStudent() << endl;\n    }\n}"}
+];
+CARDS.forEach((c,i) => c.id = "c"+i);
+let fcFilter = "all", fcList = [], fcIdx = 0, fcShuffled = false;
+function fcBuild(){
+  let list = CARDS.slice();
+  if (fcFilter === "lower") list = list.filter(c => RANK[c.b] <= 2);
+  if (fcFilter === "higher") list = list.filter(c => RANK[c.b] >= 3);
+  if (fcFilter === "review") list = list.filter(c => state.fc[c.id] !== "know");
+  list.sort((a,b) => RANK[a.b] - RANK[b.b] || a.s - b.s);
+  if (fcShuffled) list = shuffle(list);
+  fcList = list; fcIdx = 0; fcRender();
+}
+function fcRender(){
+  const flash = $("#flash"); flash.classList.remove("flipped");
+  const known = CARDS.filter(c => state.fc[c.id] === "know").length;
+  $("#fcStats").textContent = `${known} of ${CARDS.length} cards marked "Got it" · ${CARDS.filter(c => state.fc[c.id] === "again").length} marked for review`;
+  $("#fcPill").textContent = `${known}/${CARDS.length}`;
+  if (!fcList.length){
+    $("#fcFront").innerHTML = `<div class="big">${fcFilter === "review" ? "Nothing left to review. Nice work!" : "No cards in this filter."}</div>`;
+    $("#fcBack").innerHTML = ""; $("#fcPos").textContent = "0 / 0"; $("#fcBar").style.width = "0"; return;
+  }
+  const c = fcList[fcIdx], mark = state.fc[c.id];
+  const meta = `<div class="meta">${chip(c.b)}<span class="sec">Section ${c.s}</span>${mark ? `<span class="sec" style="color:${mark==="know"?"var(--ok)":"var(--user-accent)"}">${mark==="know"?"✓ Got it":"↻ Review"}</span>`:""}</div>`;
+  $("#fcFront").innerHTML = meta + `<div class="big">${inline(c.f)}</div><div class="hint">Click or press Space to reveal the answer</div>`;
+  $("#fcBack").innerHTML = meta + `<div style="font-size:17px">${inline(c.k)}</div>` + (c.code ? `<pre class="code">${hl(c.code)}</pre>` : "") + `<div class="hint">Click to flip back</div>`;
+  $("#fcPos").textContent = `${fcIdx+1} / ${fcList.length}`;
+  $("#fcBar").style.width = ((fcIdx+1)/fcList.length*100) + "%";
+}
+function fcFlip(){ if (fcList.length) $("#flash").classList.toggle("flipped"); }
+function fcMove(d){ if (!fcList.length) return; fcIdx = (fcIdx + d + fcList.length) % fcList.length; fcRender(); }
+function fcMark(v){
+  if (!fcList.length) return;
+  state.fc[fcList[fcIdx].id] = v; save();
+  if (fcFilter === "review" && v === "know"){ fcList.splice(fcIdx,1); if (fcIdx >= fcList.length) fcIdx = 0; fcRender(); }
+  else fcMove(1);
+}
+$("#flash").addEventListener("click", fcFlip);
+$("#fcPrev").addEventListener("click", () => fcMove(-1));
+$("#fcNext").addEventListener("click", () => fcMove(1));
+$("#fcKnow").addEventListener("click", () => fcMark("know"));
+$("#fcAgain").addEventListener("click", () => fcMark("again"));
+$("#fcShuffle").addEventListener("click", () => { fcShuffled = true; fcBuild(); });
+$("#fcOrder").addEventListener("click", () => { fcShuffled = false; fcBuild(); });
+$$("[data-fl]").forEach(b => b.addEventListener("click", () => {
+  fcFilter = b.dataset.fl; $$("[data-fl]").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); fcBuild();
+}));
+document.addEventListener("keydown", e => {
+  if (!$("#panel-flash").classList.contains("active")) return;
+  if (["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName)) return;
+  if (e.key === " " || e.key === "Enter"){ if (document.activeElement.id !== "flash") { e.preventDefault(); fcFlip(); } }
+  else if (e.key === "ArrowRight") fcMove(1);
+  else if (e.key === "ArrowLeft") fcMove(-1);
+});
+fcBuild();
+
+/* ---------------- quiz ---------------- */
+const QUIZ = [
+ {b:"R", q:"Which block contains statements that might throw an exception?", o:["`catch`","`try`","`throw`","`finally`"], a:1, w:"Risky statements go in a `try` block. C++ has no `finally` keyword."},
+ {b:"R", q:"Which class is the base class of `invalid_argument`?", o:["`runtime_error`","`logic_error`","`bad_alloc`","`length_error`"], a:1, w:"`invalid_argument` derives from `logic_error`, which derives from `exception`."},
+ {b:"R", q:"What does the `what()` function return?", o:["The line number of the error","A C-string describing the exception","The type name of the exception","`true` if an error occurred"], a:1, w:"`what()` returns a `const char*` message."},
+ {b:"U", q:"What is printed?", c:"try {\n    cout << \"A\";\n    throw 5;\n    cout << \"B\";\n} catch (int x) {\n    cout << \"C\" << x;\n}\ncout << \"D\";", o:["ABC5D","AC5D","AC5","AC5BD"], a:1, w:"\"B\" is skipped after the throw; execution resumes after the handler, so D prints."},
+ {b:"U", q:"Why does dividing an `int` by zero inside a `try` block usually crash instead of reaching the `catch`?", o:["The catch block has the wrong type","Integer division by zero is undefined behavior, not a thrown exception","The try block is too short","C++ catches it but prints nothing"], a:1, w:"Nothing is thrown, so there is nothing to catch. Check and throw yourself."},
+ {b:"U", q:"`string s = \"CSP31B\";` (6 characters). What does `s.substr(3, 10)` do?", o:["Throws `length_error`","Throws `out_of_range`","Returns \"31B\"","Returns \"CSP\""], a:2, w:"A count past the end is clamped. Only a start position greater than 6 would throw `out_of_range`."},
+ {b:"Ap", q:"Which line correctly creates and throws a standard exception?", o:["`throw new invalid_argument;`","`throw invalid_argument(\"bad size\");`","`invalid_argument.throw(\"bad size\");`","`return invalid_argument(\"bad size\");`"], a:1, w:"Throw an object by value; it is then caught by reference."},
+ {b:"Ap", q:"Which is the correct header for a custom exception derived from `runtime_error`?", o:["`class SensorFault : runtime_error() {`","`class SensorFault : public runtime_error {`","`class SensorFault extends runtime_error {`","`class SensorFault(runtime_error) {`"], a:1, w:"C++ uses `: public Base`. `extends` is Java; `(Base)` is Python."},
+ {b:"Ap", q:"Which statement inside a catch block passes the same exception to the caller?", o:["`throw;`","`throw e;`","`return e;`","`rethrow();`"], a:0, w:"A bare `throw;` rethrows the original object. `throw e;` throws a copy, which can slice a derived exception."},
+ {b:"An", q:"What is printed?", c:"try {\n    throw out_of_range(\"x\");\n}\ncatch (const logic_error& e)  { cout << \"L\"; }\ncatch (const out_of_range& e) { cout << \"O\"; }\ncatch (...)                   { cout << \"?\"; }", o:["O","L","LO","?"], a:1, w:"`out_of_range` is a `logic_error`, and that handler comes first."},
+ {b:"An", q:"What is printed?", c:"void f() { throw runtime_error(\"r\"); }\nvoid g() {\n    try { f(); }\n    catch (const invalid_argument& e) { cout << \"G\"; }\n    cout << \"g done \";\n}\nint main() {\n    try { g(); }\n    catch (const exception& e) { cout << \"M\"; }\n}", o:["G g done","g done M","M","GM"], a:2, w:"`g`'s handler doesn't match `runtime_error`, so `g` unwinds before printing \"g done \". `main` catches it."},
+ {b:"An", q:"A handler is written `catch (exception e)` and a `TriangleException` is thrown. `e.what()` prints a generic message instead of \"Invalid triangle\". Why?", o:["`what()` isn't virtual","The object was sliced when copied by value","TriangleException isn't derived from exception","Handlers can't call member functions"], a:1, w:"Catching by value copies only the base part. Use `const exception&`."},
+ {b:"E", q:"Which design best handles a user who types a letter when a number is expected in a menu loop?", o:["Terminate the program","Clear the input and prompt again until it is valid","Log the error and use 0 as the value","Throw an exception from main"], a:1, w:"The user can fix it, so fix and continue: clear the fail state and re-prompt."},
+ {b:"E", q:"Which is the strongest reason to throw from `quotient()` instead of printing a message and calling `exit(0)` inside it?", o:["Throwing is faster","The caller can decide whether to terminate, recover, or log, so the function is reusable","exit(0) doesn't compile","It avoids needing a return statement"], a:1, w:"Separating detection from handling is the main advantage of exceptions."},
+ {b:"E", q:"Your team wants a custom `IndexTooBig` exception for vector-like containers. Best evaluation?", o:["Great idea: always create custom classes","Use `out_of_range`; it already describes the problem, and callers already know how to catch it","Use `bad_alloc` instead","Throw an `int` error code"], a:1, w:"Prefer standard classes when they fit. Create your own only when they don't, or you need extra data."}
+];
+let qOrder, qi, qScore, qMissed, qAnswered;
+function quizStart(){ qOrder = QUIZ.map((q,i)=>i); qi = 0; qScore = 0; qMissed = []; quizRender(); }
+function quizRender(){
+  const box = $("#quizBox");
+  if (qi >= qOrder.length){
+    const pct = Math.round(qScore/QUIZ.length*100);
+    state.quiz = Math.max(state.quiz || 0, pct); save();
+    box.innerHTML = `<div class="result"><div class="muted">Your score</div><div class="big">${qScore} / ${QUIZ.length}</div><p>${pct >= 90 ? "Excellent. Try the Challenge tab next." : pct >= 70 ? "Solid. Review the questions you missed, then try the Challenge tab." : "Revisit the Learn sections linked below, then retake the quiz."}</p></div>` +
+      (qMissed.length ? `<h3>Review what you missed</h3><ol class="review">${qMissed.map(i => `<li>${chip(QUIZ[i].b)} ${inline(QUIZ[i].q)}<br><b>Answer:</b> ${inline(QUIZ[i].o[QUIZ[i].a])}<br><span class="muted">${inline(QUIZ[i].w)}</span></li>`).join("")}</ol>` : "") +
+      `<div class="row" style="justify-content:center"><button class="btn" id="qRetake">Retake quiz</button></div>`;
+    $("#qRetake").addEventListener("click", quizStart); return;
+  }
+  const q = QUIZ[qOrder[qi]]; qAnswered = false;
+  box.innerHTML = `<div class="qhead">${chip(q.b)}<span class="muted">Question ${qi+1} of ${QUIZ.length}</span><span class="spacer"></span><span class="muted">Score: ${qScore}</span></div>
+    <div class="qbar"><span style="width:${qi/QUIZ.length*100}%"></span></div>
+    <div class="mcq"><div class="q" style="font-size:18px">${inline(q.q)}</div>${q.c ? `<pre class="code">${hl(q.c)}</pre>` : ""}
+    <div class="opts">${q.o.map((o,oi) => `<button class="opt" data-oi="${oi}"><span class="L">${"ABCD"[oi]}</span><span>${inline(o)}</span></button>`).join("")}</div>
+    <div class="fb" id="qFb" aria-live="polite"></div></div>
+    <div class="row"><span class="spacer"></span><button class="btn" id="qNext" disabled>${qi === QUIZ.length-1 ? "See results" : "Next question →"}</button></div>`;
+  $$("#quizBox .opt").forEach(b => b.addEventListener("click", () => {
+    if (qAnswered) return; qAnswered = true;
+    const oi = +b.dataset.oi, ok = oi === q.a;
+    $$("#quizBox .opt").forEach(x => { x.disabled = true; if (+x.dataset.oi === q.a) x.classList.add("correct"); });
+    if (ok) qScore++; else { b.classList.add("wrong"); qMissed.push(qOrder[qi]); }
+    const fb = $("#qFb"); fb.className = "fb show " + (ok ? "ok" : "no");
+    fb.innerHTML = (ok ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + inline(q.w);
+    $("#qNext").disabled = false; $("#qNext").focus();
+  }));
+  $("#qNext").addEventListener("click", () => { qi++; quizRender(); });
+}
+quizStart();
+
+/* ---------------- matching ---------------- */
+const MSETS = [
+ {b:["R","U"], pairs:[
+  ["`try` block","Holds statements that might throw"],
+  ["`catch (...)`","Catches an exception of any type; must be last"],
+  ["`throw;`","Rethrows the exception currently being handled"],
+  ["`what()`","Returns a C-string describing the exception"],
+  ["Stack unwinding","Functions end and locals are destroyed until a handler matches"],
+  ["`std::terminate`","Called when no handler catches an exception"],
+  ["`noexcept`","Marks a function that will not throw"]]},
+ {b:["Ap","An"], pairs:[
+  ["`stoi(\"abc\")`","`invalid_argument`"],
+  ["`v.at(99)` on a 3-element vector","`out_of_range`"],
+  ["`s.substr(40, 2)` on a 25-character string","`out_of_range` (start position too big)"],
+  ["`new int[huge]` when memory runs out","`bad_alloc`"],
+  ["A sensor value read at run time is too large for the variable","`overflow_error`"],
+  ["`sqrt` of a negative value, in a function you write","`domain_error` (or `invalid_argument`)"],
+  ["Three sides that can't form a triangle","Custom `TriangleException : public logic_error`"]]}
+];
+let mSet = 0, mSel = null, mDone = new Set(), mTries = 0, mRightOrder = [];
+function mRender(){
+  const set = MSETS[mSet];
+  $("#mInfo").innerHTML = set.b.map(chip).join(" ");
+  $("#mLeft").innerHTML = set.pairs.map((p,i) => `<button class="mitem ${mDone.has(i)?"done":""}" data-side="L" data-i="${i}" ${mDone.has(i)?"disabled":""}>${inline(p[0])}</button>`).join("");
+  $("#mRight").innerHTML = mRightOrder.map(i => `<button class="mitem ${mDone.has(i)?"done":""}" data-side="R" data-i="${i}" ${mDone.has(i)?"disabled":""}>${inline(set.pairs[i][1])}</button>`).join("");
+  $("#mScore").textContent = `${mDone.size} / ${set.pairs.length} matched · ${mTries} attempts`;
+  $$("#panel-match .mitem").forEach(b => b.addEventListener("click", () => mClick(b)));
+  if (mSel) { const s = $(`#panel-match .mitem[data-side="${mSel.side}"][data-i="${mSel.i}"]`); if (s) s.classList.add("sel"); }
+}
+function mClick(b){
+  const side = b.dataset.side, i = +b.dataset.i;
+  if (!mSel || mSel.side === side){ mSel = {side, i}; mRender(); return; }
+  mTries++;
+  if (mSel.i === i){
+    mDone.add(i); mSel = null; mRender();
+    const fb = $("#mFb"), set = MSETS[mSet];
+    if (mDone.size === set.pairs.length){
+      fb.className = "fb show ok";
+      fb.innerHTML = `All matched in ${mTries} attempts. ${mTries === set.pairs.length ? "Perfect, no misses!" : "Try the other set, or reset and aim for zero misses."}`;
+      state.match[mSet] = true; save();
+    }
+  } else {
+    const other = $(`#panel-match .mitem[data-side="${mSel.side}"][data-i="${mSel.i}"]`);
+    [b, other].forEach(x => { x && x.classList.add("shake"); });
+    mSel = null;
+    setTimeout(mRender, 380);
+    $("#mScore").textContent = `${mDone.size} / ${MSETS[mSet].pairs.length} matched · ${mTries} attempts`;
+  }
+}
+function mStart(k){
+  mSet = k; mSel = null; mDone = new Set(); mTries = 0; $("#mFb").className = "fb";
+  mRightOrder = shuffle(MSETS[k].pairs.map((p,i)=>i)); mRender();
+  $$("[data-ms]").forEach(x => x.setAttribute("aria-pressed", +x.dataset.ms === k ? "true" : "false"));
+}
+$$("[data-ms]").forEach(b => b.addEventListener("click", () => mStart(+b.dataset.ms)));
+$("#mReset").addEventListener("click", () => mStart(mSet));
+mStart(0);
+
+/* ---------------- challenge ---------------- */
+const CH1 = [
+ {t:"The handler for the base class `runtime_error` comes before the handler for its derived class `FileNotFound`, so `FileNotFound` can never be reached.", ok:true},
+ {t:"`catch (exception e)` catches by value, which slices derived exceptions so `what()` loses their message.", ok:true},
+ {t:"The most general handler (`exception`) comes first, so it catches everything and the other two handlers are unreachable.", ok:true},
+ {t:"`loadGrades()` must be called outside the try block.", ok:false},
+ {t:"A try block can only have one catch block.", ok:false},
+ {t:"`e.what()` cannot be called inside a catch block.", ok:false}
+];
+$("#ch1list").innerHTML = CH1.map((c,i) => `<label class="check" data-i="${i}"><input type="checkbox"><span>${inline(c.t)}</span></label>`).join("");
+$("#ch1check").addEventListener("click", () => {
+  let right = 0;
+  $$("#ch1list .check").forEach(l => {
+    const c = CH1[+l.dataset.i], on = $("input", l).checked;
+    l.classList.remove("right","missed","falsepos");
+    if (on && c.ok) { l.classList.add("right"); right++; }
+    else if (!on && c.ok) l.classList.add("missed");
+    else if (on && !c.ok) l.classList.add("falsepos");
+    else right++;
+  });
+  const fb = $("#ch1fb"), all = right === CH1.length;
+  fb.className = "fb show " + (all ? "ok" : "no");
+  fb.innerHTML = all ? "Exactly right: three real problems, and the other three statements are false." : `${right} of ${CH1.length} judged correctly. Green = correctly found, yellow = a real problem you missed, red = not actually a problem.`;
+  $("#ch1model").classList.add("show");
+  if (all) { state.ch.ch1 = true; save(); }
+});
+
+const CH2 = [
+ {t:"A payroll batch job starts, but its required employee data file doesn't exist.", a:"terminate", w:"Without the data nothing useful can happen, and continuing could produce wrong paychecks. Print a clear message and exit."},
+ {t:"A cashier types \"abc\" when the point-of-sale system asks for a quantity.", a:"recover", w:"The user can fix it immediately: clear the input, explain, and prompt again."},
+ {t:"A hospital heart-rate monitor receives one corrupted reading from a sensor.", a:"log", w:"The monitor must keep running for the patient. Record the bad reading for technicians and continue."},
+ {t:"An ATM customer asks to withdraw more than their balance.", a:"recover", w:"Show the available balance and let the customer enter a new amount; the session should continue."},
+ {t:"Satellite telemetry software gets an out-of-range temperature value.", a:"log", w:"The satellite can't be stopped. Log the value with a timestamp and keep processing the next packets."}
+];
+$("#ch2list").innerHTML = CH2.map((c,i) => `<div class="scen" data-i="${i}"><div>${esc(c.t)}</div>
+  <select aria-label="Strategy for scenario ${i+1}"><option value="">Choose a strategy…</option><option value="terminate">Terminate the program</option><option value="recover">Fix the error and continue</option><option value="log">Log the error and continue</option></select>
+  <div class="why"></div></div>`).join("");
+$("#ch2check").addEventListener("click", () => {
+  if ($$("#ch2list select").some(s => !s.value)){ const fb = $("#ch2fb"); fb.className = "fb show no"; fb.textContent = "Choose a strategy for every scenario first."; return; }
+  let right = 0;
+  $$("#ch2list .scen").forEach(d => {
+    const c = CH2[+d.dataset.i], v = $("select", d).value, ok = v === c.a;
+    if (ok) right++;
+    d.classList.remove("ok","no"); d.classList.add(ok ? "ok" : "no", "revealed");
+    $(".why", d).innerHTML = `<b>${ok ? "✓" : "✗ Best choice: " + {terminate:"Terminate",recover:"Fix and continue",log:"Log and continue"}[c.a] + "."}</b> ${esc(c.w)}`;
+  });
+  const fb = $("#ch2fb"); fb.className = "fb show " + (right === CH2.length ? "ok" : "info");
+  fb.textContent = `${right} of ${CH2.length} match the recommended strategy. Read each reason: the key questions are "Can the program do anything useful?" and "Can it be allowed to stop?"`;
+  if (right === CH2.length) { state.ch.ch2 = true; save(); }
+});
+
+$("#ch3check").addEventListener("click", () => {
+  const pick = $("#ch3pick").value, why = $("#ch3why").value.trim(), fb = $("#ch3fb");
+  if (!pick || why.length < 25){ fb.className = "fb show no"; fb.textContent = "Choose a design and write at least a sentence or two of justification first."; return; }
+  const kw = ["expected","same function","local","unexpected","caller","readab","simple","control flow","exception"].filter(k => why.toLowerCase().includes(k));
+  fb.className = "fb show " + (pick === "B" ? "ok" : "info");
+  fb.innerHTML = (pick === "B" ? "You chose the recommended design. " : "The model answer prefers Design B; compare your reasoning below. ") +
+    (kw.length >= 2 ? "Your justification uses key ideas from Section 5." : "Strengthen your justification: mention whether the situation is <i>expected</i>, and <i>where</i> the error is handled.");
+  $("#ch3model").classList.add("show");
+  state.ch.ch3 = true; save();
+});
+
+const CH4 = [
+ "Derives from a standard class with `public` (for example `out_of_range` or `invalid_argument`)",
+ "Constructor passes a message to the base constructor in the initializer list",
+ "Stores the student name and score as private data members",
+ "Provides `const` getter functions for the extra data",
+ "`recordScore()` checks `score < 0 || score > 100` and throws the custom type",
+ "The try/catch is inside the loop, so one bad row doesn't stop the import",
+ "Catches by `const` reference and prints the name, score, and `what()`"
+];
+$("#ch4list").innerHTML = CH4.map((t,i) => `<label class="check"><input type="checkbox" data-i="${i}"><span>${inline(t)}</span></label>`).join("");
+$("#ch4check").addEventListener("click", () => {
+  const n = $$("#ch4list input:checked").length;
+  $("#ch4model").classList.add("show");
+  $("#ch4score").textContent = `Your self-assessment: ${n} / ${CH4.length} criteria met.`;
+  state.ch.ch4 = true; save();
+});
+
+/* ---------------- progress ---------------- */
+function updateProgress(){
+  const scDone = SECS.filter(s => state.sc[s.id] && state.sc[s.id].done).length;
+  const known = CARDS.filter(c => state.fc[c.id] === "know").length;
+  const atts = ["att1","att3","att4"].filter(a => state.att[a]).length;
+  const chDone = ["ch1","ch2","ch3","ch4"].filter(c => state.ch[c]).length;
+  const mDoneN = state.match.filter(Boolean).length;
+  const parts = [scDone/SECS.length, atts/3, known/CARDS.length, (state.quiz||0)/100, mDoneN/2, chDone/4];
+  const pct = Math.round(parts.reduce((a,b)=>a+b,0)/parts.length*100);
+  $("#overallText").textContent = `Progress: ${pct}%`;
+  $("#overallBar").style.width = pct + "%";
+  $("#dash").innerHTML = [
+    ["Section self-checks", `${scDone} / ${SECS.length}`],
+    ["\"Your turn\" practice", `${atts} / 3`],
+    ["Flashcards mastered", `${known} / ${CARDS.length}`],
+    ["Best quiz score", state.quiz == null ? "not taken" : state.quiz + "%"],
+    ["Matching sets", `${mDoneN} / 2`],
+    ["Challenge tasks", `${chDone} / 4`]
+  ].map(r => `<div class="stat"><span>${r[0]}</span><b>${r[1]}</b></div>`).join("");
+}
+$("#resetAll").addEventListener("click", () => {
+  if (!confirm("Reset all saved progress for this study tool?")) return;
+  state = {sc:{}, fc:{}, quiz:null, match:[false,false], ch:{}, att:{}};
+  save(); $$(".selfcheck").forEach(renderSelfCheck); fcBuild(); renderToc();
+});
+
+showSec(0);
+updateProgress();
+})();
+</script>
+</body>
+</html>
