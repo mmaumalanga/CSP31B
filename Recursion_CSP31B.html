@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recursion Study Lab · CSP31B</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --user-primary:#1a4480;
+  --user-accent:#c8102e;
+  --user-background:#ffffff;
+  --ink:#1b1f24;
+  --muted:#5b6470;
+  --line:#d9dee5;
+  --soft:#f2f5fa;
+  --ok:#1e7a3c;
+  --ok-bg:#e7f5ec;
+  --bad:#b3261e;
+  --bad-bg:#fdecea;
+  --warn-bg:#fff6e0;
+  --radius:10px;
+  --mono:'JetBrains Mono',Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--user-background);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif}
+header{background:var(--user-primary);color:#fff;padding:22px 16px 0}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header .kicker{font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+header h1{margin:4px 0 6px;font-size:28px}
+header p{margin:0 0 14px;opacity:.9;font-size:15px}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+nav button{flex:none;border:0;background:transparent;color:#fff;opacity:.8;padding:10px 14px;font:600 14px Inter,sans-serif;cursor:pointer;border-radius:8px 8px 0 0}
+nav button[aria-selected=true]{background:var(--user-background);color:var(--user-primary);opacity:1}
+nav button:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+main{padding:24px 0 48px}
+section.tab{display:none}
+section.tab.active{display:block}
+h2{color:var(--user-primary);font-size:22px;margin:28px 0 8px}
+h2:first-child{margin-top:0}
+h3{font-size:17px;margin:20px 0 6px}
+.lead{color:var(--muted);margin-top:0}
+.card{border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin:14px 0;background:#fff}
+.soft{background:var(--soft);border-color:transparent}
+.tag{display:inline-block;font:600 11px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--user-primary);margin-right:6px;vertical-align:middle}
+.tag.hi{background:var(--user-accent);color:#fff}
+.tag.new{background:#fff;border:1px solid var(--user-accent);color:var(--user-accent)}
+pre{background:#0f1b2d;color:#e6edf6;font:13.5px/1.55 var(--mono);padding:14px 16px;border-radius:8px;overflow-x:auto;margin:10px 0}
+code{font-family:var(--mono);font-size:.92em;background:var(--soft);padding:1px 5px;border-radius:4px}
+pre code{background:none;padding:0;font-size:inherit}
+.mis{border-left:0;background:var(--warn-bg);border-color:#f0d9a8}
+.mis b.wrong{color:var(--bad)}
+.mis b.right{color:var(--ok)}
+.rw{background:#eef3fb;border-color:#c9d6ea}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{color:var(--user-primary)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--user-primary);background:var(--user-primary);color:#fff;font:600 14px Inter,sans-serif;padding:8px 14px;border-radius:8px;cursor:pointer;margin:4px 6px 4px 0}
+.btn.ghost{background:#fff;color:var(--user-primary)}
+.btn.accent{background:var(--user-accent);border-color:var(--user-accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--user-accent);outline-offset:2px}
+input[type=text],input[type=number],textarea,select{font:15px Inter,sans-serif;padding:7px 10px;border:1px solid var(--line);border-radius:8px;max-width:100%}
+textarea{width:100%;min-height:110px;font-family:var(--mono);font-size:13.5px}
+.fb{margin-top:8px;padding:8px 12px;border-radius:8px;font-size:14.5px;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--ok-bg);color:var(--ok)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.fb.info{background:var(--soft);color:var(--ink)}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;font:15px Inter,sans-serif;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--user-primary)}
+.opt.correct{background:var(--ok-bg);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.selfcheck{border:2px solid var(--user-primary);border-radius:var(--radius);padding:16px 18px;margin-top:28px}
+.selfcheck h3{margin-top:0;color:var(--user-primary)}
+.sc-item{margin:14px 0}
+.score{font-weight:700;color:var(--user-primary)}
+/* stack visualizer */
+.stackviz{display:flex;flex-direction:column-reverse;gap:6px;min-height:230px;justify-content:flex-start;padding:10px;border:1px dashed var(--line);border-radius:8px;background:#fafbfd}
+.frame{font:13.5px var(--mono);background:#fff;border:1px solid var(--user-primary);border-radius:6px;padding:6px 10px;display:flex;justify-content:space-between}
+.frame.top{background:var(--user-primary);color:#fff}
+.frame.ret{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.narr{min-height:48px;font-size:14.5px}
+/* flashcards */
+.fc-wrap{perspective:1200px;max-width:620px;margin:14px auto}
+.fc{position:relative;height:270px;cursor:pointer;transition:transform .5s;transform-style:preserve-3d}
+.fc.flip{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;border-radius:14px;padding:22px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--line);overflow:auto}
+.fc-front{background:var(--user-primary);color:#fff;font-size:21px;font-weight:600}
+.fc-back{background:#fff;transform:rotateY(180deg);font-size:15.5px}
+.fc-back pre{text-align:left;width:100%}
+.fc-meta{display:flex;justify-content:space-between;align-items:center;max-width:620px;margin:0 auto;flex-wrap:wrap;gap:6px}
+.center{text-align:center}
+.bar{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin:6px 0}
+.bar>i{display:block;height:100%;background:var(--user-accent);width:0;transition:width .3s}
+/* matching */
+.match{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+.mcol{display:grid;gap:8px;align-content:start}
+.mi{border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:#fff;cursor:pointer;font:14.5px Inter,sans-serif;text-align:left;color:var(--ink)}
+.mi.sel{border-color:var(--user-accent);box-shadow:0 0 0 2px var(--user-accent) inset}
+.mi.done{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);cursor:default}
+.mi.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+/* hanoi */
+.hanoi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.peg{height:150px;border-bottom:6px solid var(--ink);position:relative;display:flex;flex-direction:column-reverse;align-items:center;gap:3px;padding-bottom:3px}
+.peg::before{content:"";position:absolute;bottom:0;width:6px;height:140px;background:var(--muted);border-radius:3px;z-index:0}
+.disk{height:18px;border-radius:9px;background:var(--user-accent);z-index:1;color:#fff;font:600 11px var(--mono);display:flex;align-items:center;justify-content:center}
+.peglabel{text-align:center;font-weight:700;color:var(--user-primary)}
+.kv{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.rubric label{display:block;margin:4px 0;font-size:14.5px}
+.model{display:none}
+.model.show{display:block}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:16px 0 30px}
+@media (max-width:640px){
+  header h1{font-size:23px}
+  .match{grid-template-columns:1fr}
+  .fc{height:300px}
+}
+@media (prefers-reduced-motion:reduce){.fc{transition:none}.mi.shake{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kicker">CSP31B · C++ Programming II · San Joaquin Delta College</div>
+    <h1>Chapter 17: Recursion Study Lab</h1>
+    <p>Learn it, trace it, practice it, then prove it. Work through the tabs in order: each one builds on the last.</p>
+    <nav role="tablist" aria-label="Sections" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+
+<!-- ===================== LEARN ===================== -->
+<section class="tab" id="learn" role="tabpanel">
+  <h2>1. What is recursion?</h2>
+  <p class="lead"><span class="tag">Remember</span><span class="tag">Understand</span></p>
+  <p>A <b>recursive function</b> is a function that calls itself. Recursion is another form of program control: it is <i>repetition without a loop</i>. Instead of repeating steps, the function solves a smaller copy of the same problem.</p>
+  <div class="grid2">
+    <div class="card soft"><h3>Base case</h3>One or more simplest cases that the function answers directly, <b>without</b> calling itself. The base case is what stops the recursion.</div>
+    <div class="card soft"><h3>Recursive case</h3>Every recursive call works on a <b>smaller</b> version of the problem, moving closer to a base case until it becomes that case.</div>
+  </div>
+  <p>To solve a problem recursively, break it into subproblems. If a subproblem looks like the original problem with a smaller size, apply the same function to it.</p>
+
+  <div class="card rw">
+    <span class="tag hi">Real world</span><b>Finding files in nested folders</b>
+    <p>Your <code>Downloads</code> folder holds files and other folders, and those folders hold more folders. How many levels deep does it go? You don't know, and you don't need to. The structure is <i>inherently recursive</i>: a folder is files plus smaller folders. Search tools, backup software and your IDE's "Find in Files" all walk folder trees this way.</p>
+<pre><code>#include &lt;filesystem&gt;
+namespace fs = std::filesystem;
+
+// Count every file inside dir, at any depth (C++17)
+int countFiles(const fs::path&amp; dir) {
+    int count = 0;
+    for (const auto&amp; entry : fs::directory_iterator(dir)) {
+        if (entry.is_directory())
+            count += countFiles(entry.path()); // recursive case: a smaller folder
+        else
+            count++;                           // simplest case: a plain file
+    }
+    return count;  // a folder with no sub-folders makes no recursive calls
+}</code></pre>
+  </div>
+
+  <h2>2. Worked example: factorial</h2>
+  <p class="lead"><span class="tag">Understand</span><span class="tag">Apply</span> Follow the reasoning step by step. You'll do one on your own right after.</p>
+  <div class="card">
+    <h3>Step 1: What is the simplest input?</h3>
+    <p><code>factorial(0)</code> is <code>1</code>. No more work is needed, so this is the <b>base case</b>.</p>
+    <h3>Step 2: Relate a hard case to a simpler one</h3>
+    <p>If I already knew <code>factorial(3)</code> = 6, could I get <code>factorial(4)</code>? Yes: <code>4 * factorial(3)</code> = 24.</p>
+    <h3>Step 3: Generalize the pattern</h3>
+    <p><code>factorial(n) = n * factorial(n - 1)</code>. Each call shrinks <code>n</code> by 1, so it always reaches 0 for any <code>n ≥ 0</code>.</p>
+    <h3>Step 4: Write the code (combine steps 1 and 3)</h3>
+<pre><code>long long factorial(int n) {
+    if (n == 0)                    // base case (step 1)
+        return 1;
+    return n * factorial(n - 1);   // recursive case (step 3)
+}</code></pre>
+    <h3>Step 5: Expand it by hand</h3>
+<pre><code>factorial(4) = 4 * factorial(3)
+             = 4 * (3 * factorial(2))
+             = 4 * (3 * (2 * factorial(1)))
+             = 4 * (3 * (2 * (1 * factorial(0))))
+             = 4 * (3 * (2 * (1 * 1)))      &lt;- base case reached, now unwind
+             = 4 * (3 * (2 * 1))
+             = 4 * (3 * 2)
+             = 4 * 6
+             = 24</code></pre>
+  </div>
+
+  <h3>Watch the call stack</h3>
+  <p>Each call gets its own <b>stack frame</b> holding its own copy of <code>n</code>. Frames pile up on the way down and are removed as each call returns.</p>
+  <div class="card">
+    <div class="grid2">
+      <div><div class="stackviz" id="stack" aria-live="polite"></div></div>
+      <div>
+        <div class="narr" id="stackNarr"></div>
+        <div class="kv">
+          <button class="btn ghost" id="stackPrev">◀ Back</button>
+          <button class="btn" id="stackNext">Step ▶</button>
+          <button class="btn ghost" id="stackReset">Reset</button>
+        </div>
+        <p class="lead" id="stackCount"></p>
+      </div>
+    </div>
+  </div>
+
+  <h2>3. Your turn: a similar problem</h2>
+  <p class="lead"><span class="tag">Apply</span> Use the same five steps on this function from the slides.</p>
+<pre><code>int f(int n) {
+    if (n == 0) return 0;     // base case
+    return n + f(n - 1);      // recursive case
+}</code></pre>
+  <div class="card">
+    <p><b>a)</b> Expand <code>f(4)</code> by hand. What value does it return? <input type="number" id="t1" aria-label="Value of f(4)" style="width:90px"></p>
+    <p><b>b)</b> At the deepest point, how many frames for <code>f</code> are on the stack (count <code>f(4)</code> through <code>f(0)</code>)? <input type="number" id="t2" aria-label="Number of frames" style="width:90px"></p>
+    <p><b>c)</b> In words, what does <code>f(n)</code> compute? <select id="t3" aria-label="What f computes"><option value="">Choose…</option><option value="a">n factorial</option><option value="b">The sum 1 + 2 + … + n</option><option value="c">2 to the power n</option><option value="d">The nth Fibonacci number</option></select></p>
+    <button class="btn" id="tryCheck">Check my work</button>
+    <div class="fb" id="tryFb"></div>
+  </div>
+
+  <h2>4. Common misconceptions</h2>
+  <div class="card mis">
+    <span class="tag hi">Misconception 1</span>
+    <p><b class="wrong">"Recursion is faster or more efficient than a loop."</b></p>
+    <p><b class="right">Why it's wrong:</b> Every call has to allocate a stack frame for its parameters and local variables, then clean it up. That costs both memory and time. A loop that does the same job uses one frame. Recursion's advantage is <i>clarity</i> for inherently recursive problems (trees, folders, Tower of Hanoi), not speed. Naive recursive Fibonacci can be far <i>slower</i>, because it recomputes the same values again and again (see the Patterns tab).</p>
+  </div>
+  <div class="card mis">
+    <span class="tag hi">Misconception 2</span>
+    <p><b class="wrong">"As long as I write a base case, the recursion will stop."</b></p>
+    <p><b class="right">Why it's wrong:</b> The base case also has to be <i>reachable</i>. Call <code>factorial(-1)</code> with the code above: <code>n</code> goes −2, −3, −4… and never equals 0. Calls keep piling up until the program runs out of stack memory and crashes with a <b>stack overflow</b>. Every recursive call must move closer to a base case, and you should guard against bad input, for example with <code>if (n &lt;= 0) return 1;</code>.</p>
+  </div>
+  <div class="card mis">
+    <span class="tag hi">Misconception 3</span>
+    <p><b class="wrong">"All the recursive calls share the same variable n."</b></p>
+    <p><b class="right">Why it's wrong:</b> Each call has its <i>own</i> frame with its <i>own</i> copy of every parameter and local variable. When <code>factorial(1)</code> runs, the <code>n = 4</code> in the first frame is still waiting there, untouched. That is why each frame can finish its own multiplication when control comes back to it.</p>
+  </div>
+
+  <h2>5. Recursion vs. iteration</h2>
+  <table>
+    <thead><tr><th></th><th>Recursion</th><th>Iteration (loop)</th></tr></thead>
+    <tbody>
+      <tr><td><b>How it repeats</b></td><td>The function calls itself</td><td><code>for</code> / <code>while</code> loop</td></tr>
+      <tr><td><b>How it stops</b></td><td>Reaches a base case</td><td>Loop condition becomes false</td></tr>
+      <tr><td><b>Memory</b></td><td>One stack frame per active call</td><td>A single frame</td></tr>
+      <tr><td><b>Failure mode</b></td><td>Stack overflow</td><td>Infinite loop</td></tr>
+      <tr><td><b>Best for</b></td><td>Inherently recursive problems: trees, nested folders, Tower of Hanoi, divide and conquer</td><td>Simple counting or linear repetition</td></tr>
+    </tbody>
+  </table>
+  <p>Any recursive function can be rewritten with a loop, sometimes with your own explicit stack. Pick whichever one makes the solution clearer, unless performance or stack depth is a real concern.</p>
+
+  <div class="selfcheck" data-check="learn"></div>
+</section>
+
+<!-- ===================== FLASHCARDS ===================== -->
+<section class="tab" id="cards" role="tabpanel">
+  <h2>Flashcards</h2>
+  <p class="lead">Click the card (or press Space) to flip it. Mark each card "Got it" or "Review again". Cards go from basic terms to analysis.</p>
+  <div class="fc-meta">
+    <span id="fcPos"></span>
+    <span><button class="btn ghost" id="fcShuffle">Shuffle</button><button class="btn ghost" id="fcReviewOnly">Review missed only</button></span>
+  </div>
+  <div class="fc-wrap">
+    <div class="fc" id="fc" tabindex="0" role="button" aria-label="Flashcard. Press space to flip.">
+      <div class="fc-face fc-front" id="fcFront"></div>
+      <div class="fc-face fc-back" id="fcBack"></div>
+    </div>
+  </div>
+  <div class="fc-meta">
+    <button class="btn ghost" id="fcPrev">◀ Prev</button>
+    <span><button class="btn accent" id="fcAgain">Review again</button><button class="btn" id="fcGot">Got it ✓</button></span>
+    <button class="btn ghost" id="fcNext">Next ▶</button>
+  </div>
+  <div style="max-width:620px;margin:10px auto">
+    <div class="bar"><i id="fcBar"></i></div>
+    <p class="center lead" id="fcStats"></p>
+  </div>
+  <div class="selfcheck" data-check="cards"></div>
+</section>
+
+<!-- ===================== PATTERNS ===================== -->
+<section class="tab" id="patterns" role="tabpanel">
+  <h2>1. Helper functions: a recursive palindrome</h2>
+  <p class="lead"><span class="tag">Understand</span><span class="tag">Analyze</span></p>
+  <p>A string is a palindrome if its first and last characters match <i>and</i> the inside is also a palindrome. That's a smaller copy of the same problem.</p>
+<pre><code>// Version A: simple, but it builds a NEW string on every call
+bool isPalindrome(const string&amp; s) {
+    if (s.size() &lt;= 1) return true;                  // base case
+    if (s[0] != s[s.size() - 1]) return false;       // base case
+    return isPalindrome(s.substr(1, s.size() - 2));  // copies the string
+}
+
+// Version B: an overloaded HELPER function tracks low/high indexes instead
+bool isPalindrome(const string&amp; s, int low, int high) {
+    if (high &lt;= low) return true;
+    if (s[low] != s[high]) return false;
+    return isPalindrome(s, low + 1, high - 1);       // no copying
+}
+bool isPalindrome(const string&amp; s) {                 // what callers use
+    return isPalindrome(s, 0, s.size() - 1);
+}</code></pre>
+  <p><b>Why use a helper?</b> Version A calls <code>substr</code> every time, which copies about <i>n</i> characters on each of about <i>n</i>/2 calls. Version B passes the same string by reference and only moves two indexes. The short public version keeps the interface simple for callers. Recursive problems often need extra parameters like these, so this pattern comes up a lot.</p>
+
+  <h2>2. Recursive binary search</h2>
+  <p class="lead"><span class="tag">Apply</span> Each call throws away half of the array, so the search takes about log<sub>2</sub>(n) calls.</p>
+<pre><code>int binarySearch(const int list[], int key, int low, int high) {
+    if (low &gt; high) return -low - 1;          // base case: not found
+    int mid = (low + high) / 2;
+    if (key &lt; list[mid])  return binarySearch(list, key, low, mid - 1);  // case 1
+    if (key == list[mid]) return mid;                                    // case 2 (base)
+    return binarySearch(list, key, mid + 1, high);                       // case 3
+}</code></pre>
+  <div class="card">
+    <p>Array: <code id="bsArr"></code></p>
+    <div class="kv"><label for="bsKey">Search for</label><input type="number" id="bsKey" value="45" style="width:90px"><button class="btn" id="bsGo">Trace the calls</button></div>
+    <pre id="bsOut" aria-live="polite">Pick a key and trace the calls.</pre>
+  </div>
+
+  <h2>3. Recursive selection sort</h2>
+  <p class="lead"><span class="tag">Understand</span></p>
+  <p>Find the <b>largest</b> number in the list and swap it with the last number. Then ignore the last number and recursively sort the smaller list that's left.</p>
+<pre><code>void sort(int list[], int high) {              // sorts list[0..high]
+    if (high &lt;= 0) return;                     // base case: 0 or 1 element
+    int indexOfMax = 0;
+    for (int i = 1; i &lt;= high; i++)
+        if (list[i] &gt; list[indexOfMax]) indexOfMax = i;
+    swap(list[indexOfMax], list[high]);       // largest goes to the end
+    sort(list, high - 1);                      // sort the rest
+}
+void sort(int list[], int size) { sort(list, size - 1); }   // helper wrapper</code></pre>
+
+  <h2>4. Tower of Hanoi</h2>
+  <p class="lead"><span class="tag">Understand</span><span class="tag">Analyze</span> Move all <i>n</i> disks from tower A to tower B. Move one disk at a time, and never put a larger disk on a smaller one.</p>
+  <div class="card soft">
+    <b>The recursive idea: three subproblems</b>
+    <ol style="margin:6px 0 0">
+      <li>Move the top <i>n</i> − 1 disks from A to C, using B as the helper.</li>
+      <li>Move disk <i>n</i> from A to B.</li>
+      <li>Move the <i>n</i> − 1 disks from C to B, using A as the helper.</li>
+    </ol>
+  </div>
+<pre><code>void moveDisks(int n, char from, char to, char aux) {
+    if (n == 1) {                                         // base case
+        cout &lt;&lt; "Move disk 1 from " &lt;&lt; from &lt;&lt; " to " &lt;&lt; to &lt;&lt; endl;
+        return;
+    }
+    moveDisks(n - 1, from, aux, to);                       // step 1
+    cout &lt;&lt; "Move disk " &lt;&lt; n &lt;&lt; " from " &lt;&lt; from &lt;&lt; " to " &lt;&lt; to &lt;&lt; endl; // step 2
+    moveDisks(n - 1, aux, to, from);                       // step 3
+}
+// call: moveDisks(n, 'A', 'B', 'C');</code></pre>
+  <div class="card">
+    <div class="kv">
+      <label for="hN">Disks</label>
+      <select id="hN"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+      <button class="btn ghost" id="hReset">Reset</button>
+      <button class="btn" id="hStep">Next move ▶</button>
+      <button class="btn ghost" id="hAll">Play all</button>
+    </div>
+    <div class="hanoi" id="hanoi"></div>
+    <p id="hMsg" aria-live="polite"></p>
+  </div>
+  <p><b>Counting moves:</b> moves(<i>n</i>) = 2·moves(<i>n</i> − 1) + 1, with moves(1) = 1. That gives 1, 3, 7, 15, 31… = 2<sup><i>n</i></sup> − 1. For 3 disks that's 3 + 1 + 3 = 7 moves, and for 4 disks it's 7 + 1 + 7 = 15.</p>
+
+  <h2>5. Fibonacci and the cost of repeated work <span class="tag new">Beyond the slides</span></h2>
+  <p class="lead"><span class="tag">Analyze</span><span class="tag">Evaluate</span></p>
+<pre><code>// fib(0) = 0, fib(1) = 1, fib(n) = fib(n-1) + fib(n-2)
+long long fib(int n) {
+    if (n == 0) return 0;          // base case
+    if (n == 1) return 1;          // base case
+    return fib(n - 1) + fib(n - 2); // TWO recursive calls
+}</code></pre>
+  <p>Each call makes two more calls, so the number of calls grows exponentially. <code>fib(3)</code> is computed again inside <code>fib(5)</code>, again inside <code>fib(4)</code>, and so on. Try it:</p>
+  <div class="card">
+    <div class="kv"><label for="fibN">n =</label><input type="range" id="fibN" min="1" max="45" value="10" aria-label="n for Fibonacci"><b id="fibNv">10</b></div>
+    <table style="margin-top:8px"><tbody>
+      <tr><td>fib(n)</td><td id="fibV"></td></tr>
+      <tr><td>Calls made by naive recursion</td><td id="fibC"></td></tr>
+      <tr><td>Calls made with memoization</td><td id="fibM"></td></tr>
+    </tbody></table>
+  </div>
+  <p><b>The fix: memoization.</b> Save each answer the first time you compute it, and look it up after that:</p>
+<pre><code>long long fibMemo(int n, vector&lt;long long&gt;&amp; memo) {
+    if (n &lt;= 1) return n;
+    if (memo[n] != -1) return memo[n];               // already computed
+    memo[n] = fibMemo(n - 1, memo) + fibMemo(n - 2, memo);
+    return memo[n];
+}
+// vector&lt;long long&gt; memo(n + 1, -1);  cout &lt;&lt; fibMemo(n, memo);</code></pre>
+
+  <div class="selfcheck" data-check="patterns"></div>
+</section>
+
+<!-- ===================== PRACTICE ===================== -->
+<section class="tab" id="practice" role="tabpanel">
+  <h2>Practice lab: write recursive functions</h2>
+  <p class="lead"><span class="tag">Apply</span> These are the exercises from the end of the slides, ordered from easiest to hardest. Write your solution in your IDE or in the box, try the hint, and then compare with the worked solution.</p>
+  <div id="labList"></div>
+  <div class="selfcheck" data-check="practice"></div>
+</section>
+
+<!-- ===================== QUIZ ===================== -->
+<section class="tab" id="quiz" role="tabpanel">
+  <h2>Interactive quiz</h2>
+  <p class="lead">15 questions that go from recall up to evaluation. Each answer is explained right away.</p>
+  <div class="bar"><i id="qBar"></i></div>
+  <div class="card" id="qCard"></div>
+  <div class="kv"><button class="btn" id="qNext" disabled>Next question ▶</button><span id="qScore" class="score"></span></div>
+</section>
+
+<!-- ===================== MATCHING ===================== -->
+<section class="tab" id="match" role="tabpanel">
+  <h2>Matching activity</h2>
+  <p class="lead"><span class="tag">Remember</span><span class="tag">Understand</span> Select a term, then select its description. A correct match locks in place.</p>
+  <div class="kv"><span id="mStat" class="score"></span><button class="btn ghost" id="mReset">New round</button></div>
+  <div class="match"><div class="mcol" id="mTerms"></div><div class="mcol" id="mDefs"></div></div>
+  <div class="fb" id="mFb"></div>
+</section>
+
+<!-- ===================== CHALLENGE ===================== -->
+<section class="tab" id="challenge" role="tabpanel">
+  <h2>Challenge: analyze, evaluate, create</h2>
+  <p class="lead"><span class="tag hi">Higher-order</span> Each task asks you to <b>justify</b>, <b>compare</b> or <b>produce</b> something original. Write your answer first, then open the model answer and score yourself with the checklist.</p>
+  <div id="chList"></div>
+  <div class="selfcheck" data-check="challenge"></div>
+</section>
+
+</main>
+<footer><div class="wrap">CSP31B · C++ Programming II · San Joaquin Delta College · Chapter 17: Recursion. Items marked “Beyond the slides” add material not in the chapter slides.</div></footer>
+
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ---------- Tabs ---------- */
+const TABS = [["learn","1 · Learn"],["cards","2 · Flashcards"],["patterns","3 · Patterns"],["practice","4 · Practice"],["quiz","5 · Quiz"],["match","6 · Matching"],["challenge","7 · Challenge"]];
+const nav = $("#tabs");
+TABS.forEach(([id, label], i) => {
+  const b = el("button", "", label);
+  b.setAttribute("role","tab"); b.id = "tab-" + id; b.setAttribute("aria-controls", id);
+  b.onclick = () => show(id);
+  b.onkeydown = e => {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      const n = (i + (e.key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;
+      show(TABS[n][0]); $("#tab-" + TABS[n][0]).focus();
+    }
+  };
+  nav.appendChild(b);
+});
+function show(id){
+  TABS.forEach(([t]) => {
+    const on = t === id;
+    $("#" + t).classList.toggle("active", on);
+    const b = $("#tab-" + t); b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1;
+  });
+  try { localStorage.setItem("rec-tab", id); } catch(e) {}
+  window.scrollTo({top:0});
+}
+let startTab = "learn";
+try { const s = localStorage.getItem("rec-tab"); if (s && TABS.some(t => t[0] === s)) startTab = s; } catch(e) {}
+show(startTab);
+
+/* ---------- Generic MCQ renderer ---------- */
+function mcq(container, q, onAnswer){
+  container.appendChild(el("div", "", `<span class="tag">${q.level}</span> ${q.q}`));
+  if (q.code) container.appendChild(el("pre", "", "<code>" + esc(q.code) + "</code>"));
+  const box = el("div", "opts"), fb = el("div", "fb");
+  const order = shuffle(q.opts.map((o, i) => i));   // randomize answer positions each time
+  order.forEach((i, pos) => {
+    const o = q.opts[i];
+    const b = el("button", "opt", `<b>(${"abcd"[pos]})</b> ${o}`);
+    b.dataset.i = i;
+    b.onclick = () => {
+      [...box.children].forEach(c => { c.disabled = true; if (+c.dataset.i === q.a) c.classList.add("correct"); });
+      const ok = i === q.a;
+      if (!ok) b.classList.add("wrong");
+      fb.className = "fb show " + (ok ? "ok" : "bad");
+      fb.innerHTML = (ok ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.why;
+      onAnswer && onAnswer(ok);
+    };
+    box.appendChild(b);
+  });
+  container.appendChild(box); container.appendChild(fb);
+}
+
+/* ---------- Self-checks (end of each major section) ---------- */
+const CHECKS = {
+  learn: [
+    {level:"Remember", q:"What stops a recursive function from calling itself forever?", opts:["A loop counter","A base case that is reachable","The return type","The <code>const</code> keyword"], a:1, why:"A base case answers without recursing, and every call must move closer to it."},
+    {level:"Understand", q:"While <code>factorial(1)</code> is running, what is the value of <code>n</code> in the frame for <code>factorial(4)</code>?", opts:["1","0","4","It was overwritten"], a:2, why:"Each frame keeps its own copy of <code>n</code>. The first frame still holds 4 and is waiting to multiply."},
+    {level:"Apply", q:"Using <code>f(n) = n + f(n-1)</code>, <code>f(0) = 0</code>, what is <code>f(5)</code>?", opts:["10","15","120","5"], a:1, why:"5 + 4 + 3 + 2 + 1 + 0 = 15."}
+  ],
+  cards: [
+    {level:"Remember", q:"Which pair names the two required parts of every recursive function?", opts:["Loop and counter","Base case and recursive case","Header and footer","Helper and wrapper"], a:1, why:"Every recursive function needs a base case and a recursive case that shrinks the problem."},
+    {level:"Understand", q:"Why does a recursive call use more memory than one loop iteration?", opts:["It copies the whole program","Each active call needs its own stack frame","Recursion uses the heap","It doesn't use more memory"], a:1, why:"Each active call holds a stack frame for its parameters and locals until it returns."}
+  ],
+  patterns: [
+    {level:"Understand", q:"Why does the helper version of <code>isPalindrome</code> run faster than the <code>substr</code> version?", opts:["It uses a loop","It avoids building a new string on every call","It skips the base case","It checks half the characters"], a:1, why:"Passing indexes avoids copying the string on every call."},
+    {level:"Apply", q:"How many moves does Tower of Hanoi need for 5 disks?", opts:["15","25","31","32"], a:2, why:"2<sup>5</sup> − 1 = 31, or 15 + 1 + 15."},
+    {level:"Analyze", q:"Why is naive recursive <code>fib(40)</code> so slow?", opts:["Integer overflow","It recomputes the same subproblems an exponential number of times","The base case is wrong","Stack frames are too large"], a:1, why:"Two calls per level means the same values get recomputed over and over. Memoization fixes that."}
+  ],
+  practice: [
+    {level:"Apply", q:"In <code>sumArray(list, first, length)</code>, which base case is correct?", opts:["<code>if (first == 0) return 0;</code>","<code>if (first &gt;= length) return 0;</code>","<code>if (length == 0) return list[0];</code>","<code>if (first &gt; length) return 1;</code>"], a:1, why:"Once <code>first</code> reaches <code>length</code> there are no elements left, and the sum of nothing is 0."},
+    {level:"Analyze", q:"In <code>printStars(n)</code>, why does the second star line print in increasing order?", opts:["It runs after the recursive call returns, while the stack unwinds","A second loop counts upward","n is increased by 1","Output is buffered and reversed"], a:0, why:"Code after the recursive call runs on the way back up: printStars(1) finishes first, then 2, then 3…"}
+  ],
+  challenge: [
+    {level:"Evaluate", q:"A teammate wants to sum a 1,000,000-element array recursively, one element per call. Best response?", opts:["Great idea: recursion is always cleaner","Risky: a million frames can overflow the stack, so use a loop","Fine, as long as there is a base case","Use two recursive calls per level to halve the work"], a:1, why:"Linear recursion that deep can exhaust the stack. A loop is the better tool here."},
+    {level:"Create", q:"You're designing <code>countNodes()</code> for a folder tree. Which design is best?", opts:["Base: empty folder returns 0; recursive: 1 + countNodes of each child","A while loop that never ends","Base: folder name length; recursive: n − 1","No base case needed for trees"], a:0, why:"Count the node itself, then add the counts for each smaller sub-tree. An empty folder adds nothing."}
+  ]
+};
+document.querySelectorAll(".selfcheck").forEach(box => {
+  const key = box.dataset.check, qs = CHECKS[key];
+  let right = 0, done = 0;
+  box.appendChild(el("h3", "", "✔ Self-check: are you ready to move on?"));
+  const sc = el("p", "score", "");
+  qs.forEach(q => {
+    const item = el("div", "sc-item");
+    mcq(item, q, ok => { done++; if (ok) right++; sc.textContent = `Score: ${right} / ${qs.length}` + (done === qs.length ? (right === qs.length ? " · Ready for the next section!" : " · Review the section above and try the related flashcards.") : ""); });
+    box.appendChild(item);
+  });
+  box.appendChild(sc);
+});
+
+/* ---------- Call stack visualizer ---------- */
+const steps = [];
+(function build(){
+  const stack = [];
+  for (let n = 4; n >= 0; n--) {
+    stack.push({n, txt: n === 0 ? "base case" : `waits for factorial(${n-1})`});
+    steps.push({stack: stack.map(f => ({...f})), msg: n === 0 ? "<b>factorial(0)</b> is the base case. It returns 1 right away with no more calls." : `Call <b>factorial(${n})</b>: n ≠ 0, so it needs factorial(${n-1}) first. A new frame is pushed.`});
+  }
+  let val = 1;
+  for (let n = 0; n <= 4; n++) {
+    val = n === 0 ? 1 : n * val;
+    const s = stack.map(f => ({...f}));
+    s[s.length - 1].ret = val;
+    steps.push({stack: s, msg: n === 0 ? "factorial(0) <b>returns 1</b>, and its frame will pop." : `factorial(${n}) computes ${n} × ${val / n} = <b>${val}</b> and returns it.`});
+    stack.pop();
+  }
+  steps.push({stack: [], msg: "The stack is empty again. <b>factorial(4) = 24</b>. The maximum depth was 5 frames."});
+})();
+let sIdx = 0;
+function renderStack(){
+  const st = steps[sIdx], box = $("#stack");
+  box.innerHTML = "";
+  if (!st.stack.length) box.appendChild(el("div", "lead", "(empty stack)"));
+  st.stack.forEach((f, i) => {
+    const top = i === st.stack.length - 1;
+    const d = el("div", "frame" + (f.ret != null ? " ret" : top ? " top" : ""));
+    d.innerHTML = `<span>factorial(n = ${f.n})</span><span>${f.ret != null ? "returns " + f.ret : f.txt}</span>`;
+    box.appendChild(d);
+  });
+  $("#stackNarr").innerHTML = st.msg;
+  $("#stackCount").textContent = `Step ${sIdx + 1} of ${steps.length} · frames on stack: ${st.stack.length}`;
+  $("#stackPrev").disabled = sIdx === 0; $("#stackNext").disabled = sIdx === steps.length - 1;
+}
+$("#stackNext").onclick = () => { if (sIdx < steps.length - 1) sIdx++; renderStack(); };
+$("#stackPrev").onclick = () => { if (sIdx > 0) sIdx--; renderStack(); };
+$("#stackReset").onclick = () => { sIdx = 0; renderStack(); };
+renderStack();
+
+/* ---------- Your turn ---------- */
+$("#tryCheck").onclick = () => {
+  const a = +$("#t1").value, b = +$("#t2").value, c = $("#t3").value, fb = $("#tryFb");
+  const msgs = [];
+  msgs.push(a === 10 ? "✓ f(4) = 4 + 3 + 2 + 1 + 0 = 10." : "✗ a) Expand it: f(4) = 4 + f(3) = 4 + 3 + f(2) = … = 4 + 3 + 2 + 1 + 0.");
+  msgs.push(b === 5 ? "✓ 5 frames: f(4), f(3), f(2), f(1) and f(0)." : "✗ b) Count every call that is active at once, including the base case f(0).");
+  msgs.push(c === "b" ? "✓ f(n) is the sum 1 + 2 + … + n, which equals n(n + 1)/2." : "✗ c) Look at the operator: it adds, it doesn't multiply.");
+  const all = a === 10 && b === 5 && c === "b";
+  fb.className = "fb show " + (all ? "ok" : "bad");
+  fb.innerHTML = msgs.join("<br>");
+};
+
+/* ---------- Flashcards ---------- */
+const CARDS = [
+  ["Recursive function", "A function that calls itself, solving a problem by solving smaller instances of the same problem.", "Remember"],
+  ["Base case", "The simplest case. The function returns an answer directly without recursing. It stops the recursion.", "Remember"],
+  ["Recursive case", "The part of the function that calls itself on a smaller version of the problem, moving toward a base case.", "Remember"],
+  ["Stack frame", "Memory set aside on the call stack for one function call: its parameters, local variables and return address.", "Remember"],
+  ["Stack overflow", "A crash that happens when too many calls are active at once, usually because the base case is never reached.", "Remember"],
+  ["factorial definition", "<pre><code>factorial(0) = 1\nfactorial(n) = n * factorial(n-1)</code></pre>", "Remember"],
+  ["Fibonacci definition", "<pre><code>fib(0) = 0, fib(1) = 1\nfib(n) = fib(n-1) + fib(n-2), n ≥ 2</code></pre>Series: 0 1 1 2 3 5 8 13 21 34…", "Remember"],
+  ["Two characteristics of every recursive function", "1) One or more base cases stop the recursion. 2) Each recursive call reduces the problem, bringing it closer to a base case.", "Understand"],
+  ["Recursion vs. iteration", "Recursion is repetition without a loop. It has more overhead (one frame per call) but is clearer for inherently recursive problems.", "Understand"],
+  ["Helper function", "An overloaded function with extra parameters (like <code>low</code> and <code>high</code>) that does the real recursion. A simple public version calls it.", "Understand"],
+  ["Why use a helper for isPalindrome?", "To avoid making a new string with <code>substr</code> on every call. Passing indexes is much cheaper.", "Understand"],
+  ["Recursive binary search: 3 cases", "key &lt; middle → search the left half. key == middle → found. key &gt; middle → search the right half. Base: low &gt; high means not found.", "Understand"],
+  ["Recursive selection sort idea", "Swap the largest element to the end, then recursively sort everything except the last element.", "Understand"],
+  ["Tower of Hanoi: 3 steps", "Move n−1 disks from A to C (using B). Move disk n from A to B. Move n−1 disks from C to B (using A).", "Understand"],
+  ["Hanoi moves for n disks", "2<sup>n</sup> − 1. For 3 disks: 7. For 4 disks: 15.", "Apply"],
+  ["Trace: f(n) = n + f(n−1), f(0) = 0. What is f(4)?", "4 + 3 + 2 + 1 + 0 = <b>10</b>", "Apply"],
+  ["Code after the recursive call runs…", "…while the stack <b>unwinds</b>, so it runs in reverse order of the calls. That's how <code>printStars</code> prints its second half bottom-up.", "Analyze"],
+  ["Why is naive fib(n) exponential?", "Each call makes two calls, and the same subproblems get recomputed many times. fib(30) takes over 2.6 million calls.", "Analyze"],
+  ["Memoization", "Store each result the first time it's computed and reuse it later. This turns exponential recursive Fibonacci into linear time.", "Analyze"],
+  ["When should you NOT use recursion?", "When a simple loop works just as well, or when the depth could be huge (like millions of calls) and risk a stack overflow.", "Evaluate"]
+];
+let deck = CARDS.map((c, i) => i), fcI = 0;
+const known = new Set(), again = new Set();
+function renderCard(){
+  const c = CARDS[deck[fcI]];
+  $("#fc").classList.remove("flip");
+  $("#fcFront").innerHTML = `<div><span class="tag" style="background:#fff">${c[2]}</span></div><div style="margin-top:10px">${c[0]}</div><div class="lead" style="color:#dfe6f2;font-size:13px;margin-top:14px">click to flip</div>`;
+  $("#fcBack").innerHTML = `<div>${c[1]}</div>`;
+  $("#fcPos").textContent = `Card ${fcI + 1} of ${deck.length}`;
+  $("#fcPrev").disabled = fcI === 0; $("#fcNext").disabled = fcI === deck.length - 1;
+  const pct = Math.round(known.size / CARDS.length * 100);
+  $("#fcBar").style.width = pct + "%";
+  $("#fcStats").textContent = `Got it: ${known.size} · Review again: ${again.size} · ${pct}% of the deck mastered`;
+}
+const flip = () => $("#fc").classList.toggle("flip");
+$("#fc").onclick = flip;
+$("#fc").onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
+$("#fcNext").onclick = () => { if (fcI < deck.length - 1) { fcI++; renderCard(); } };
+$("#fcPrev").onclick = () => { if (fcI > 0) { fcI--; renderCard(); } };
+function mark(isKnown){
+  const id = deck[fcI];
+  if (isKnown) { known.add(id); again.delete(id); } else { again.add(id); known.delete(id); }
+  if (fcI < deck.length - 1) fcI++;
+  renderCard();
+}
+$("#fcGot").onclick = () => mark(true);
+$("#fcAgain").onclick = () => mark(false);
+$("#fcShuffle").onclick = () => { deck = shuffle(CARDS.map((c, i) => i)); fcI = 0; renderCard(); };
+$("#fcReviewOnly").onclick = () => {
+  if (!again.size) { $("#fcStats").textContent = "No cards are marked “Review again” yet. Nice work!"; return; }
+  deck = [...again]; fcI = 0; renderCard();
+};
+renderCard();
+
+/* ---------- Binary search trace ---------- */
+const BS = [2, 4, 7, 10, 11, 45, 50, 59, 60, 66, 69, 70, 79];
+$("#bsArr").textContent = "{" + BS.join(", ") + "}   (indexes 0–12)";
+$("#bsGo").onclick = () => {
+  const key = parseInt($("#bsKey").value, 10);
+  if (isNaN(key)) { $("#bsOut").textContent = "Enter a whole number."; return; }
+  const lines = [];
+  (function bs(low, high, depth){
+    const pad = "  ".repeat(depth);
+    if (low > high) { lines.push(`${pad}binarySearch(low=${low}, high=${high}) → low > high: NOT FOUND, return ${-low - 1}`); return; }
+    const mid = Math.floor((low + high) / 2);
+    let line = `${pad}binarySearch(low=${low}, high=${high}) mid=${mid}, list[mid]=${BS[mid]} → `;
+    if (key < BS[mid]) { lines.push(line + `${key} < ${BS[mid]}, search the left half`); bs(low, mid - 1, depth + 1); }
+    else if (key === BS[mid]) { lines.push(line + `FOUND at index ${mid}`); }
+    else { lines.push(line + `${key} > ${BS[mid]}, search the right half`); bs(mid + 1, high, depth + 1); }
+  })(0, BS.length - 1, 0);
+  lines.push(`\n${lines.length} call(s) for 13 elements. log2(13) ≈ 3.7, so at most 4 calls are needed.`);
+  $("#bsOut").textContent = lines.join("\n");
+};
+
+/* ---------- Tower of Hanoi ---------- */
+let H = {n:3, moves:[], k:0, pegs:null, timer:null};
+function hMoves(n, from, to, aux, out){ if (n === 1) { out.push([1, from, to]); return; } hMoves(n-1, from, aux, to, out); out.push([n, from, to]); hMoves(n-1, aux, to, from, out); }
+function hReset(){
+  clearInterval(H.timer); H.timer = null; $("#hAll").textContent = "Play all";
+  H.n = +$("#hN").value; H.moves = []; hMoves(H.n, "A", "B", "C", H.moves); H.k = 0;
+  H.pegs = {A: Array.from({length: H.n}, (_, i) => H.n - i), B: [], C: []};
+  hRender(`Start: ${H.n} disk(s) on A. Goal: move them all to B. Minimum moves: 2^${H.n} − 1 = ${H.moves.length}.`);
+}
+function hRender(msg){
+  const box = $("#hanoi"); box.innerHTML = "";
+  ["A","B","C"].forEach(p => {
+    const col = el("div");
+    const peg = el("div", "peg");
+    H.pegs[p].forEach(d => { const disk = el("div", "disk", d); disk.style.width = (24 + d * 16) + "%"; peg.appendChild(disk); });
+    col.appendChild(peg); col.appendChild(el("div", "peglabel", p + (p === "B" ? " (goal)" : "")));
+    box.appendChild(col);
+  });
+  $("#hMsg").innerHTML = msg;
+  $("#hStep").disabled = H.k >= H.moves.length;
+}
+function hStep(){
+  if (H.k >= H.moves.length) return false;
+  const [d, f, t] = H.moves[H.k++];
+  H.pegs[t].push(H.pegs[f].pop());
+  hRender(`Move ${H.k} of ${H.moves.length}: disk ${d} from ${f} to ${t}` + (H.k === H.moves.length ? " · <b>Solved!</b>" : ""));
+  return H.k < H.moves.length;
+}
+$("#hN").onchange = hReset; $("#hReset").onclick = hReset; $("#hStep").onclick = hStep;
+$("#hAll").onclick = () => {
+  if (H.timer) { clearInterval(H.timer); H.timer = null; $("#hAll").textContent = "Play all"; return; }
+  $("#hAll").textContent = "Pause";
+  H.timer = setInterval(() => { if (!hStep()) { clearInterval(H.timer); H.timer = null; $("#hAll").textContent = "Play all"; } }, 550);
+};
+hReset();
+
+/* ---------- Fibonacci explorer ---------- */
+function fibUpdate(){
+  const n = +$("#fibN").value; $("#fibNv").textContent = n;
+  let a = 0, b = 1; for (let i = 0; i < n; i++) [a, b] = [b, a + b];
+  let f1 = 1, f2 = 1; for (let i = 0; i < n; i++) [f1, f2] = [f2, f1 + f2];   // f1 = fib(n+1)
+  $("#fibV").textContent = a.toLocaleString();
+  $("#fibC").textContent = (2 * f1 - 1).toLocaleString();
+  $("#fibM").textContent = (n <= 1 ? 1 : 2 * n - 1).toLocaleString();
+}
+$("#fibN").oninput = fibUpdate; fibUpdate();
+
+/* ---------- Practice lab ---------- */
+const LAB = [
+  {title:"sumArray", lvl:"Apply · easier", prompt:"Write <code>int sumArray(const int list[], int first, int length)</code> so that <code>sumArray(list, 0, 10)</code> returns the sum of the 10 elements. For <code>{1,2,…,10}</code> the output is <code>Sum list = 55</code>.",
+   hint:"The sum of the elements starting at <code>first</code> is <code>list[first]</code> plus the sum of the elements starting at <code>first + 1</code>. When does the range become empty?",
+   sol:"int sumArray(const int list[], int first, int length) {\n    if (first >= length)          // base case: no elements left\n        return 0;\n    return list[first] + sumArray(list, first + 1, length);\n}",
+   why:"Each call handles one element and passes a range that is one element smaller. The empty range adds 0, so the total is correct."},
+  {title:"sumDigits", lvl:"Apply", prompt:"Write <code>void sumDigits(long num, long&amp; sum)</code>. Called with 456782, <code>sum</code> should end up as 32. The result comes back through the <i>reference</i> parameter.",
+   hint:"<code>num % 10</code> is the last digit and <code>num / 10</code> removes it. Stop when no digits are left.",
+   sol:"void sumDigits(long num, long& sum) {\n    if (num == 0)                 // base case: no digits left\n        return;\n    sum += num % 10;              // add the last digit\n    sumDigits(num / 10, sum);     // recurse on the remaining digits\n}",
+   why:"Each call removes one digit, so <code>num</code> always reaches 0. Because <code>sum</code> is passed by reference, every frame adds to the same variable."},
+  {title:"countVowels", lvl:"Apply", prompt:"Write <code>int countVowels(string str, int pos, int length)</code>. For \"Delta College\" it returns 5.",
+   hint:"Check the character at <code>pos</code> (use <code>tolower</code>), count it as 1 or 0, and add the count for the rest of the string starting at <code>pos + 1</code>.",
+   sol:"int countVowels(string str, int pos, int length) {\n    if (pos >= length)            // base case: past the end\n        return 0;\n    char c = tolower(str[pos]);\n    int isVowel = (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') ? 1 : 0;\n    return isVowel + countVowels(str, pos + 1, length);\n}",
+   why:"This is the same pattern as sumArray: handle one position, then recurse on the rest. Tip: pass <code>const string&amp;</code> instead of <code>string</code> to avoid copying the string on every call."},
+  {title:"printStars", lvl:"Apply → Analyze · harder", prompt:"Write <code>void printStars(int n)</code> so that <code>printStars(5)</code> prints 5, 4, 3, 2, 1 stars and then 1, 2, 3, 4, 5 stars, one row per line.",
+   out:"*****\n****\n***\n**\n*\n*\n**\n***\n****\n*****",
+   hint:"Print a row of n stars <i>before</i> the recursive call and print it again <i>after</i> the call. Which half prints while the stack unwinds?",
+   sol:"void printRow(int n) {\n    for (int i = 0; i < n; i++) cout << '*';\n    cout << endl;\n}\nvoid printStars(int n) {\n    if (n == 0) return;           // base case\n    printRow(n);                  // runs on the way DOWN: 5,4,3,2,1\n    printStars(n - 1);\n    printRow(n);                  // runs on the way UP:   1,2,3,4,5\n}",
+   why:"Statements before the call run in call order. Statements after the call run in reverse, as each frame resumes. That's the key idea behind printing in reverse and walking trees."}
+];
+const lab = $("#labList");
+LAB.forEach((x, i) => {
+  const c = el("div", "card");
+  c.innerHTML = `<h3>${i + 1}. ${x.title} <span class="tag">${x.lvl}</span></h3><p>${x.prompt}</p>` + (x.out ? `<p>Expected output:</p><pre><code>${x.out}</code></pre>` : "") +
+    `<label class="lead" for="lab${i}">Your attempt (optional):</label><textarea id="lab${i}" spellcheck="false" placeholder="// write your function here"></textarea>`;
+  const hb = el("button", "btn ghost", "💡 Hint"), sb = el("button", "btn", "Show worked solution");
+  const hint = el("div", "fb info", x.hint), sol = el("div", "model", `<pre><code>${esc(x.sol)}</code></pre><p><b>Reasoning:</b> ${x.why}</p>`);
+  hb.onclick = () => hint.classList.toggle("show");
+  sb.onclick = () => { sol.classList.toggle("show"); sb.textContent = sol.classList.contains("show") ? "Hide solution" : "Show worked solution"; };
+  c.append(hb, sb, hint, sol);
+  lab.appendChild(c);
+});
+
+/* ---------- Quiz (scaffolded) ---------- */
+const QUIZ = [
+  {level:"Remember", q:"What is the base case of a recursive function?", opts:["The first line of the function","The case that is answered directly without a recursive call","The largest input the function accepts","The call made from main()"], a:1, why:"The base case returns an answer directly and stops the recursion."},
+  {level:"Remember", q:"Recursion is best described as…", opts:["Repetition without a loop","A loop inside a loop","A function with no parameters","Code that runs only once"], a:0, why:"From the slides: recursion is essentially repetition without a loop."},
+  {level:"Remember", q:"What is <code>fib(6)</code>, if fib(0) = 0 and fib(1) = 1?", opts:["5","6","8","13"], a:2, why:"0, 1, 1, 2, 3, 5, <b>8</b>. Index 6 is 8."},
+  {level:"Understand", q:"Why does recursion use more memory than an equivalent loop?", opts:["Recursive code is longer","Every active call keeps its own stack frame for its parameters and locals","Loops store data on the heap","The compiler copies the function for each call"], a:1, why:"Each call allocates a frame, and frames stay on the stack until their call returns."},
+  {level:"Understand", q:"In recursive binary search, what does it mean when <code>low &gt; high</code>?", opts:["The key was found","The array is unsorted","The search range is empty, so the key is not in the list","The middle element must be checked again"], a:2, why:"An empty range means there's nothing left to search: the key isn't there."},
+  {level:"Understand", q:"In the recursive selection sort from the slides, what happens on each call?", opts:["The smallest element moves to the front","The largest element moves to the end, then the rest is sorted","Adjacent elements are swapped","The array is split in half"], a:1, why:"Find the largest, swap it with the last element, then sort the list minus that element."},
+  {level:"Apply", q:"What does <code>mystery(4)</code> return?", code:"int mystery(int n) {\n    if (n == 1) return 1;\n    return 2 * mystery(n - 1);\n}", opts:["4","8","16","6"], a:1, why:"mystery(4) = 2·2·2·mystery(1) = 8. It computes 2<sup>n−1</sup>."},
+  {level:"Apply", q:"How many moves does Tower of Hanoi need to move 4 disks?", opts:["8","15","16","7"], a:1, why:"7 moves for 3 disks + 1 move + 7 moves = 15 = 2<sup>4</sup> − 1."},
+  {level:"Apply", q:"What does this code print for <code>show(3)</code>?", code:"void show(int n) {\n    if (n == 0) return;\n    show(n - 1);\n    cout << n << \" \";\n}", opts:["3 2 1","1 2 3","3 2 1 0","0 1 2 3"], a:1, why:"The print happens after the recursive call, so it runs as the stack unwinds: 1, then 2, then 3."},
+  {level:"Apply", q:"Which line correctly finishes the helper <code>isPalindrome(s, low, high)</code> after both base cases?", opts:["<code>return isPalindrome(s, low, high);</code>","<code>return isPalindrome(s, low + 1, high - 1);</code>","<code>return isPalindrome(s, low - 1, high + 1);</code>","<code>return isPalindrome(s.substr(1), low, high);</code>"], a:1, why:"Move both indexes toward the middle so the range shrinks toward the base case."},
+  {level:"Analyze", q:"What happens when <code>factorial(-3)</code> is called with this code?", code:"long long factorial(int n) {\n    if (n == 0) return 1;\n    return n * factorial(n - 1);\n}", opts:["It returns 1","It returns -6","n never reaches 0, so the calls continue until the stack overflows","The compiler rejects the call"], a:2, why:"n goes −4, −5, … and never reaches 0. The base case exists but can't be reached."},
+  {level:"Analyze", q:"Naive <code>fib(n)</code> makes two recursive calls per call. What is the main reason it's slow?", opts:["Deep recursion depth","It recomputes the same subproblems many times","long long arithmetic","The base cases are checked twice"], a:1, why:"The depth is only n, but the overlapping subproblems create an exponential number of calls."},
+  {level:"Analyze", q:"Compare <code>sumArray</code> (one call per element) with binary search (one call per half) on 1,000,000 elements. About how deep does each recursion go?", opts:["Both about 20","About 1,000,000 vs. about 20","About 20 vs. about 1,000,000","Both about 1,000,000"], a:1, why:"Linear recursion goes one level per element. Halving the range takes about log<sub>2</sub>(10<sup>6</sup>) ≈ 20 levels."},
+  {level:"Evaluate", q:"Which task is the <b>best</b> fit for recursion?", opts:["Printing the numbers 1 to 100","Adding up a 10-million-element array","Listing every file in a folder and all of its sub-folders","Reading a file line by line"], a:2, why:"A folder tree is inherently recursive. The other tasks are simple linear repetition, where a loop is clearer and safer."},
+  {level:"Evaluate", q:"A student says: “My recursive solution has a base case, so it's correct.” What's the best critique?", opts:["Agree: a base case guarantees correctness","They must also show each call shrinks the problem toward the base case and combines results correctly","Recursion is never correct without a loop","They need two base cases"], a:1, why:"Correctness needs a reachable base case, progress toward it on every call, and a correct way to combine the results."}
+];
+let qi = 0, qRight = 0, qAnswered = false;
+function renderQ(){
+  const card = $("#qCard"); card.innerHTML = "";
+  if (qi >= QUIZ.length) {
+    const pct = Math.round(qRight / QUIZ.length * 100);
+    card.innerHTML = `<h3>Quiz complete</h3><p class="score">You scored ${qRight} / ${QUIZ.length} (${pct}%).</p><p>${pct >= 80 ? "Strong work. Try the Challenge tab next." : "Review the Learn and Patterns tabs, then retake the quiz."}</p>`;
+    const r = el("button", "btn", "Retake quiz"); r.onclick = () => { qi = 0; qRight = 0; renderQ(); }; card.appendChild(r);
+    $("#qNext").disabled = true; $("#qBar").style.width = "100%"; $("#qScore").textContent = ""; return;
+  }
+  card.appendChild(el("p", "lead", `Question ${qi + 1} of ${QUIZ.length}`));
+  qAnswered = false; $("#qNext").disabled = true;
+  mcq(card, QUIZ[qi], ok => { if (ok) qRight++; qAnswered = true; $("#qNext").disabled = false; $("#qScore").textContent = `Score: ${qRight} / ${qi + 1}`; });
+  $("#qBar").style.width = (qi / QUIZ.length * 100) + "%";
+}
+$("#qNext").onclick = () => { if (qAnswered) { qi++; renderQ(); } };
+renderQ();
+
+/* ---------- Matching ---------- */
+const PAIRS = [
+  ["Base case", "The simplest input, answered without recursing"],
+  ["Recursive case", "Calls the function again on a smaller problem"],
+  ["Stack frame", "Holds one call's parameters and local variables"],
+  ["Stack overflow", "Crash from too many active calls"],
+  ["Helper function", "Overload with extra parameters, such as low and high, that does the recursion"],
+  ["Memoization", "Caching results so repeated subproblems are computed only once"],
+  ["Iteration", "Repetition using a for or while loop"],
+  ["Divide and conquer", "Splits the problem in half each call, as in binary search"]
+];
+let mSel = null, mDone = 0, mTries = 0;
+function mBuild(){
+  mSel = null; mDone = 0; mTries = 0;
+  const T = $("#mTerms"), D = $("#mDefs"); T.innerHTML = D.innerHTML = "";
+  $("#mFb").className = "fb";
+  shuffle(PAIRS.map((p, i) => i)).forEach(i => { const b = el("button", "mi", "<b>" + PAIRS[i][0] + "</b>"); b.dataset.k = i; b.dataset.side = "t"; T.appendChild(b); });
+  shuffle(PAIRS.map((p, i) => i)).forEach(i => { const b = el("button", "mi", PAIRS[i][1]); b.dataset.k = i; b.dataset.side = "d"; D.appendChild(b); });
+  [...T.children, ...D.children].forEach(b => b.onclick = () => mClick(b));
+  mStat();
+}
+function mStat(){ $("#mStat").textContent = `Matched ${mDone} / ${PAIRS.length} · Attempts: ${mTries}`; }
+function mClick(b){
+  if (b.classList.contains("done")) return;
+  if (!mSel || mSel.dataset.side === b.dataset.side) {
+    if (mSel) mSel.classList.remove("sel");
+    mSel = b; b.classList.add("sel"); return;
+  }
+  mTries++;
+  if (mSel.dataset.k === b.dataset.k) {
+    [mSel, b].forEach(x => { x.classList.remove("sel"); x.classList.add("done"); x.disabled = true; });
+    mDone++;
+  } else {
+    [mSel, b].forEach(x => { x.classList.remove("sel"); x.classList.add("shake"); setTimeout(() => x.classList.remove("shake"), 400); });
+  }
+  mSel = null; mStat();
+  if (mDone === PAIRS.length) {
+    const fb = $("#mFb");
+    fb.className = "fb show ok";
+    fb.innerHTML = `<b>All matched in ${mTries} attempts.</b> ` + (mTries <= PAIRS.length + 2 ? "Excellent recall!" : "Try another round and aim for fewer attempts.");
+  }
+}
+$("#mReset").onclick = mBuild;
+mBuild();
+
+/* ---------- Challenge (Analyze / Evaluate / Create) ---------- */
+const CH = [
+  {lvl:"Analyze", title:"Predict and explain", task:"Predict the exact output of <code>mystery(7)</code>, then explain <b>why</b> the numbers come out in that order.",
+   code:"void mystery(int n) {\n    if (n <= 0) return;\n    mystery(n - 2);\n    cout << n << \" \";\n}",
+   model:"<b>Output:</b> <code>1 3 5 7</code><br>The calls go mystery(7) → mystery(5) → mystery(3) → mystery(1) → mystery(−1), which hits the base case <code>n &lt;= 0</code> and returns. Because <code>cout</code> comes <i>after</i> the recursive call, each frame prints only as the stack unwinds: mystery(1) prints first, then 3, 5 and 7. The base case uses <code>&lt;=</code> instead of <code>==</code> because n jumps by 2 and would skip right past 0 when starting from an odd number.",
+   rubric:["I gave the exact output, 1 3 5 7","I traced the calls down to the base case","I explained that printing happens while the stack unwinds","I noticed why the base case needs <= rather than =="]},
+  {lvl:"Evaluate", title:"Code review: recursive Fibonacci in a game", task:"A teammate's game calls the naive recursive <code>fib(45)</code> each time a level loads to set the difficulty. Evaluate this design. Is it acceptable? Back your answer with numbers from the Patterns tab and recommend a fix.",
+   model:"<b>Not acceptable.</b> Naive <code>fib(45)</code> makes about 3.67 billion calls (2·fib(46) − 1), because it recomputes the same subproblems over and over. That would visibly freeze the game on every level load. The depth is only 45, so stack overflow isn't the problem: the time is. <b>Recommendation:</b> use the iterative version (45 loop steps) or memoization (about 89 calls), or compute the value once and store it. Both keep the clear recursive definition but avoid exponential work.",
+   rubric:["I gave a clear verdict","I used numbers (the call count) as evidence","I separated time cost from stack depth","I recommended a specific fix and explained why it works"]},
+  {lvl:"Evaluate", title:"Compare: recursion or loop?", task:"For each task, choose recursion or iteration and <b>justify</b> your choice: (a) adding up a 5,000,000-element array, (b) finding the total size of a folder including all sub-folders, (c) solving Tower of Hanoi for 6 disks.",
+   model:"(a) <b>Iteration.</b> It's simple linear work, and one recursive call per element would use 5 million stack frames and likely overflow. (b) <b>Recursion.</b> A folder tree is inherently recursive and its depth is unknown, so the recursive definition (size = files + sizes of sub-folders) matches the structure and the depth is small. (c) <b>Recursion.</b> The three-step decomposition is natural and the depth is only 6. An iterative Hanoi exists, but it's much harder to read and verify.",
+   rubric:["I chose an approach for all three tasks","I considered stack depth and memory","I tied my choice to whether the problem is inherently recursive","I mentioned readability or clarity"]},
+  {lvl:"Create", title:"Design your own recursive function", task:"Write an original recursive function <code>long long power(long long base, int exp)</code> that makes about log<sub>2</sub>(exp) calls instead of exp calls. Identify the base case, explain why every call gets closer to it, and test it on power(2, 10).",
+   model:"<pre><code>long long power(long long base, int exp) {\n    if (exp == 0) return 1;                  // base case\n    long long half = power(base, exp / 2);   // ONE recursive call on half the problem\n    if (exp % 2 == 0) return half * half;    // even: b^e = (b^(e/2))^2\n    return half * half * base;               // odd:  one extra factor of base\n}</code></pre>Every call halves <code>exp</code>, so it reaches 0 after about log<sub>2</sub>(exp) + 1 calls. power(2, 10) → power(2, 5) → power(2, 2) → power(2, 1) → power(2, 0) = 1, then unwinds 1 → 2 → 4 → 32 → 1024. Saving the result in <code>half</code> matters: calling <code>power(base, exp/2) * power(base, exp/2)</code> would bring back the repeated work.",
+   rubric:["My function has a correct base case","Each call reduces exp, by halving","I make only one recursive call per level (no repeated work)","I tested it and got 1024 for power(2, 10)"]}
+];
+const ch = $("#chList");
+CH.forEach((x, i) => {
+  const c = el("div", "card");
+  c.innerHTML = `<h3>${i + 1}. ${x.title} <span class="tag hi">${x.lvl}</span></h3><p>${x.task}</p>` + (x.code ? `<pre><code>${esc(x.code)}</code></pre>` : "") +
+    `<label class="lead" for="ch${i}">Your answer and justification:</label><textarea id="ch${i}" spellcheck="true"></textarea>`;
+  const ta = c.querySelector("textarea");
+  try { ta.value = localStorage.getItem("rec-ch" + i) || ""; } catch(e) {}
+  ta.oninput = () => { try { localStorage.setItem("rec-ch" + i, ta.value); } catch(e) {} };
+  const b = el("button", "btn", "Show model answer and checklist");
+  const m = el("div", "model card soft", `<p>${x.model}</p><div class="rubric"><b>Score yourself:</b>${x.rubric.map((r, j) => `<label><input type="checkbox" data-r="${j}"> ${r}</label>`).join("")}</div><p class="score"></p>`);
+  b.onclick = () => {
+    if (!ta.value.trim() && !m.classList.contains("show")) { if (!confirmFirst(b)) return; }
+    m.classList.toggle("show");
+    b.textContent = m.classList.contains("show") ? "Hide model answer" : "Show model answer and checklist";
+  };
+  m.addEventListener("change", () => { const n = m.querySelectorAll("input:checked").length; m.querySelector(".score").textContent = `Checklist: ${n} / ${x.rubric.length}` + (n === x.rubric.length ? " · Fully met!" : ""); });
+  c.append(b, m);
+  ch.appendChild(c);
+});
+function confirmFirst(btn){
+  if (btn.dataset.warned) return true;
+  btn.dataset.warned = "1";
+  btn.textContent = "Try writing an answer first (click again to reveal anyway)";
+  return false;
+}
+})();
+</script>
+</body>
+</html>
