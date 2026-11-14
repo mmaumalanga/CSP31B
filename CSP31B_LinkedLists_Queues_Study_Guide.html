@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSP31B Study Guide: Linked Lists, Queues, and Priority Queues | San Joaquin Delta College</title>
+<style>
+  :root {
+    --user-primary: #1a4480;
+    --user-accent: #c8102e;
+    --user-background: #ffffff;
+    --ink: #1b1b1b;
+    --muted: #5b616b;
+    --line: #d9dee5;
+    --soft: #f1f5fb;
+    --ok: #1e6b2c;
+    --ok-bg: #e7f4ea;
+    --bad: #a3141b;
+    --bad-bg: #fdecec;
+    --warn-bg: #fff6e6;
+    --warn-line: #e0a100;
+    --code-bg: #0f2341;
+    --code-ink: #e9eef7;
+    --radius: 10px;
+    --mono: "Consolas", "Menlo", "Courier New", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--user-background); color: var(--ink); font: 16px/1.55 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  .skip { position: absolute; left: -999px; top: 0; background: var(--user-accent); color: #fff; padding: 8px 14px; z-index: 10; }
+  .skip:focus { left: 8px; }
+  :focus-visible { outline: 3px solid var(--user-accent); outline-offset: 2px; }
+  header { background: var(--user-primary); color: #fff; padding: 18px 20px 14px; border-bottom: 5px solid var(--user-accent); }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header .kicker { font-size: .85rem; letter-spacing: .06em; text-transform: uppercase; opacity: .85; margin: 0; }
+  header h1 { margin: 4px 0 2px; font-size: 1.6rem; line-height: 1.25; }
+  header p.sub { margin: 0; opacity: .92; }
+  .progress { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-size: .9rem; }
+  .bar { flex: 1; height: 10px; background: rgba(255,255,255,.25); border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; width: 0; background: #fff; transition: width .4s; }
+  nav.steps { background: var(--soft); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  nav.steps ol { list-style: none; margin: 0 auto; padding: 8px 12px; display: flex; gap: 6px; overflow-x: auto; max-width: 980px; }
+  nav.steps button { border: 1px solid var(--line); background: #fff; color: var(--user-primary); border-radius: 99px; padding: 6px 12px; font: inherit; font-size: .88rem; cursor: pointer; white-space: nowrap; display: flex; gap: 6px; align-items: center; }
+  nav.steps button[aria-current="step"] { background: var(--user-primary); color: #fff; border-color: var(--user-primary); }
+  nav.steps .num { font-weight: 700; }
+  nav.steps .done::after { content: "✓"; color: var(--ok); font-weight: 700; }
+  nav.steps button[aria-current="step"] .done::after { color: #fff; }
+  main { max-width: 980px; margin: 0 auto; padding: 22px 18px 40px; }
+  section.panel { display: none; }
+  section.panel.active { display: block; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  h2 { color: var(--user-primary); font-size: 1.45rem; margin: 0 0 4px; }
+  h3 { color: var(--user-primary); font-size: 1.12rem; margin: 26px 0 8px; }
+  h4 { margin: 14px 0 6px; font-size: 1rem; }
+  .lead { color: var(--muted); margin-top: 0; }
+  .box { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin: 14px 0; background: #fff; }
+  .box.soft { background: var(--soft); }
+  .box.warn { background: var(--warn-bg); border-left: 6px solid var(--warn-line); }
+  .box.scenario { border-left: 6px solid var(--user-primary); background: var(--soft); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+  .tier { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; border: 1px solid; vertical-align: middle; }
+  .tier.Remember   { color: #1a4480; border-color: #9fb6d9; background: #eef3fa; }
+  .tier.Understand { color: #22577a; border-color: #8cc0d6; background: #eaf6fa; }
+  .tier.Apply      { color: #1e6b2c; border-color: #9ccaa6; background: #e9f5ec; }
+  .tier.Analyze    { color: #7a4b00; border-color: #e0b766; background: #fff5e2; }
+  .tier.Evaluate   { color: #8a1c2b; border-color: #e5a3ac; background: #fdeef0; }
+  .tier.Create     { color: #fff; border-color: var(--user-accent); background: var(--user-accent); }
+  button.btn { font: inherit; font-size: .95rem; border-radius: 8px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--user-primary); background: var(--user-primary); color: #fff; }
+  button.btn:hover { filter: brightness(1.1); }
+  button.btn.ghost { background: #fff; color: var(--user-primary); }
+  button.btn.accent { background: var(--user-accent); border-color: var(--user-accent); }
+  button.btn:disabled { opacity: .5; cursor: not-allowed; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .spacer { flex: 1; }
+  code, pre, textarea.code { font-family: var(--mono); }
+  :not(pre) > code { background: var(--soft); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-size: .92em; }
+  pre.code { background: var(--code-bg); color: var(--code-ink); border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin: 8px 0; font-size: .9rem; line-height: 1.5; }
+  pre.code.ln { counter-reset: ln; }
+  pre.code.ln .l { display: block; }
+  pre.code.ln .l::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 1.8em; margin-right: 10px; color: #8ea3c4; text-align: right; }
+  pre.out { background: #f7f7f7; border: 1px dashed #b9bec6; color: #111; border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; margin: 8px 0; font-size: .9rem; font-family: var(--mono); }
+  .fc-stage { perspective: 1200px; margin: 12px 0; }
+  .flashcard { position: relative; height: 300px; cursor: pointer; transform-style: preserve-3d; transition: transform .5s; border-radius: 14px; }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; padding: 22px 24px; display: flex; flex-direction: column; overflow: auto; border: 2px solid var(--user-primary); background: #fff; }
+  .face.back { transform: rotateY(180deg); background: var(--soft); border-color: var(--user-accent); }
+  .face .meta { display: flex; gap: 8px; align-items: center; font-size: .82rem; color: var(--muted); }
+  .face .txt { flex: 1; display: flex; flex-direction: column; justify-content: center; font-size: 1.12rem; }
+  .face .hint { font-size: .8rem; color: var(--muted); text-align: right; }
+  .fc-status { font-size: .92rem; color: var(--muted); }
+  .fc-dots { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+  .fc-dots span { width: 12px; height: 12px; border-radius: 3px; background: var(--line); }
+  .fc-dots span.known { background: var(--ok); }
+  .fc-dots span.review { background: var(--user-accent); }
+  .fc-dots span.cur { outline: 2px solid var(--user-primary); outline-offset: 1px; }
+  select, input.ans { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); }
+  input.ans { font-family: var(--mono); width: 120px; }
+  @media (prefers-reduced-motion: reduce) { .flashcard { transition: none; } section.panel.active { animation: none; } }
+  fieldset.q { border: 1px solid var(--line); border-radius: var(--radius); margin: 12px 0; padding: 12px 16px; }
+  fieldset.q legend { font-weight: 600; padding: 0 6px; }
+  .opt { display: flex; gap: 10px; align-items: flex-start; padding: 7px 10px; border-radius: 8px; border: 1px solid transparent; margin: 4px 0; cursor: pointer; }
+  .opt:hover { background: var(--soft); }
+  .opt input { margin-top: 5px; }
+  .opt.right { background: var(--ok-bg); border-color: #9ccaa6; }
+  .opt.wrong { background: var(--bad-bg); border-color: #e5a3ac; }
+  .fb { margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: .95rem; }
+  .fb.ok { background: var(--ok-bg); color: var(--ok); }
+  .fb.no { background: var(--bad-bg); color: var(--bad); }
+  .selfcheck { border: 2px solid var(--user-primary); border-radius: 12px; padding: 4px 18px 16px; margin-top: 30px; background: #fff; }
+  .selfcheck h3 { margin-top: 14px; }
+  .score { font-weight: 700; }
+  .tierbars div { display: grid; grid-template-columns: 120px 1fr 60px; gap: 10px; align-items: center; margin: 6px 0; font-size: .92rem; }
+  .tierbars .track { height: 12px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .tierbars .fill { height: 100%; background: var(--user-primary); }
+  .quiz-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .match-tabs { display: flex; gap: 6px; margin: 10px 0; }
+  .match-tabs button[aria-selected="true"] { background: var(--user-primary); color: #fff; }
+  .match { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .match .col { display: flex; flex-direction: column; gap: 8px; }
+  .match button.item { font: inherit; text-align: left; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--line); background: #fff; cursor: pointer; min-height: 48px; }
+  .match button.item code { background: none; border: 0; padding: 0; font-weight: 700; color: var(--user-primary); }
+  .match button.item[aria-pressed="true"] { border-color: var(--user-primary); background: var(--soft); }
+  .match button.item.matched { border-color: #9ccaa6; background: var(--ok-bg); cursor: default; }
+  .match button.item.miss { border-color: var(--user-accent); background: var(--bad-bg); }
+  .editor { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin: 12px 0; }
+  .editor .bar2 { background: var(--soft); padding: 8px 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--line); font-size: .9rem; }
+  .editor textarea.code { width: 100%; min-height: 240px; border: 0; padding: 12px 14px; font-size: .9rem; line-height: 1.5; background: var(--code-bg); color: var(--code-ink); resize: vertical; tab-size: 4; display: block; }
+  .steps-list { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  .steps-list > li { counter-increment: s; position: relative; padding: 12px 14px 12px 54px; border: 1px solid var(--line); border-radius: var(--radius); margin: 10px 0; }
+  .steps-list > li::before { content: counter(s); position: absolute; left: 14px; top: 12px; width: 28px; height: 28px; border-radius: 50%; background: var(--user-primary); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .think { color: var(--muted); font-style: italic; }
+  table.trace { border-collapse: collapse; width: 100%; font-size: .92rem; margin: 8px 0; }
+  table.trace th, table.trace td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  table.trace th { background: var(--soft); color: var(--user-primary); }
+  /* Linked-list diagrams */
+  .ll { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 0; margin: 10px 0; font-family: var(--mono); font-size: .85rem; }
+  .ll .cell { display: flex; flex-direction: column; align-items: center; }
+  .ll .ptrs { min-height: 20px; font-size: .72rem; font-weight: 700; color: var(--user-accent); text-align: center; line-height: 1.2; }
+  .ll .node { border: 2px solid var(--user-primary); border-radius: 6px; background: #fff; min-width: 84px; text-align: center; }
+  .ll .node .el { padding: 4px 8px; border-bottom: 1px solid var(--line); }
+  .ll .node .nx { padding: 2px 8px; color: var(--muted); font-size: .75rem; }
+  .ll .node.hl { background: var(--warn-bg); border-color: var(--warn-line); }
+  .ll .node.cur { box-shadow: 0 0 0 3px var(--user-accent); }
+  .ll .arrow { align-self: center; margin-top: 20px; padding: 0 4px; color: var(--user-primary); font-weight: 700; }
+  .ll .null { align-self: center; margin-top: 20px; color: var(--muted); }
+  .ll .empty { color: var(--muted); font-style: italic; padding: 8px 0; }
+  .sim-ops { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .sim-log { font-family: var(--mono); font-size: .88rem; background: #f7f7f7; border: 1px dashed #b9bec6; border-radius: 8px; padding: 8px 12px; min-height: 40px; white-space: pre-wrap; }
+  .myth-title { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; color: var(--bad); font-size: 1.05rem; flex-wrap: wrap; }
+  .myth-title .flag { background: var(--user-accent); color: #fff; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; letter-spacing: .04em; }
+  .checklist { list-style: none; padding: 0; margin: 6px 0; }
+  .checklist li { padding: 6px 8px 6px 34px; position: relative; border-radius: 6px; }
+  .checklist li::before { content: "○"; position: absolute; left: 10px; color: var(--muted); font-weight: 700; }
+  .checklist li.met { background: var(--ok-bg); }
+  .checklist li.met::before { content: "✓"; color: var(--ok); }
+  .checklist li.warnrule { background: var(--bad-bg); }
+  .checklist li.warnrule::before { content: "!"; color: var(--bad); }
+  .linepick label { display: inline-flex; gap: 6px; align-items: center; margin: 4px 12px 4px 0; font-family: var(--mono); }
+  textarea.just { width: 100%; min-height: 80px; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+  details { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 8px 0; background: #fff; }
+  details summary { cursor: pointer; font-weight: 600; color: var(--user-primary); }
+  .navfoot { display: flex; justify-content: space-between; margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); }
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; padding: 16px 18px 28px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  ul.obj li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">San Joaquin Delta College · Computer Science</p>
+    <h1>CSP31B: C++ Programming II<br>Study Guide: Linked Lists, Queues, and Priority Queues</h1>
+    <p class="sub">Flashcards, matching, a worked example, common misconceptions, a scaffolded quiz, and a real-world lab</p>
+    <div class="progress" aria-label="Study guide progress">
+      <span id="progText">0 of 6 activities complete</span>
+      <div class="bar" aria-hidden="true"><span id="progBar"></span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="steps" aria-label="Study guide sections"><ol id="stepNav"></ol></nav>
+
+<main id="main">
+
+  <!-- ===================== START ===================== -->
+  <section class="panel" id="start" data-title="Start here">
+    <h2>Start Here</h2>
+    <p class="lead">This guide covers <strong>Chapter 20: Linked Lists, Queues, and Priority Queues</strong>: the <code>Node</code> class, traversing with pointers, the <code>LinkedList</code> class and its add and remove operations, iterators and foreach loops, variations of linked lists, and the <code>Stack</code>, <code>Queue</code>, and <code>PriorityQueue</code> classes. Work through the activities in order. Each one builds on the one before it.</p>
+    <div class="box soft">
+      <h3 style="margin-top:0">Learning objectives</h3>
+      <p>By the end of this guide, you should be able to:</p>
+      <ul class="obj">
+        <li><span class="tier Remember">Remember</span> Describe the parts of a node and the roles of <code>head</code>, <code>tail</code>, and <code>NULL</code>/<code>nullptr</code>.</li>
+        <li><span class="tier Understand">Understand</span> Explain when a linked list is more efficient than an array, and how stacks, queues, and priority queues order their elements.</li>
+        <li><span class="tier Apply">Apply</span> Trace <code>add</code>, <code>remove</code>, traversal, and queue operations, and write a traversal function.</li>
+        <li><span class="tier Analyze">Analyze</span> Find pointer bugs in linked-list code and explain their effects.</li>
+        <li><span class="tier Evaluate">Evaluate</span> Judge design choices such as composition versus inheritance and which data structure fits a situation.</li>
+        <li><span class="tier Create">Create</span> Design and write a <code>Stack</code> class that uses a <code>LinkedList</code>.</li>
+      </ul>
+    </div>
+    <h3>Your path</h3>
+    <ol>
+      <li><strong>Flashcards</strong>: key terms and code, from recall to tracing.</li>
+      <li><strong>Matching</strong>: connect terms and code to their meanings.</li>
+      <li><strong>Worked Example</strong>: follow an expert's reasoning for <code>indexOf</code>, then write <code>lastIndexOf</code> yourself.</li>
+      <li><strong>Misconceptions</strong>: five mistakes that cause many linked-list bugs.</li>
+      <li><strong>Quiz</strong>: 15 questions that grow from Remember to Evaluate.</li>
+      <li><strong>Real-World Lab</strong>: debug, evaluate, and create code for a campus help desk and a text editor.</li>
+    </ol>
+    <p>Each activity ends with a short <strong>self-check</strong> so you can confirm your understanding before moving on. The colored labels show the kind of thinking each task asks for. Your progress is saved in this browser.</p>
+    <div class="box warn"><strong>Writing code:</strong> The worked example and lab ask you to write C++ in this page. The page checks your code's structure, but it can't compile it. Copy your code into your IDE, add it to the chapter's <code>LinkedList.h</code>, and compile and run it there.</div>
+    <div class="navfoot"><span></span><button class="btn" data-go="flash">Start with Flashcards →</button></div>
+  </section>
+
+  <!-- ===================== FLASHCARDS ===================== -->
+  <section class="panel" id="flash" data-title="Flashcards" data-key="flash">
+    <h2>1 · Flashcards</h2>
+    <p class="lead">The cards follow the order of the chapter, and each topic's cards move from <span class="tier Remember">Remember</span> to <span class="tier Understand">Understand</span> to <span class="tier Apply">Apply</span>. Click a card or press <kbd>Space</kbd> to flip it. Use <kbd>←</kbd> and <kbd>→</kbd> to move between cards.</p>
+    <div class="row">
+      <label for="fcFilter">Show:</label>
+      <select id="fcFilter">
+        <option value="all">All levels</option>
+        <option value="Remember">Remember only</option>
+        <option value="Understand">Understand only</option>
+        <option value="Apply">Apply only</option>
+        <option value="review">Cards marked "Review again"</option>
+      </select>
+      <button class="btn ghost" id="fcShuffle" type="button">Shuffle</button>
+      <button class="btn ghost" id="fcReset" type="button">Restart in order</button>
+      <span class="spacer"></span>
+      <span class="fc-status" id="fcStatus" aria-live="polite"></span>
+    </div>
+    <div class="fc-dots" id="fcDots" aria-hidden="true"></div>
+    <div class="fc-stage">
+      <div class="flashcard" id="fcCard" tabindex="0" role="button" aria-describedby="fcHelp">
+        <div class="face front" id="fcFront"></div>
+        <div class="face back" id="fcBack" aria-hidden="true"></div>
+      </div>
+      <p id="fcHelp" class="sr">Flashcard. Press Space or Enter to flip. Use the left and right arrow keys to change cards.</p>
+    </div>
+    <div class="row">
+      <button class="btn ghost" id="fcPrev" type="button">← Previous</button>
+      <button class="btn" id="fcFlip" type="button">Flip card</button>
+      <button class="btn ghost" id="fcNext" type="button">Next →</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="fcReview" type="button">↺ Review again</button>
+      <button class="btn" id="fcKnow" type="button" style="background:var(--ok);border-color:var(--ok)">✓ Got it</button>
+    </div>
+    <div class="selfcheck" id="checkFlash"></div>
+    <div class="navfoot"><button class="btn ghost" data-go="start">← Start</button><button class="btn" data-go="match">Next: Matching →</button></div>
+  </section>
+
+  <!-- ===================== MATCHING ===================== -->
+  <section class="panel" id="match" data-title="Matching" data-key="match">
+    <h2>2 · Matching Activity</h2>
+    <p class="lead">Select an item on the left, then select its match on the right. Round A tests recall (<span class="tier Remember">Remember</span>). Round B asks what code does (<span class="tier Understand">Understand</span> and <span class="tier Apply">Apply</span>).</p>
+    <div class="match-tabs" role="tablist" aria-label="Matching rounds">
+      <button class="btn ghost" role="tab" id="tabA" aria-selected="true" aria-controls="matchArea">Round A: Terms</button>
+      <button class="btn ghost" role="tab" id="tabB" aria-selected="false" aria-controls="matchArea">Round B: Code and effects</button>
+    </div>
+    <div id="matchArea" role="tabpanel"></div>
+    <p id="matchStatus" aria-live="polite" class="fc-status"></p>
+    <div class="selfcheck" id="checkMatch"></div>
+    <div class="navfoot"><button class="btn ghost" data-go="flash">← Flashcards</button><button class="btn" data-go="worked">Next: Worked Example →</button></div>
+  </section>
+
+  <!-- ===================== WORKED EXAMPLE ===================== -->
+  <section class="panel" id="worked" data-title="Worked Example" data-key="worked">
+    <h2>3 · Worked Example, Then Your Turn</h2>
+    <p class="lead">First, read how an experienced programmer writes a traversal function for <code>LinkedList</code>. Then write a similar function yourself. <span class="tier Apply">Apply</span></p>
+    <div class="box scenario">
+      <h3 style="margin-top:0">The problem: find a song in a playlist</h3>
+      <p>A music app stores a playlist in a <code>LinkedList&lt;string&gt;</code>. Implement <code>int indexOf(const T&amp; e) const</code>, which returns the index of the <strong>first</strong> element equal to <code>e</code>, or <code>-1</code> if there's no match.</p>
+      <div id="wPlaylist"></div>
+    </div>
+    <ol class="steps-list">
+      <li><strong>Recall what the list gives us.</strong>
+        <p class="think">"What can I reach directly, and what do I have to walk to?"</p>
+        <p>The class has <code>head</code>, <code>tail</code>, and <code>size</code>. Unlike an array, there's no way to jump straight to element <code>i</code>: the only way to reach a node is to start at <code>head</code> and follow <code>next</code> pointers. So the function needs a traversal loop.</p></li>
+      <li><strong>Write the function header.</strong>
+        <p class="think">"Does this function change the list? How should <code>e</code> be passed?"</p>
+<pre class="code">template&lt;typename T&gt;
+int LinkedList&lt;T&gt;::indexOf(const T&amp; e) const</pre>
+        <p>Searching doesn't change the list, so the function is <code>const</code>. <code>T</code> could be a large type such as a <code>string</code>, so <code>e</code> is passed by const reference to avoid a copy.</p></li>
+      <li><strong>Start a pointer at the head and keep a position counter.</strong>
+        <p class="think">"I need to know which node I'm on <em>and</em> its index."</p>
+<pre class="code">Node&lt;T&gt;* current = head;
+for (int i = 0; i &lt; size; i++)</pre>
+        <p>We use a separate pointer, <code>current</code>, and never move <code>head</code>: moving <code>head</code> would lose the start of the list. The counter <code>i</code> tracks the index of the node <code>current</code> points to.</p></li>
+      <li><strong>Check each node, and stop at the first match.</strong>
+        <p class="think">"The first match is the answer, so I can return right away."</p>
+<pre class="code">{
+    if (current-&gt;element == e)
+        return i;                 // first match: done
+    current = current-&gt;next;      // move to the next node
+}
+return -1;                        // walked the whole list: no match</pre>
+        <p>The arrow operator <code>-&gt;</code> reads a member through a pointer. If the loop finishes, every node was checked without a match, so we return <code>-1</code>. Because the loop runs <code>size</code> times, it also works for an empty list: the loop body never runs and the function returns <code>-1</code>.</p></li>
+      <li><strong>Trace it before trusting it.</strong> Call <code>playlist.indexOf("Imagine")</code>:
+        <table class="trace">
+          <thead><tr><th><code>i</code></th><th><code>current-&gt;element</code></th><th>Equal to "Imagine"?</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>"Hello"</td><td>No</td><td>Move to the next node</td></tr>
+            <tr><td>1</td><td>"Imagine"</td><td><strong>Yes</strong></td><td>Return 1</td></tr>
+          </tbody>
+        </table>
+        <p>The function returns <code>1</code>, even though "Imagine" also appears at index 3: <code>indexOf</code> stops at the first match. <code>playlist.indexOf("Help")</code> visits all five nodes and returns <code>-1</code>.</p></li>
+    </ol>
+    <details><summary>See the complete function</summary>
+<pre class="code">template&lt;typename T&gt;
+int LinkedList&lt;T&gt;::indexOf(const T&amp; e) const
+{
+    Node&lt;T&gt;* current = head;
+    for (int i = 0; i &lt; size; i++)
+    {
+        if (current-&gt;element == e)
+            return i;
+        current = current-&gt;next;
+    }
+    return -1;
+}</pre></details>
+
+    <h3>Your turn <span class="tier Apply">Apply</span></h3>
+    <div class="box soft">
+      <p>Implement <code>int lastIndexOf(const T&amp; e) const</code>, which returns the index of the <strong>last</strong> element equal to <code>e</code>, or <code>-1</code> if there's no match.</p>
+      <p>A singly linked list can only be walked forward, from <code>head</code> to <code>tail</code>. Think about what you must do differently from <code>indexOf</code> when you find a match.</p>
+      <p>The checklist updates as you type. Then predict, or run, the results for the same playlist.</p>
+    </div>
+    <ul class="checklist" id="turnRubric"></ul>
+    <div class="editor">
+      <div class="bar2"><strong>Your function</strong><span class="spacer"></span><button class="btn ghost" type="button" id="turnReset">Reset</button></div>
+      <label class="sr" for="turnCode">C++ code</label>
+      <textarea class="code" id="turnCode" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    </div>
+    <div class="row">
+      <label for="turnOut1"><code>playlist.lastIndexOf("Imagine")</code> returns</label><input class="ans" id="turnOut1" placeholder="?">
+      <label for="turnOut2"><code>playlist.lastIndexOf("Help")</code> returns</label><input class="ans" id="turnOut2" placeholder="?">
+      <button class="btn" type="button" id="turnCheck">Check</button>
+    </div>
+    <div id="turnVerdict" aria-live="polite"></div>
+    <details><summary>Hint 1: the key difference</summary><p>In <code>indexOf</code>, a match ends the search. Here, a later node might also match, so you can't return yet. Remember the index in a variable and keep walking.</p></details>
+    <details><summary>Hint 2: the starting value</summary><p>Start the variable at <code>-1</code>. If no node matches, it's never changed, so you can return it as is.</p></details>
+    <details><summary>Show a sample solution</summary>
+<pre class="code">template&lt;typename T&gt;
+int LinkedList&lt;T&gt;::lastIndexOf(const T&amp; e) const
+{
+    int result = -1;                 // no match found yet
+    Node&lt;T&gt;* current = head;
+    for (int i = 0; i &lt; size; i++)
+    {
+        if (current-&gt;element == e)
+            result = i;              // remember it, but keep going
+        current = current-&gt;next;
+    }
+    return result;                   // 3 for "Imagine", -1 for "Help"
+}</pre></details>
+    <div class="selfcheck" id="checkWorked"></div>
+    <div class="navfoot"><button class="btn ghost" data-go="match">← Matching</button><button class="btn" data-go="myths">Next: Misconceptions →</button></div>
+  </section>
+
+  <!-- ===================== MISCONCEPTIONS ===================== -->
+  <section class="panel" id="myths" data-title="Misconceptions" data-key="myths">
+    <h2>4 · Common Misconceptions</h2>
+    <p class="lead">These five mistakes cause many linked-list bugs. For each one, read why it's wrong and what the correct reasoning is. <span class="tier Understand">Understand</span> <span class="tier Analyze">Analyze</span></p>
+    <div id="mythList"></div>
+    <div class="selfcheck" id="checkMyths"></div>
+    <div class="navfoot"><button class="btn ghost" data-go="worked">← Worked Example</button><button class="btn" data-go="quiz">Next: Quiz →</button></div>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section class="panel" id="quiz" data-title="Quiz" data-key="quiz">
+    <h2>5 · Interactive Quiz</h2>
+    <p class="lead">There are 15 questions in order of difficulty: <span class="tier Remember">Remember</span> → <span class="tier Understand">Understand</span> → <span class="tier Apply">Apply</span> → <span class="tier Analyze">Analyze</span> → <span class="tier Evaluate">Evaluate</span>. You'll get feedback after each answer and a breakdown by level at the end.</p>
+    <div class="box" id="quizBox" aria-live="polite"></div>
+    <div class="navfoot"><button class="btn ghost" data-go="myths">← Misconceptions</button><button class="btn" data-go="lab">Next: Real-World Lab →</button></div>
+  </section>
+
+  <!-- ===================== LAB ===================== -->
+  <section class="panel" id="lab" data-title="Real-World Lab" data-key="lab">
+    <h2>6 · Real-World Lab: Campus Help Desk and Text Editor</h2>
+    <div class="box scenario">
+      <p>You've joined the student team that maintains software for Delta College's IT help desk. Students line up for help with Wi-Fi, Canvas, and password resets. Try the three ways the desk could serve them, then complete each part below.</p>
+      <div class="sim-ops" id="simOps">
+        <label for="simMode"><strong>Serve students using a:</strong></label>
+        <select id="simMode"><option value="queue">Queue (first in, first out)</option><option value="stack">Stack (last in, first out)</option><option value="pq">Priority queue (highest priority first)</option></select>
+        <button class="btn ghost" type="button" id="simAdd">Next student arrives</button>
+        <button class="btn" type="button" id="simServe">Serve one student</button>
+        <button class="btn ghost" type="button" id="simReset">Reset</button>
+      </div>
+      <div id="simList"></div>
+      <div class="sim-log" id="simLog" aria-live="polite">Waiting line is empty. Add some students.</div>
+    </div>
+
+    <h3>Part A · Debug the help desk's "insert" feature <span class="tier Analyze">Analyze</span></h3>
+    <p>Staff can move a student with an urgent problem to a specific spot in line using <code>add(index, e)</code>. A teammate rewrote the function and broke it. For the list <code>Ana Ben Carla Dev</code>, <code>add(2, "Xi")</code> should give <code>Ana Ben Xi Carla Dev</code> with size 5. Find <strong>every</strong> line with a bug.</p>
+    <pre class="code ln" id="bugCode"></pre>
+    <fieldset class="q"><legend>Which lines contain a bug? Select all that apply.</legend><div class="linepick" id="bugPick"></div></fieldset>
+    <div class="row"><button class="btn" type="button" id="bugCheck">Check my answer</button><span class="fc-status" id="bugMsg" aria-live="polite"></span></div>
+    <div class="box soft" id="bugExplain" hidden>
+      <h4 style="margin-top:0">The three bugs</h4>
+      <ul>
+        <li><strong>Line 11:</strong> the loop starts at <code>i = 0</code>, so <code>current</code> moves <code>index</code> times and stops <em>on</em> position 2 (Carla) instead of the node <em>before</em> it (Ben). Fix: <code>for (int i = 1; i &lt; index; i++)</code>.</li>
+        <li><strong>Line 15:</strong> the links are backwards. <code>temp-&gt;next = current-&gt;next;</code> points the old node at the new one and leaves the new node's <code>next</code> as <code>nullptr</code>, so the rest of the list is cut off. Fix: <code>(current-&gt;next)-&gt;next = temp;</code></li>
+        <li><strong>Line 16:</strong> inserting a node must <em>increase</em> the size. Fix: <code>size++;</code></li>
+      </ul>
+      <p>Lines 6–7 are correct: an index at or past the end appends with <code>addLast</code>. Lines 13–14 are correct too: save the node after <code>current</code> in <code>temp</code> <em>before</em> changing <code>current-&gt;next</code>, then link the new node in.</p>
+      <p style="margin-bottom:0"><strong>Corrected trace:</strong> <code>current</code> stops at Ben, <code>temp</code> = Carla, Ben → Xi, Xi → Carla, size becomes 5.</p>
+      <div id="bugFixed"></div>
+    </div>
+
+    <h3>Part B · How should the team build the help desk's Queue? <span class="tier Evaluate">Evaluate</span></h3>
+    <p>The chapter describes two ways to build a <code>Queue</code> class on top of <code>LinkedList</code>:</p>
+<pre class="code">// Design 1: inheritance (a Queue IS A LinkedList)
+template&lt;typename T&gt;
+class Queue : public LinkedList&lt;T&gt; { ... };
+
+// Design 2: composition (a Queue HAS A LinkedList)
+template&lt;typename T&gt;
+class Queue {
+public:
+    void enqueue(const T&amp; element) { list.addLast(element); }
+    T dequeue()                    { return list.removeFirst(); }
+    int getSize() const            { return list.getSize(); }
+private:
+    LinkedList&lt;T&gt; list;
+};</pre>
+    <fieldset class="q"><legend>Which design should the team use for the help desk?</legend>
+      <label class="opt"><input type="radio" name="evalPick" value="1"> Design 1 (inheritance)</label>
+      <label class="opt"><input type="radio" name="evalPick" value="2"> Design 2 (composition)</label>
+    </fieldset>
+    <label for="evalWhy"><strong>Justify your choice.</strong> Consider what a help desk worker could do with each design, and whether the line stays fair (first come, first served).</label>
+    <textarea id="evalWhy" class="just" placeholder="I chose Design ... because ..."></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn" id="evalBtn" type="button">Compare with an expert's answer</button><span class="fc-status" id="evalMsg" aria-live="polite"></span></div>
+    <div class="box soft" id="evalExpert" hidden>
+      <h4 style="margin-top:0">An expert's evaluation</h4>
+      <table class="trace"><thead><tr><th>Question</th><th>Design 1: inheritance</th><th>Design 2: composition</th></tr></thead>
+        <tbody>
+          <tr><td>Which operations can callers use?</td><td>Every public <code>LinkedList</code> function, including <code>addFirst</code>, <code>add(index, e)</code>, <code>removeLast</code>, and <code>removeAt</code></td><td>Only <code>enqueue</code>, <code>dequeue</code>, and <code>getSize</code></td></tr>
+          <tr><td>Can someone cut the line?</td><td><strong>Yes</strong>: <code>q.addFirst("Zed")</code> compiles</td><td>No: the list is private</td></tr>
+          <tr><td>Is "a queue is a linked list" true?</td><td>Not really: a queue only uses a list to store elements</td><td>"A queue has a list" describes it accurately</td></tr>
+          <tr><td>Can the storage change later?</td><td>Hard: callers may depend on the list functions</td><td>Easy: swap the list for another structure without changing callers</td></tr>
+        </tbody></table>
+      <p style="margin-bottom:0" class="think">Verdict: Design 2. Composition lets the Queue enforce first in, first out, because callers can't reach the list's other operations. Inheritance saves a little typing but exposes operations that break the queue's rules. (Part A's <code>add(index, e)</code> is a deliberate exception that staff use through a separate admin tool, not through the Queue.)</p>
+    </div>
+
+    <h3>Part C · Create an Undo stack for the help desk's ticket editor <span class="tier Create">Create</span></h3>
+    <div class="box soft">
+      <p>Help desk staff type notes into each ticket. They want <strong>Undo</strong>: each edit is saved, and Undo reverses the <em>most recent</em> edit first. That's last in, first out, so you'll build a <code>Stack</code>.</p>
+      <p>Write a class template <code>Stack&lt;T&gt;</code> that:</p>
+      <ul>
+        <li>Uses <strong>composition</strong>: a private <code>LinkedList&lt;T&gt;</code> data field.</li>
+        <li>Has <code>push</code>, <code>pop</code> (removes and returns the top), <code>peek</code> (returns the top without removing it), <code>isEmpty</code>, and <code>getSize</code>.</li>
+        <li>Works at <strong>one end</strong> of the list, and that end must make both <code>push</code> and <code>pop</code> fast.</li>
+      </ul>
+      <p>Then justify the end of the list you chose in two or three sentences.</p>
+    </div>
+    <ul class="checklist" id="createRubric"></ul>
+    <div class="editor">
+      <div class="bar2"><strong>Your Stack class</strong><span class="spacer"></span><button class="btn ghost" type="button" id="createReset">Reset</button></div>
+      <label class="sr" for="createCode">C++ code</label>
+      <textarea class="code" id="createCode" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    </div>
+    <label for="createWhy"><strong>Justify your design:</strong> which end of the list do <code>push</code> and <code>pop</code> use, and why?</label>
+    <textarea id="createWhy" class="just" placeholder="My stack pushes and pops at the ... because ..."></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn" type="button" id="createBtn">Check my design</button><span class="fc-status" id="createMsg" aria-live="polite"></span></div>
+    <details><summary>Show one possible solution (try your own first)</summary>
+<pre class="code">#include "LinkedList.h"
+
+template&lt;typename T&gt;
+class Stack
+{
+public:
+    void push(const T&amp; e) { list.addFirst(e); }        // top = head
+    T pop()               { return list.removeFirst(); }
+    T&amp; peek()             { return list.getFirst(); }
+    bool isEmpty() const  { return list.isEmpty(); }
+    int getSize() const   { return list.getSize(); }
+private:
+    LinkedList&lt;T&gt; list;   // composition: a Stack HAS A LinkedList
+};
+
+int main()
+{
+    Stack&lt;string&gt; undo;
+    undo.push("type A");
+    undo.push("type B");
+    undo.push("bold");
+    while (!undo.isEmpty())
+        cout &lt;&lt; "Undo: " &lt;&lt; undo.pop() &lt;&lt; endl;
+    return 0;
+}</pre>
+<pre class="out">Undo: bold
+Undo: type B
+Undo: type A</pre>
+      <p><strong>Justification:</strong> the top of the stack is the <em>head</em>. <code>addFirst</code> and <code>removeFirst</code> each change only a couple of pointers, so both are O(1). Using the tail would make <code>push</code> fast (<code>addLast</code>), but <code>removeLast</code> must walk from the head to find the node before the tail, which is O(n) for every Undo.</p></details>
+    <div class="selfcheck" id="checkLab"></div>
+    <div class="navfoot"><button class="btn ghost" data-go="quiz">← Quiz</button><button class="btn" data-go="start">Back to Start</button></div>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <p>Study guide for CSP31B: C++ Programming II, San Joaquin Delta College. Based on the course lecture "Chapter 20: Linked Lists, Queues, and Priority Queues." Your progress is saved in this browser only.</p>
+</div></footer>
+
+<script>
+(function () {
+  "use strict";
+  /* ---------- Utilities ---------- */
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const tierTag = t => `<span class="tier ${t}">${t}</span>`;
+  const codeBlock = (c, lines) => lines
+    ? `<pre class="code ln">${c.split("\n").map(l => `<span class="l">${esc(l) || " "}</span>`).join("")}</pre>`
+    : `<pre class="code">${esc(c)}</pre>`;
+  const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("csp31b_llq_" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("csp31b_llq_" + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+  };
+  // Remove comments and string contents so checks look only at code
+  const stripCpp = src => src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ").replace(/"(?:\\.|[^"\\])*"/g, '""');
+
+  /* Draws a singly linked list. opts: { label: {index: "text"}, hl: [indexes], cur: index } */
+  function drawList(items, opts = {}) {
+    const label = opts.label || {}, hl = opts.hl || [], aria = opts.aria || ("Linked list: " + (items.length ? items.join(", ") : "empty"));
+    if (!items.length) return `<div class="ll" role="img" aria-label="${esc(aria)}"><div class="cell"><div class="ptrs">head, tail</div><div class="empty">NULL (empty list)</div></div></div>`;
+    const cells = items.map((v, i) => {
+      const p = [i === 0 ? "head" : "", i === items.length - 1 ? "tail" : "", label[i] || ""].filter(Boolean).join(", ");
+      return `<div class="cell"><div class="ptrs">${esc(p)}</div><div class="node${hl.includes(i) ? " hl" : ""}${opts.cur === i ? " cur" : ""}"><div class="el">${esc(v)}</div><div class="nx">next</div></div></div>` + (i < items.length - 1 ? `<span class="arrow" aria-hidden="true">→</span>` : `<span class="arrow" aria-hidden="true">→</span><span class="null">NULL</span>`);
+    }).join("");
+    return `<div class="ll" role="img" aria-label="${esc(aria)}">${cells}</div>`;
+  }
+
+  /* ---------- Navigation and progress ---------- */
+  const panels = [...document.querySelectorAll("section.panel")];
+  const doneKeys = ["flash", "match", "worked", "myths", "quiz", "lab"];
+  const done = store.get("done", {});
+  const nav = $("#stepNav");
+  panels.forEach((p, i) => {
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button"; b.dataset.target = p.id;
+    b.innerHTML = `<span class="num">${i === 0 ? "★" : i}</span> ${p.dataset.title} <span class="${p.dataset.key ? "mark" : ""}"></span>`;
+    b.addEventListener("click", () => show(p.id, true));
+    li.appendChild(b); nav.appendChild(li);
+  });
+  function show(id, focus) {
+    if (!document.getElementById(id)) id = "start";
+    panels.forEach(p => p.classList.toggle("active", p.id === id));
+    nav.querySelectorAll("button").forEach(b => { if (b.dataset.target === id) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
+    store.set("last", id);
+    if (focus) { const h = $("#" + id + " h2"); h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); window.scrollTo({ top: 0 }); }
+  }
+  document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => show(b.dataset.go, true)));
+  function markDone(key) { done[key] = true; store.set("done", done); renderProgress(); }
+  function renderProgress() {
+    const n = doneKeys.filter(k => done[k]).length;
+    $("#progText").textContent = `${n} of ${doneKeys.length} activities complete`;
+    $("#progBar").style.width = (n / doneKeys.length * 100) + "%";
+    nav.querySelectorAll("button").forEach(b => { const p = $("#" + b.dataset.target), m = b.querySelector(".mark"); if (m) m.className = "mark" + (done[p.dataset.key] ? " done" : ""); });
+  }
+
+  /* ---------- Reusable self-check ---------- */
+  function renderCheck(el, title, qs, key) {
+    el.innerHTML = `<h3>✔ Self-check: ${title}</h3><p class="fc-status">Answer these before moving on. They show whether you're ready for the next activity.</p>` +
+      qs.map((q, i) => `<fieldset class="q"><legend>${i + 1}. ${q.q} ${tierTag(q.t)}</legend>${q.code ? codeBlock(q.code) : ""}` +
+        (q.keep ? q.o.map((_, j) => j) : shuffle(q.o.map((_, j) => j))).map(j => `<label class="opt"><input type="radio" name="${key}_${i}" value="${j}"> <span>${q.o[j]}</span></label>`).join("") +
+        `<div class="fb" hidden></div></fieldset>`).join("") +
+      `<div class="row"><button class="btn" type="button">Check my answers</button><span class="score" aria-live="polite"></span></div>`;
+    el.querySelector("button").addEventListener("click", () => {
+      let score = 0, answered = 0;
+      el.querySelectorAll("fieldset").forEach((fs, i) => {
+        const sel = fs.querySelector("input:checked"), fb = fs.querySelector(".fb");
+        fs.querySelectorAll(".opt").forEach(o => o.classList.remove("right", "wrong"));
+        if (!sel) { fb.hidden = false; fb.className = "fb no"; fb.textContent = "Choose an answer."; return; }
+        answered++;
+        const ok = +sel.value === qs[i].a; if (ok) score++;
+        sel.closest(".opt").classList.add(ok ? "right" : "wrong");
+        fs.querySelector(`input[value="${qs[i].a}"]`).closest(".opt").classList.add("right");
+        fb.hidden = false; fb.className = "fb " + (ok ? "ok" : "no");
+        fb.innerHTML = (ok ? "Correct. " : "Not quite. ") + qs[i].why;
+      });
+      const out = el.querySelector(".score");
+      if (answered < qs.length) { out.textContent = "Answer every question first."; return; }
+      out.textContent = `${score} / ${qs.length}. ` + (score === qs.length ? "Ready to move on!" : "Review the feedback, then try again if you like.");
+      markDone(key);
+    });
+  }
+
+  /* ---------- Live checklist for code editors ---------- */
+  function makeChecklist(listEl, ta, rules, storeKey, starter) {
+    const saved = store.get(storeKey, null);
+    ta.value = saved !== null ? saved : starter;
+    const update = () => {
+      const code = stripCpp(ta.value);
+      let met = 0;
+      listEl.innerHTML = rules.map(([label, test, kind]) => {
+        const ok = test(code, ta.value);
+        if (kind === "warn") return ok ? `<li class="warnrule"><span class="sr">Warning: </span>${label}</li>` : "";
+        if (ok) met++;
+        return `<li class="${ok ? "met" : ""}"><span class="sr">${ok ? "Met: " : "Not yet: "}</span>${label}</li>`;
+      }).join("");
+      return met === rules.filter(r => r[2] !== "warn").length;
+    };
+    ta.addEventListener("input", () => { store.set(storeKey, ta.value); update(); });
+    ta.addEventListener("keydown", e => {
+      if (e.key === "Tab" && !e.shiftKey) { e.preventDefault(); const s = ta.selectionStart; ta.value = ta.value.slice(0, s) + "    " + ta.value.slice(ta.selectionEnd); ta.selectionStart = ta.selectionEnd = s + 4; }
+    });
+    update();
+    return { update, reset() { ta.value = starter; store.set(storeKey, null); update(); } };
+  }
+
+  /* ---------- 1. Flashcards ---------- */
+  const CARDS = [
+    { s: "Arrays vs lists", t: "Remember", q: "For an array or vector, what is the cost of reading an element when you know its index? Of inserting or deleting in the middle?", a: "Reading by index is <strong>O(1)</strong>. Inserting in order or deleting is <strong>O(n)</strong>, because elements must be shifted." },
+    { s: "Arrays vs lists", t: "Understand", q: "When is a linked list a better choice than an array?", a: "When the number of elements varies and there are <strong>lots of insertions and deletions</strong>. A linked list changes a few pointers instead of shifting elements." },
+    { s: "Node", t: "Remember", q: "What two data fields does a <code>Node</code> contain?", a: "<code>T element</code>: the data stored in the node.<br><code>Node* next</code>: a pointer to the next node in the list." },
+    { s: "Node", t: "Remember", q: "What do <code>head</code> and <code>tail</code> point to? What are they when the list is empty?", a: "<code>head</code> points to the first node and <code>tail</code> to the last node. In an empty list, both are <code>NULL</code> (or <code>nullptr</code>)." },
+    { s: "Node", t: "Understand", q: "What is <code>NULL</code>, and how does the last node use it?", a: "A constant for 0 meaning the pointer doesn't point to any node. The last node's <code>next</code> is <code>NULL</code>, which is how you detect the end of the list." },
+    { s: "Node", t: "Apply", q: "Draw the list after this code:" + codeBlock('Node<string>* head = new Node<string>("Chicago");\nNode<string>* tail = head;\ntail->next = new Node<string>("Denver");\ntail = tail->next;'), a: drawList(["Chicago", "Denver"]) + "Each new node is linked from the current tail, and then <code>tail</code> moves to it." },
+    { s: "Traversal", t: "Apply", q: "Write a loop that prints every element, starting from <code>head</code>.", a: codeBlock("Node<string>* current = head;\nwhile (current != NULL)\n{\n    cout << current->element << endl;\n    current = current->next;\n}") + "Use a separate pointer, so <code>head</code> isn't lost." },
+    { s: "LinkedList", t: "Remember", q: "What three private data fields does <code>LinkedList&lt;T&gt;</code> have?", a: "<code>head</code> (Node&lt;T&gt;*), <code>tail</code> (Node&lt;T&gt;*), and <code>size</code> (int)." },
+    { s: "LinkedList", t: "Understand", q: "<code>addFirst(e)</code> runs <code>newNode-&gt;next = head; head = newNode;</code>. Why is the order important?", a: "The new node must link to the old first node <em>before</em> <code>head</code> moves. In the other order, <code>newNode-&gt;next</code> would point to itself and the rest of the list would be lost." },
+    { s: "LinkedList", t: "Understand", q: "Why does <code>addFirst</code> check <code>if (tail == nullptr) tail = head;</code>?", a: "If the list was empty, the new node is both the first and the last node, so <code>tail</code> must point to it too." },
+    { s: "LinkedList", t: "Apply", q: "What does <code>addLast(e)</code> do when the list isn't empty?", a: codeBlock("tail->next = new Node<T>(e);\ntail = tail->next;\nsize++;") + "Link the new node after the tail, then move <code>tail</code> to it. This is O(1)." },
+    { s: "LinkedList", t: "Understand", q: "In <code>add(index, e)</code>, why does the loop start at <code>i = 1</code>?", a: "It must stop at the node <em>before</em> the insertion point, at position <code>index - 1</code>. Starting <code>current</code> at <code>head</code> (position 0), the loop moves it <code>index - 1</code> times." },
+    { s: "LinkedList", t: "Understand", q: "Why is <code>removeLast()</code> O(n) even though the list has a <code>tail</code> pointer?", a: "After removing the last node, <code>tail</code> must point to the node before it. A singly linked node has no backward pointer, so the function walks from <code>head</code> to find it." },
+    { s: "LinkedList", t: "Apply", q: "In <code>removeFirst()</code>, why is <code>T element = temp-&gt;element;</code> written before <code>delete temp;</code>?", a: "After <code>delete</code>, the node's memory is freed and must not be used. Copy the element first, then delete the node, then return the copy." },
+    { s: "LinkedList", t: "Apply", q: "Starting from an empty list, what does the list hold after these calls?" + codeBlock('list.add("America");\nlist.add(0, "Canada");\nlist.add("Russia");\nlist.add("France");'), a: drawList(["Canada", "America", "Russia", "France"]) + "<code>add(e)</code> appends; <code>add(0, e)</code> inserts at the head." },
+    { s: "Iterators", t: "Remember", q: "What is an <strong>iterator</strong>?", a: "An object that gives a uniform way to traverse the elements of a container. It can be viewed as an <strong>encapsulated pointer</strong>, with operators such as <code>++</code>, <code>*</code>, <code>==</code>, and <code>!=</code>." },
+    { s: "Iterators", t: "Apply", q: "Write a loop that uses an iterator to print every element of <code>LinkedList&lt;string&gt; list</code>.", a: codeBlock("for (Iterator<string> it = list.begin(); it != list.end(); it++)\n    cout << *it << \" \";") + "Or use a foreach loop: <code>for (string s : list)</code>." },
+    { s: "Variations", t: "Remember", q: "What makes a list <strong>circular</strong>? What makes it <strong>doubly linked</strong>?", a: "<strong>Circular:</strong> the last node's <code>next</code> points back to the first node.<br><strong>Doubly linked:</strong> each node has a <code>next</code> (forward) and a <code>previous</code> (backward) pointer, so the list can be traversed both ways." },
+    { s: "Stack & Queue", t: "Remember", q: "How does a <strong>queue</strong> order its elements?", a: "<strong>First in, first out (FIFO).</strong> Elements are added at the end (tail) and removed from the beginning (head), like a waiting line." },
+    { s: "Stack & Queue", t: "Understand", q: "How does the chapter's <code>Queue</code> class use its <code>LinkedList</code>?", a: "By <strong>composition</strong>: <code>enqueue</code> calls <code>list.addLast</code>, <code>dequeue</code> calls <code>list.removeFirst</code>, and <code>getSize</code> calls <code>list.getSize</code>." },
+    { s: "Stack & Queue", t: "Apply", q: "What does this print?" + codeBlock("Queue<int> q;\nq.enqueue(5);\nq.enqueue(8);\ncout << q.dequeue() << \" \";\nq.enqueue(3);\ncout << q.dequeue();"), a: codeBlock("5 8") + "5 entered first, so it leaves first. Then 8 is at the front, ahead of 3." },
+    { s: "Priority queue", t: "Understand", q: "How is a <strong>priority queue</strong> different from a regular queue?", a: "Each element has a priority, and the element with the <strong>highest priority</strong> is removed first (largest in, first out). The chapter's <code>PriorityQueue</code> stores elements in a <strong>heap</strong>." },
+    { s: "Priority queue", t: "Apply", q: "Patients are enqueued with priorities John 2, Jim 1, Tim 5, Cindy 7. In what order are they dequeued?", a: "<strong>Cindy (7), Tim (5), John (2), Jim (1)</strong>: highest priority first, regardless of arrival order. <code>Patient</code> defines <code>operator&lt;</code> to compare priorities." }
+  ];
+  const fcState = store.get("fc", { known: {}, review: {} });
+  let order = CARDS.map((_, i) => i), view = order.slice(), pos = 0;
+  const card = $("#fcCard"), front = $("#fcFront"), back = $("#fcBack");
+  function applyFilter() { const f = $("#fcFilter").value; view = order.filter(i => f === "all" ? true : f === "review" ? fcState.review[i] : CARDS[i].t === f); pos = 0; renderCard(); }
+  function renderCard() {
+    card.classList.remove("flipped"); back.setAttribute("aria-hidden", "true"); front.removeAttribute("aria-hidden");
+    if (!view.length) { front.innerHTML = `<div class="txt" style="text-align:center"><div>No cards in this view. Choose another filter.</div></div>`; back.innerHTML = ""; $("#fcStatus").textContent = ""; renderDots(); return; }
+    const i = view[pos], c = CARDS[i];
+    const meta = `<div class="meta">${c.s} ${tierTag(c.t)}${fcState.known[i] ? ' <span style="color:var(--ok)">✓ known</span>' : ""}${fcState.review[i] ? ' <span style="color:var(--user-accent)">↺ review</span>' : ""}</div>`;
+    front.innerHTML = meta + `<div class="txt"><div>${c.q}</div></div><div class="hint">Click or press Space to flip</div>`;
+    back.innerHTML = meta + `<div class="txt"><div>${c.a}</div></div><div class="hint">Answer</div>`;
+    $("#fcStatus").textContent = `Card ${pos + 1} of ${view.length} · Known: ${Object.keys(fcState.known).length} / ${CARDS.length}`;
+    renderDots();
+  }
+  function renderDots() { $("#fcDots").innerHTML = view.map((i, k) => `<span class="${fcState.known[i] ? "known" : fcState.review[i] ? "review" : ""}${k === pos ? " cur" : ""}"></span>`).join(""); }
+  function flip() { if (!view.length) return; const f = card.classList.toggle("flipped"); back.setAttribute("aria-hidden", String(!f)); front.setAttribute("aria-hidden", String(f)); }
+  function move(d) { if (!view.length) return; pos = (pos + d + view.length) % view.length; renderCard(); }
+  function markCard(kind) {
+    if (!view.length) return;
+    const i = view[pos];
+    if (kind === "known") { fcState.known[i] = true; delete fcState.review[i]; } else { fcState.review[i] = true; delete fcState.known[i]; }
+    store.set("fc", fcState);
+    if ($("#fcFilter").value === "review" && kind === "known") { view.splice(pos, 1); if (pos >= view.length) pos = 0; renderCard(); } else move(1);
+  }
+  card.addEventListener("click", flip);
+  card.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } if (e.key === "ArrowRight") move(1); if (e.key === "ArrowLeft") move(-1); });
+  $("#fcFlip").addEventListener("click", flip);
+  $("#fcNext").addEventListener("click", () => move(1));
+  $("#fcPrev").addEventListener("click", () => move(-1));
+  $("#fcKnow").addEventListener("click", () => markCard("known"));
+  $("#fcReview").addEventListener("click", () => markCard("review"));
+  $("#fcFilter").addEventListener("change", applyFilter);
+  $("#fcShuffle").addEventListener("click", () => { order = shuffle(order); applyFilter(); });
+  $("#fcReset").addEventListener("click", () => { order = CARDS.map((_, i) => i); applyFilter(); });
+  applyFilter();
+
+  renderCheck($("#checkFlash"), "Flashcards", [
+    { t: "Remember", q: "In an empty linked list, what are <code>head</code> and <code>tail</code>?", o: ["Both point to a dummy node", "Both are <code>NULL</code>", "<code>head</code> is <code>NULL</code> and <code>tail</code> is 0", "They are undefined"], a: 1, why: "By convention, both are <code>NULL</code> (<code>nullptr</code>) when the list has no nodes." },
+    { t: "Understand", q: "Which structure removes elements in the order they were added?", o: ["Stack", "Queue", "Priority queue", "Circular list"], a: 1, why: "A queue is first in, first out. A stack is last in, first out, and a priority queue removes the highest priority first." },
+    { t: "Apply", q: "A list holds <code>A B C</code>. What does it hold after <code>list.add(1, \"X\");</code>?", o: ["<code>X A B C</code>", "<code>A X B C</code>", "<code>A B X C</code>", "<code>A B C X</code>"], a: 1, why: "Index 1 is the second position, so X goes between A and B." }
+  ], "flash");
+
+  /* ---------- 2. Matching ---------- */
+  const ROUNDS = {
+    A: [
+      ["Node", "Holds one element and a pointer to the next node"],
+      ["<code>head</code>", "Points to the first node in the list"],
+      ["<code>NULL</code> / <code>nullptr</code>", "Means a pointer doesn't point to any node"],
+      ["Queue", "First in, first out: add at the tail, remove at the head"],
+      ["Stack", "Last in, first out: add and remove at the same end"],
+      ["Priority queue", "Removes the element with the highest priority first"],
+      ["Iterator", "An object that works like an encapsulated pointer for traversing a container"],
+      ["Doubly linked list", "Each node has both a next and a previous pointer"]
+    ],
+    B: [
+      ["<code>current = current-&gt;next;</code>", "Moves a traversal pointer one node forward"],
+      ["<code>while (current != NULL)</code>", "Keeps looping until every node has been visited"],
+      ["<code>newNode-&gt;next = head; head = newNode;</code>", "Adds a node at the front of the list"],
+      ["<code>tail-&gt;next = new Node&lt;T&gt;(e); tail = tail-&gt;next;</code>", "Adds a node at the end of a non-empty list"],
+      ["<code>previous-&gt;next = current-&gt;next;</code>", "Unlinks the node after <code>previous</code>, as in <code>removeAt</code>"],
+      ["<code>list.removeFirst()</code> inside <code>dequeue()</code>", "Takes the element that has waited longest"],
+      ["<code>return heap.remove();</code>", "Dequeues from a <code>PriorityQueue</code>"]
+    ]
+  };
+  function renderMatch(key) {
+    const pairs = ROUNDS[key], area = $("#matchArea");
+    let sel = null, misses = 0, matched = 0;
+    const rights = shuffle(pairs.map((p, i) => i));
+    area.innerHTML = `<div class="match"><div class="col" aria-label="Items">${pairs.map((p, i) => `<button type="button" class="item" data-side="L" data-i="${i}" aria-pressed="false">${p[0]}</button>`).join("")}</div>
+      <div class="col" aria-label="Matches">${rights.map(i => `<button type="button" class="item" data-side="R" data-i="${i}">${pairs[i][1]}</button>`).join("")}</div></div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" id="matchReset">Restart this round</button></div>`;
+    const status = $("#matchStatus");
+    status.textContent = `Matched 0 of ${pairs.length}.`;
+    area.querySelectorAll("button.item").forEach(b => b.addEventListener("click", () => {
+      if (b.classList.contains("matched")) return;
+      if (b.dataset.side === "L") { area.querySelectorAll('[data-side="L"]').forEach(x => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", "true"); sel = b; return; }
+      if (!sel) { status.textContent = "First select an item in the left column."; return; }
+      if (sel.dataset.i === b.dataset.i) {
+        [sel, b].forEach(x => { x.classList.add("matched"); x.setAttribute("aria-disabled", "true"); x.setAttribute("aria-pressed", "false"); });
+        matched++; sel = null;
+        status.textContent = `Correct! Matched ${matched} of ${pairs.length}.`;
+        if (matched === pairs.length) status.textContent = `Round ${key} complete with ${misses} wrong ${misses === 1 ? "try" : "tries"}. ` + (key === "A" ? "Now try Round B." : "Nice work!");
+      } else {
+        misses++; b.classList.add("miss"); sel.classList.add("miss");
+        const s2 = sel; setTimeout(() => { b.classList.remove("miss"); s2.classList.remove("miss"); }, 650);
+        status.textContent = "Not a match. Try again.";
+      }
+    }));
+    $("#matchReset").addEventListener("click", () => renderMatch(key));
+  }
+  function setTab(k) { $("#tabA").setAttribute("aria-selected", String(k === "A")); $("#tabB").setAttribute("aria-selected", String(k === "B")); renderMatch(k); }
+  $("#tabA").addEventListener("click", () => setTab("A"));
+  $("#tabB").addEventListener("click", () => setTab("B"));
+  setTab("A");
+  renderCheck($("#checkMatch"), "Matching", [
+    { t: "Understand", q: "Why does <code>Queue::enqueue</code> call <code>addLast</code> while <code>dequeue</code> calls <code>removeFirst</code>?", o: ["Both are O(n), so it doesn't matter", "Elements join at the tail and leave from the head, which keeps first in, first out, and both calls are O(1)", "<code>removeLast</code> doesn't exist", "It makes the queue last in, first out"], a: 1, why: "Adding at one end and removing at the other gives FIFO order. <code>addLast</code> and <code>removeFirst</code> are both O(1); <code>removeLast</code> would be O(n)." },
+    { t: "Understand", q: "What advantage does a doubly linked list have over a singly linked list?", o: ["It uses less memory", "It can be traversed backward as well as forward", "It never needs a <code>head</code> pointer", "Every operation becomes O(1)"], a: 1, why: "Each node's <code>previous</code> pointer allows backward traversal, which also makes removing the last node O(1). It costs one extra pointer per node." }
+  ], "match");
+
+  /* ---------- 3. Worked example ---------- */
+  const PLAYLIST = ["Hello", "Imagine", "Yesterday", "Imagine", "Respect"];
+  $("#wPlaylist").innerHTML = "<p style=\"margin-bottom:0\"><code>playlist</code> holds:</p>" + drawList(PLAYLIST, { label: { 0: "index 0", 1: "index 1", 2: "index 2", 3: "index 3", 4: "index 4" } });
+  const TURN_STARTER = "template<typename T>\nint LinkedList<T>::lastIndexOf(const T& e) const\n{\n    // Your code here\n\n}\n";
+  const turn = makeChecklist($("#turnRubric"), $("#turnCode"), [
+    ["Header: <code>int LinkedList&lt;T&gt;::lastIndexOf(const T&amp; e) const</code>", c => /\bint\s+LinkedList\s*<\s*T\s*>\s*::\s*lastIndexOf\s*\(\s*const\s+T\s*&\s*\w+\s*\)\s*const\b/.test(c)],
+    ["Starts a separate pointer at <code>head</code>", c => /Node\s*<\s*T\s*>\s*\*\s*\w+\s*=\s*head\s*;/.test(c)],
+    ["Has a variable that starts at <code>-1</code>", c => /\bint\s+\w+\s*=\s*-\s*1\s*;/.test(c)],
+    ["Loops through the whole list", c => /\bfor\s*\([^)]*<\s*size/.test(c) || /\bwhile\s*\(\s*\w+\s*!=\s*(nullptr|NULL)\s*\)/.test(c)],
+    ["Moves the pointer forward with <code>-&gt;next</code>", c => /\b(\w+)\s*=\s*\1\s*->\s*next\s*;/.test(c)],
+    ["Keeps going after a match (doesn't return inside the loop)", c => /\b\w+\s*=\s*i\s*;/.test(c) && !/return\s+i\s*;/.test(c)]
+  ], "turnCode", TURN_STARTER);
+  $("#turnReset").addEventListener("click", () => turn.reset());
+  $("#turnCheck").addEventListener("click", () => {
+    const a = ($("#turnOut1").value || "").trim(), b = ($("#turnOut2").value || "").trim(), out = $("#turnVerdict"), all = turn.update();
+    if (!a || !b) { out.innerHTML = `<div class="fb no">Enter both return values.</div>`; return; }
+    const ok1 = a === "3", ok2 = b === "-1";
+    if (ok1 && ok2) { out.innerHTML = `<div class="fb ok">✓ Correct: "Imagine" appears at indexes 1 and 3, and the last is 3. "Help" never matches, so the result stays −1. ${all ? "Your code meets every checklist item too." : "Now finish the unchecked checklist items as well."}</div>`; store.set("turnPass", true); }
+    else out.innerHTML = `<div class="fb no">${ok1 ? "" : "Check the first answer: indexes start at 0, and \"Imagine\" appears twice. Which one is last? "}${ok2 ? "" : "Check the second answer: what should the function return when nothing matches?"}</div>`;
+  });
+  renderCheck($("#checkWorked"), "Worked example", [
+    { t: "Understand", q: "Why does <code>indexOf</code> use a separate pointer <code>current</code> instead of moving <code>head</code>?", o: ["<code>head</code> is const", "Moving <code>head</code> would lose the start of the list", "<code>current</code> is faster", "<code>head</code> can't use the <code>-&gt;</code> operator"], a: 1, why: "<code>head</code> is the only way back to the first node. If it moved, the earlier nodes would become unreachable." },
+    { t: "Apply", q: "For the playlist, what does <code>playlist.indexOf(\"Respect\")</code> return?", o: ["3", "4", "5", "-1"], a: 1, why: "\"Respect\" is the fifth node, which is index 4." }
+  ], "worked");
+
+  /* ---------- 4. Misconceptions ---------- */
+  const MYTHS = [
+    { title: "\"A linked list is always faster than an array.\"",
+      code: "// Reading element 900 of 1,000\nint x = arr[900];           // array: one step\nint y = list.get(900);      // list: follows 900 next pointers",
+      out: "Array access by index: O(1)\nLinked list get(index): O(n)",
+      why: "A linked list wins only for the operations it's built for: adding or removing at the front, and inserting or deleting once you're already at the right node. To reach element <code>i</code>, <code>get</code> must start at <code>head</code> and follow <code>next</code> <code>i</code> times.",
+      fix: "Choose by workload. Many reads by index → array or vector. Many insertions and deletions, especially at the ends → linked list." },
+    { title: "\"The order of pointer assignments doesn't matter.\"",
+      code: "// addFirst with the two lines swapped\nNode<T>* newNode = new Node<T>(e);\nhead = newNode;\nnewNode->next = head;   // points to itself!",
+      out: "The new node points to itself, and every old node is lost (a memory leak)",
+      why: "After <code>head = newNode</code>, nothing points to the old first node any more. <code>newNode-&gt;next = head</code> then makes the node point to itself, so a traversal loops forever.",
+      fix: "Connect the new node to the existing list <em>first</em>, then move <code>head</code>: <code>newNode-&gt;next = head; head = newNode;</code>. The same rule applies in <code>add(index, e)</code>: save <code>current-&gt;next</code> in <code>temp</code> before overwriting it." },
+    { title: "\"I can read a node's element after deleting it.\"",
+      code: "Node<T>* temp = head;\nhead = head->next;\ndelete temp;\nreturn temp->element;   // undefined behavior",
+      out: "May print the right value, garbage, or crash: the behavior is undefined",
+      why: "<code>delete</code> gives the node's memory back to the system. <code>temp</code> still holds the old address (a dangling pointer), but that memory may already be reused. Code like this can seem to work in testing and fail later.",
+      fix: "Copy what you need first, as the chapter's <code>removeFirst</code> does: <code>T element = temp-&gt;element; delete temp; return element;</code>" },
+    { title: "\"removeLast() is O(1) because the list has a tail pointer.\"",
+      code: "// After removing the last node, tail must move back one node.\n// A singly linked node has no 'previous' pointer, so:\nNode<T>* current = head;\nfor (int i = 0; i < size - 2; i++)\n    current = current->next;   // walk to the second-to-last node",
+      out: "addLast: O(1)   removeLast: O(n)",
+      why: "<code>tail</code> makes <em>adding</em> at the end fast. But removing the last node means <code>tail</code> must point to the node before it, and the only way to find that node in a singly linked list is to walk from <code>head</code>.",
+      fix: "That's why the chapter's <code>Queue</code> removes from the head (<code>removeFirst</code>) and adds at the tail. If you need fast removal at both ends, use a doubly linked list." },
+    { title: "\"while (current->next != NULL) visits every node.\"",
+      code: "Node<int>* current = head;\nwhile (current->next != NULL)\n{\n    cout << current->element << \" \";\n    current = current->next;\n}",
+      out: "List 10 20 30 prints: 10 20   (30 is skipped)\nEmpty list: crash (head is NULL)",
+      why: "The loop stops when <code>current</code> is <em>on</em> the last node, before printing it. On an empty list, <code>current</code> is <code>NULL</code>, so <code>current-&gt;next</code> dereferences a null pointer.",
+      fix: "Test the pointer itself: <code>while (current != NULL)</code>. Use <code>current-&gt;next != NULL</code> only when you deliberately want to stop <em>at</em> the last node, for example to append." }
+  ];
+  $("#mythList").innerHTML = MYTHS.map((m, i) => `<div class="box warn">
+      <p class="myth-title"><span class="flag">⚠ MISCONCEPTION ${i + 1}</span> ${m.title}</p>
+      <div class="grid2"><div><strong>Code</strong>${codeBlock(m.code)}</div><div><strong>What actually happens</strong><pre class="out">${esc(m.out)}</pre></div></div>
+      <p><strong>Why it's wrong:</strong> ${m.why}</p>
+      <p style="margin-bottom:0"><strong>Correct reasoning:</strong> ${m.fix}</p></div>`).join("");
+  renderCheck($("#checkMyths"), "Misconceptions", [
+    { t: "Analyze", q: "Which version of <code>addFirst</code> is correct?", o: ["<code>head = newNode; newNode-&gt;next = head;</code>", "<code>newNode-&gt;next = head; head = newNode;</code>", "<code>newNode = head; head-&gt;next = newNode;</code>", "Both of the first two"], a: 1, why: "Link the new node to the old first node before moving <code>head</code>." },
+    { t: "Analyze", q: "What's wrong with this code?", code: "T element;\ndelete temp;\nelement = temp->element;\nreturn element;", o: ["Nothing", "It reads a node after deleting it", "It should return <code>temp</code>", "<code>element</code> must be a pointer"], a: 1, why: "The element must be copied before <code>delete</code>. Reading through a dangling pointer is undefined behavior." },
+    { t: "Understand", q: "Which operation is O(n) in the chapter's singly linked <code>LinkedList</code>?", o: ["<code>addFirst</code>", "<code>addLast</code>", "<code>removeFirst</code>", "<code>removeLast</code>"], a: 3, why: "<code>removeLast</code> walks from the head to find the node before the tail. The other three change only a few pointers." }
+  ], "myths");
+
+  /* ---------- 5. Quiz ---------- */
+  const QUIZ = [
+    { t: "Remember", q: "What does each node in a singly linked list contain?", o: ["Only an element", "An element and a pointer to the next node", "An element and an index", "Pointers to the head and the tail"], a: 1, why: "A node holds <code>element</code> and <code>next</code>." },
+    { t: "Remember", q: "How does the last node show that the list ends?", o: ["Its <code>next</code> is <code>NULL</code>", "Its element is 0", "It points to <code>head</code>", "Its <code>next</code> points to itself"], a: 0, why: "The last node's <code>next</code> is <code>NULL</code>. (In a <em>circular</em> list, it points back to the first node instead.)" },
+    { t: "Remember", q: "Where does a queue add and remove elements?", o: ["Adds and removes at the head", "Adds at the head, removes at the tail", "Adds at the tail, removes at the head", "Adds and removes at the tail"], a: 2, why: "A queue is a waiting line: join at the end, leave from the front." },
+    { t: "Understand", q: "Why is <code>get(index)</code> O(n) for a linked list but O(1) for an array?", o: ["Linked lists store elements in sorted order", "The list must follow <code>next</code> pointers from the head to reach the node", "Linked lists use more memory", "<code>get</code> copies the list first"], a: 1, why: "Array elements are stored next to each other, so the address can be computed. List nodes can be anywhere in memory and are reached only through pointers." },
+    { t: "Understand", q: "What can you do with a doubly linked list that a singly linked list can't do efficiently?", o: ["Store more than one type", "Traverse backward from the tail", "Use templates", "Add at the head"], a: 1, why: "Each node's <code>previous</code> pointer lets you move backward." },
+    { t: "Understand", q: "Why does the chapter's <code>Queue</code> class use composition rather than inheritance?", o: ["Templates can't be inherited", "It exposes only queue operations, so callers can't break first in, first out", "Composition is always faster", "Inheritance would make <code>dequeue</code> O(n)"], a: 1, why: "With a private <code>LinkedList</code>, operations such as <code>addFirst</code> and <code>removeAt</code> aren't available to callers of the queue." },
+    { t: "Apply", q: "Starting from an empty list, what does it hold after these calls?", code: "list.add(\"America\");\nlist.add(0, \"Canada\");\nlist.add(\"Russia\");\nlist.add(2, \"Germany\");", o: ["Canada America Russia Germany", "Canada America Germany Russia", "America Canada Germany Russia", "Canada Germany America Russia"], a: 1, why: "Canada America Russia, then Germany goes in at index 2, before Russia." },
+    { t: "Apply", q: "What does this print?", code: "Queue<int> q;\nq.enqueue(5);\nq.enqueue(8);\ncout << q.dequeue() << \" \";\nq.enqueue(3);\ncout << q.dequeue() << \" \" << q.getSize();", o: ["5 8 1", "8 3 1", "5 3 1", "5 8 2"], a: 0, why: "5 leaves first, then 8. Only 3 remains, so the size is 1." },
+    { t: "Apply", q: "The same operations use a <code>Stack</code> (<code>push</code> = enqueue, <code>pop</code> = dequeue). What prints?", code: "Stack<int> s;\ns.push(5);\ns.push(8);\ncout << s.pop() << \" \";\ns.push(3);\ncout << s.pop() << \" \" << s.getSize();", o: ["5 8 1", "8 3 1", "8 5 1", "3 8 1"], a: 1, why: "Last in, first out: 8 is popped, then 3 (pushed after) is on top. Only 5 remains." },
+    { t: "Apply", q: "Patients John (2), Jim (1), Tim (5), and Cindy (7) are enqueued in that order into a <code>PriorityQueue&lt;Patient&gt;</code>. Who is dequeued second?", o: ["Jim", "John", "Tim", "Cindy"], a: 2, why: "The order is Cindy (7), Tim (5), John (2), Jim (1)." },
+    { t: "Analyze", q: "A list holds <code>10 20 30</code>. What does this loop print?", code: "Node<int>* current = head;\nwhile (current->next != NULL)\n{\n    cout << current->element << \" \";\n    current = current->next;\n}", o: ["10 20 30", "10 20", "20 30", "It loops forever"], a: 1, why: "The loop stops while <code>current</code> is on the last node, so 30 is never printed. Use <code>while (current != NULL)</code>." },
+    { t: "Analyze", q: "This <code>addFirst</code> is called on the list <code>A B</code>. What's the result?", code: "Node<T>* newNode = new Node<T>(e);\nhead = newNode;\nnewNode->next = head;\nsize++;", o: ["The new node is added correctly", "The new node points to itself, and A and B are lost", "The new node is added at the end", "A compile error"], a: 1, why: "After <code>head = newNode</code>, the second line makes the new node point to itself. Nothing points to A any more." },
+    { t: "Analyze", q: "In <code>removeLast()</code>, the loop is <code>for (int i = 0; i &lt; size - 2; i++) current = current-&gt;next;</code>. Where does <code>current</code> stop, and why?", o: ["At the tail, to delete it", "At the second-to-last node, which becomes the new tail", "At the head, to restart", "At the middle node"], a: 1, why: "Starting at index 0 and moving <code>size - 2</code> times lands on index <code>size - 2</code>: the node just before the tail." },
+    { t: "Evaluate", q: "A hospital emergency room must treat the most critical patient first, no matter who arrived first. Which structure fits best?", o: ["A queue, because it's fair to everyone", "A stack, because the newest patient is freshest", "A priority queue, because it removes the highest priority first", "An array sorted by arrival time"], a: 2, why: "Treatment order depends on priority, not arrival. A priority queue removes the highest priority element first." },
+    { t: "Evaluate", q: "You build a <code>Stack</code> on a singly linked <code>LinkedList</code>. Which design is best?", o: ["push with <code>addLast</code>, pop with <code>removeLast</code>", "push with <code>addFirst</code>, pop with <code>removeFirst</code>", "push with <code>addFirst</code>, pop with <code>removeLast</code>", "push with <code>add(index, e)</code> at the middle"], a: 1, why: "Both operations stay at the head and are O(1). <code>removeLast</code> is O(n), and mixing ends would make it a queue." }
+  ];
+  let qi = 0, qAnswers = [];
+  const quizBox = $("#quizBox");
+  function renderQuiz() {
+    if (qi >= QUIZ.length) return renderQuizSummary();
+    const q = QUIZ[qi];
+    quizBox.innerHTML = `<div class="quiz-head"><strong>Question ${qi + 1} of ${QUIZ.length}</strong>${tierTag(q.t)}</div>
+      <div class="bar" style="background:var(--line);margin:8px 0"><span style="background:var(--user-primary);width:${qi / QUIZ.length * 100}%"></span></div>
+      <fieldset class="q"><legend>${q.q}</legend>${q.code ? codeBlock(q.code, q.lines) : ""}
+      ${(q.keep ? q.o.map((_, j) => j) : shuffle(q.o.map((_, j) => j))).map(j => `<label class="opt"><input type="radio" name="quizq" value="${j}"> <span>${q.o[j]}</span></label>`).join("")}
+      <div class="fb" hidden></div></fieldset>
+      <div class="row"><button class="btn" type="button" id="qSubmit">Check answer</button><button class="btn accent" type="button" id="qNext" hidden>${qi === QUIZ.length - 1 ? "See my results" : "Next question →"}</button></div>`;
+    $("#qSubmit").addEventListener("click", () => {
+      const sel = quizBox.querySelector("input:checked"), fb = quizBox.querySelector(".fb");
+      if (!sel) { fb.hidden = false; fb.className = "fb no"; fb.textContent = "Choose an answer first."; return; }
+      const ok = +sel.value === q.a; qAnswers[qi] = ok;
+      quizBox.querySelectorAll("input").forEach(x => x.disabled = true);
+      sel.closest(".opt").classList.add(ok ? "right" : "wrong");
+      quizBox.querySelector(`input[value="${q.a}"]`).closest(".opt").classList.add("right");
+      fb.hidden = false; fb.className = "fb " + (ok ? "ok" : "no");
+      fb.innerHTML = (ok ? "✓ Correct. " : "✗ Not quite. ") + q.why;
+      $("#qSubmit").hidden = true; const n = $("#qNext"); n.hidden = false; n.focus();
+    });
+    $("#qNext").addEventListener("click", () => { qi++; renderQuiz(); });
+  }
+  function renderQuizSummary() {
+    const tiers = ["Remember", "Understand", "Apply", "Analyze", "Evaluate"];
+    const total = qAnswers.filter(Boolean).length;
+    const rows = tiers.map(t => {
+      const idx = QUIZ.map((q, i) => q.t === t ? i : -1).filter(i => i >= 0), c = idx.filter(i => qAnswers[i]).length;
+      return `<div><span>${tierTag(t)}</span><span class="track"><span class="fill" style="display:block;width:${c / idx.length * 100}%"></span></span><span>${c} / ${idx.length}</span></div>`;
+    }).join("");
+    const weakest = tiers.find(t => QUIZ.some((q, i) => q.t === t && !qAnswers[i]));
+    const advice = !weakest ? "Perfect score! You're ready for the lab."
+      : weakest === "Remember" ? "Go back over the Flashcards (Remember filter) before the lab."
+      : weakest === "Understand" ? "Reread Misconceptions 1 and 4 and the Understand flashcards."
+      : weakest === "Apply" ? "Trace the Worked Example again, drawing the nodes, then retry the Apply questions."
+      : weakest === "Analyze" ? "Reread Misconceptions 2 and 5. Lab Part A gives you more debugging practice."
+      : "Lab Parts B and C give you more practice evaluating designs.";
+    quizBox.innerHTML = `<h3 style="margin-top:0">Your results: <span class="score">${total} / ${QUIZ.length}</span></h3>
+      <div class="tierbars">${rows}</div><p><strong>Next step:</strong> ${advice}</p>
+      <div class="row"><button class="btn ghost" type="button" id="qRetry">Retake the quiz</button><button class="btn" type="button" id="qLab">Go to the Real-World Lab →</button></div>`;
+    $("#qRetry").addEventListener("click", () => { qi = 0; qAnswers = []; renderQuiz(); });
+    $("#qLab").addEventListener("click", () => show("lab", true));
+    store.set("quizBest", Math.max(total, store.get("quizBest", 0)));
+    markDone("quiz");
+  }
+  renderQuiz();
+
+  /* ---------- 6. Lab ---------- */
+  // Help desk simulator
+  const STUDENTS = [["Ana", "Wi-Fi", 2], ["Ben", "Canvas login", 5], ["Carla", "Printer", 1], ["Dev", "Locked out before an exam", 9], ["Eli", "Email", 3], ["Fay", "Password reset", 4]];
+  let simLine = [], simNext = 0;
+  function simRender(msg) {
+    const mode = $("#simMode").value;
+    const labels = simLine.map(s => `${s[0]} (${s[1]}, P${s[2]})`);
+    let nextIdx = -1;
+    if (simLine.length) nextIdx = mode === "queue" ? 0 : mode === "stack" ? simLine.length - 1 : simLine.reduce((b, s, i) => s[2] > simLine[b][2] ? i : b, 0);
+    $("#simList").innerHTML = "<p class=\"fc-status\" style=\"margin:6px 0 0\">Line, in arrival order (P = priority; the highlighted student is served next):</p>" + drawList(labels, { hl: nextIdx >= 0 ? [nextIdx] : [], aria: "Waiting line: " + (labels.join(", ") || "empty") });
+    if (msg) $("#simLog").textContent = msg;
+  }
+  $("#simAdd").addEventListener("click", () => {
+    if (simNext >= STUDENTS.length) { simRender("Everyone has arrived. Serve students, or press Reset."); return; }
+    const s = STUDENTS[simNext++]; simLine.push(s);
+    simRender(`${s[0]} arrives (${s[1]}, priority ${s[2]}).`);
+  });
+  $("#simServe").addEventListener("click", () => {
+    if (!simLine.length) { simRender("The line is empty."); return; }
+    const mode = $("#simMode").value;
+    const i = mode === "queue" ? 0 : mode === "stack" ? simLine.length - 1 : simLine.reduce((b, s, k) => s[2] > simLine[b][2] ? k : b, 0);
+    const s = simLine.splice(i, 1)[0];
+    const why = mode === "queue" ? "they've waited longest" : mode === "stack" ? "they arrived most recently (is that fair?)" : "they have the highest priority";
+    simRender(`Serving ${s[0]}, because ${why}.`);
+  });
+  $("#simReset").addEventListener("click", () => { simLine = []; simNext = 0; simRender("Waiting line is empty. Add some students."); });
+  $("#simMode").addEventListener("change", () => simRender(`Mode changed. The highlighted student is the one served next.`));
+  simRender();
+
+  // Part A
+  const BUG_CODE = [
+    "template<typename T>",
+    "void LinkedList<T>::add(int index, const T& e)",
+    "{",
+    "    if (index == 0)",
+    "        addFirst(e);",
+    "    else if (index >= size)",
+    "        addLast(e);",
+    "    else",
+    "    {",
+    "        Node<T>* current = head;",
+    "        for (int i = 0; i < index; i++)",
+    "            current = current->next;",
+    "        Node<T>* temp = current->next;",
+    "        current->next = new Node<T>(e);",
+    "        temp->next = current->next;",
+    "        size--;",
+    "    }",
+    "}"
+  ];
+  $("#bugCode").innerHTML = BUG_CODE.map(l => `<span class="l">${esc(l) || " "}</span>`).join("");
+  const BUG_LINES = [11, 15, 16], PICKABLE = [6, 10, 11, 13, 14, 15, 16];
+  $("#bugPick").innerHTML = PICKABLE.map(n => `<label><input type="checkbox" value="${n}"> Line ${n}</label>`).join("");
+  $("#bugFixed").innerHTML = "<p style=\"margin:8px 0 0\">After <code>add(2, \"Xi\")</code> with the fixes:</p>" + drawList(["Ana", "Ben", "Xi", "Carla", "Dev"], { hl: [2], label: { 1: "current", 3: "temp" } });
+  $("#bugCheck").addEventListener("click", () => {
+    const picked = [...document.querySelectorAll("#bugPick input:checked")].map(x => +x.value);
+    const right = picked.filter(n => BUG_LINES.includes(n)).length, wrong = picked.filter(n => !BUG_LINES.includes(n)).length;
+    const msg = $("#bugMsg");
+    if (right === 3 && wrong === 0) { msg.textContent = "✓ You found all three bugs and no false alarms."; store.set("bugPass", true); }
+    else msg.textContent = `You found ${right} of 3 bugs` + (wrong ? ` and marked ${wrong} correct line${wrong > 1 ? "s" : ""} as buggy.` : ".") + " Read the explanation below.";
+    $("#bugExplain").hidden = false;
+  });
+
+  // Part B
+  $("#evalBtn").addEventListener("click", () => {
+    const pick = document.querySelector('input[name="evalPick"]:checked'), why = $("#evalWhy").value.trim();
+    if (!pick || why.split(/\s+/).length < 15) { $("#evalMsg").textContent = "Choose a design and write at least 15 words of justification first."; return; }
+    $("#evalMsg").textContent = pick.value === "2" ? "You chose composition. Compare your reasons with the expert's." : "You chose inheritance. Read the expert's comparison and see whether it changes your mind.";
+    $("#evalExpert").hidden = false; store.set("evalDone", true);
+  });
+
+  // Part C
+  const CREATE_STARTER = "#include \"LinkedList.h\"\n\ntemplate<typename T>\nclass Stack\n{\npublic:\n    // push, pop, peek, isEmpty, getSize\n\nprivate:\n    // your data field\n};\n";
+  const create = makeChecklist($("#createRubric"), $("#createCode"), [
+    ["Declares <code>template&lt;typename T&gt;</code> and <code>class Stack</code>", c => /template\s*<\s*(typename|class)\s+T\s*>\s*class\s+Stack\b/.test(c)],
+    ["Uses composition: a private <code>LinkedList&lt;T&gt;</code> data field", c => /private\s*:[\s\S]*LinkedList\s*<\s*T\s*>\s+\w+\s*;/.test(c)],
+    ["Has <code>push(const T&amp; …)</code>", c => /\bvoid\s+push\s*\(\s*const\s+T\s*&/.test(c)],
+    ["Has <code>pop()</code> that returns a <code>T</code>", c => /\bT\s+pop\s*\(\s*\)/.test(c)],
+    ["Has <code>peek()</code>", c => /\bpeek\s*\(\s*\)/.test(c)],
+    ["Has <code>isEmpty() const</code> and <code>getSize() const</code>", c => /\bisEmpty\s*\(\s*\)\s*const/.test(c) && /\bgetSize\s*\(\s*\)\s*const/.test(c)],
+    ["<code>push</code> and <code>pop</code> both work at the head (<code>addFirst</code> / <code>removeFirst</code>), so both are O(1)", c => /addFirst\s*\(/.test(c) && /removeFirst\s*\(/.test(c)],
+    ["Inheritance (<code>class Stack : public LinkedList</code>) exposes list operations. Use composition instead.", c => /class\s+Stack\s*:\s*(public|protected|private)?\s*LinkedList/.test(c), "warn"],
+    ["<code>removeLast</code> is O(n) in a singly linked list. Can you use the other end?", c => /removeLast\s*\(/.test(c), "warn"],
+    ["Mixing <code>addLast</code> with <code>removeFirst</code> gives first in, first out, which is a queue, not a stack.", c => /addLast\s*\(/.test(c) && /removeFirst\s*\(/.test(c), "warn"]
+  ], "createCode", CREATE_STARTER);
+  $("#createReset").addEventListener("click", () => create.reset());
+  $("#createBtn").addEventListener("click", () => {
+    const all = create.update(), why = $("#createWhy").value.trim(), words = why.split(/\s+/).filter(Boolean).length, msg = $("#createMsg");
+    const mentionsEnd = /\b(head|front|first|tail|end|last)\b/i.test(why), mentionsCost = /O\s*\(|constant|fast|walk|travers|loop|efficien|slow/i.test(why);
+    if (words < 20) { msg.textContent = "Write at least 20 words explaining which end you chose and why."; return; }
+    const tips = [];
+    if (!all) tips.push("finish the unchecked checklist items");
+    if (!mentionsEnd) tips.push("name the end of the list you used");
+    if (!mentionsCost) tips.push("explain the cost (for example, O(1) versus O(n))");
+    msg.textContent = tips.length ? "Almost there: " + tips.join("; ") + ". Then compare with the sample solution." : "✓ Your class meets every requirement and your justification names the end and its cost. Compare it with the sample solution.";
+    if (!tips.length) store.set("createPass", true);
+  });
+
+  renderCheck($("#checkLab"), "Real-World Lab", [
+    { t: "Analyze", q: "In Part A, why must <code>temp = current-&gt;next</code> come <em>before</em> <code>current-&gt;next = new Node&lt;T&gt;(e)</code>?", o: ["<code>temp</code> must be declared first", "Otherwise the only pointer to the rest of the list is overwritten and lost", "It makes the loop faster", "The order doesn't matter"], a: 1, why: "Saving the old next node in <code>temp</code> keeps the rest of the list reachable so the new node can link to it." },
+    { t: "Evaluate", q: "The help desk simulator served students with a stack. Why is that a poor choice for a help desk line?", o: ["Stacks can't hold strings", "The student who arrived last is served first, so early arrivals can wait indefinitely", "Stacks are slower than queues", "A stack can hold only one student"], a: 1, why: "Last in, first out suits Undo, where the most recent edit should be reversed first. A waiting line needs first in, first out, or a priority queue when urgency matters." }
+  ], "lab");
+
+  /* ---------- Init ---------- */
+  renderProgress();
+  show(store.get("last", "start"), false);
+})();
+</script>
+</body>
+</html>
