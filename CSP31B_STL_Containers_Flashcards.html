@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STL Containers Flashcards</title>
+<style>
+:root{
+  --user-primary:#1a4480;
+  --user-accent:#c8102e;
+  --user-background:#ffffff;
+  --ink:#1b1f24;
+  --muted:#5a6270;
+  --line:#d6dce6;
+  --soft:#eef3fa;
+  --ok:#1e7b34;
+  --ok-soft:#e7f4ea;
+  --bad-soft:#fbe9ec;
+  --warn-soft:#fff6dc;
+  --code:#f4f6f9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--user-background);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:var(--user-primary);color:#fff;padding:20px 16px 0}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+header .wrap{padding:0}
+header p{margin:0;opacity:.9;font-size:.95rem}
+header h1{margin:4px 0 14px;font-size:1.6rem;line-height:1.25}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:transparent;color:#fff;border:0;border-bottom:4px solid transparent;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
+nav button[aria-selected="true"]{border-bottom-color:var(--user-accent);background:rgba(255,255,255,.12)}
+nav button:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+main{padding:24px 0 48px}
+section.panel{display:none}
+section.panel.active{display:block}
+h2{color:var(--user-primary);font-size:1.4rem;margin:0 0 8px}
+h3{color:var(--user-primary);font-size:1.15rem;margin:24px 0 8px}
+.lead{color:var(--muted);margin-top:0}
+.unit{border:1px solid var(--line);border-radius:10px;padding:18px 18px 8px;margin:0 0 22px}
+.unit>h2{line-height:1.4;overflow-wrap:anywhere}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--user-primary);color:#fff;font-size:.95rem;vertical-align:middle;margin-right:8px}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--user-primary);vertical-align:middle}
+.tag.hi{background:var(--bad-soft);color:var(--user-accent)}
+pre,code{font-family:Consolas,"Cascadia Mono",Menlo,monospace}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-size:.88rem;line-height:1.45;margin:8px 0 12px}
+code{background:var(--code);padding:1px 4px;border-radius:4px;font-size:.92em}
+pre code{background:none;padding:0}
+.callout{border-left:5px solid var(--user-accent);background:var(--bad-soft);padding:10px 14px;border-radius:6px;margin:12px 0}
+.callout.example{border-color:var(--user-primary);background:var(--soft)}
+.callout.world{border-color:#b7791f;background:var(--warn-soft)}
+.callout strong:first-child{display:block;margin-bottom:2px}
+ol.steps{padding-left:22px}
+ol.steps li{margin-bottom:6px}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:8px 0 12px;font-size:.92rem}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+.selfcheck{background:#fafbfd;border:1px dashed var(--user-primary);border-radius:10px;padding:12px 14px;margin:20px 0 12px}
+.selfcheck>h3{margin-top:0}
+.mcq,.fill,.open{margin:12px 0 16px}
+.mcq .q,.fill .q,.open .q{font-weight:600;margin:0 0 6px}
+.opts{display:grid;gap:6px}
+.opts button,.btn{font:inherit;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+.opts button:hover:not(:disabled),.btn:hover{border-color:var(--user-primary)}
+.opts button:focus-visible,.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--user-primary);outline-offset:2px}
+.opts button.right{background:var(--ok-soft);border-color:var(--ok)}
+.opts button.wrong{background:var(--bad-soft);border-color:var(--user-accent)}
+.opts button:disabled{cursor:default;color:var(--ink)}
+.btn{text-align:center;display:inline-block}
+.btn.primary{background:var(--user-primary);color:#fff;border-color:var(--user-primary)}
+.btn.accent{background:var(--user-accent);color:#fff;border-color:var(--user-accent)}
+.fb{margin:6px 0 0;min-height:1em}
+.fb.good{color:var(--ok)}
+.fb.bad{color:var(--user-accent)}
+.fill input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;width:160px;max-width:100%;margin-right:6px}
+.fill label{display:block;margin:6px 0}
+textarea{width:100%;min-height:120px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.model{border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-top:8px;background:var(--soft)}
+.model ul{margin:6px 0}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:10px 0}
+.cats div{border:2px solid var(--user-primary);border-radius:10px;padding:10px 12px}
+.cats b{display:block;color:var(--user-primary)}
+.cats small{color:var(--muted)}
+.cells{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;align-items:center}
+.cells span{display:inline-grid;place-items:center;min-width:40px;height:36px;border:2px solid var(--user-primary);border-radius:6px;font:14px Consolas,monospace;background:#fff;padding:0 6px}
+.cells span.it{border-color:var(--user-accent);background:var(--bad-soft);font-weight:700}
+.cells span.ghost{border-style:dashed;color:var(--muted)}
+/* flashcards */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 14px}
+.toolbar select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.cardwrap{perspective:1200px;max-width:680px;margin:0 auto}
+.card{position:relative;width:100%;min-height:260px;cursor:pointer;transform-style:preserve-3d;transition:transform .5s;border:0;background:none;padding:0;font:inherit;color:inherit;display:block}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:22px;display:flex;flex-direction:column;justify-content:center;border:2px solid var(--user-primary);background:#fff;box-shadow:0 4px 14px rgba(26,68,128,.12);text-align:left}
+.face.back{transform:rotateY(180deg);background:var(--soft);border-color:var(--user-accent)}
+.face .meta{position:absolute;top:12px;left:18px;right:18px;display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+.face .txt{font-size:1.1rem}
+.face .hint{position:absolute;bottom:10px;right:18px;font-size:.78rem;color:var(--muted)}
+.cardnav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:14px 0}
+.progress{text-align:center;color:var(--muted);font-size:.92rem}
+.bar{height:8px;background:var(--soft);border-radius:999px;overflow:hidden;max-width:680px;margin:6px auto 0}
+.bar span{display:block;height:100%;background:var(--user-accent);width:0;transition:width .3s}
+/* matching */
+.match{display:grid;grid-template-columns:1fr 1.6fr;gap:12px}
+.match .col{display:grid;gap:8px;align-content:start}
+.match button{font:inherit;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;color:var(--ink)}
+.match button.sel{border-color:var(--user-primary);box-shadow:0 0 0 3px rgba(26,68,128,.25)}
+.match button.done{background:var(--ok-soft);border-color:var(--ok);cursor:default}
+.match button.shake{background:var(--bad-soft);border-color:var(--user-accent)}
+.score{font-weight:700;color:var(--user-primary)}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;padding:14px 0 24px}
+@media (max-width:640px){
+  header h1{font-size:1.3rem}
+  .match{grid-template-columns:1fr}
+  .card{min-height:320px}
+  .face .txt{font-size:1rem}
+}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p>CSP31B &ndash; C++ Programming II &middot; San Joaquin Delta College</p>
+    <h1>STL Containers (Chapter 22)</h1>
+    <nav role="tablist" aria-label="Study modes">
+      <button role="tab" aria-selected="true" aria-controls="tab-flash" id="t-flash" data-tab="flash">Flashcards</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-path" id="t-path" data-tab="path">Study Path</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-quiz" id="t-quiz" data-tab="quiz">Quiz</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-match" id="t-match" data-tab="match">Matching</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ================= FLASHCARDS ================= -->
+<section class="panel active" id="tab-flash" role="tabpanel" aria-labelledby="t-flash">
+  <h2>Flashcards</h2>
+  <p class="lead">Cards go from <b>Remember</b> to <b>Analyze/Evaluate</b> within each topic. Click a card (or press <b>Space</b>) to flip it; use <b>&larr; &rarr;</b> to move. Mark cards you know so you can focus on the rest.</p>
+  <div class="toolbar">
+    <label>Topic
+      <select id="fTopic">
+        <option value="0">All topics</option>
+        <option value="1">1. STL basics</option>
+        <option value="2">2. Iterators</option>
+        <option value="3">3. Sequence containers</option>
+        <option value="4">4. Associative containers</option>
+        <option value="5">5. Container adapters</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="fHide"> Hide cards I know</label>
+    <button class="btn" id="fShuffle" type="button">Shuffle</button>
+    <button class="btn" id="fReset" type="button">Reset known</button>
+  </div>
+  <div class="cardwrap">
+    <button class="card" id="card" type="button" aria-label="Flashcard, press to flip">
+      <div class="face front"><div class="meta"><span id="fTopicLbl"></span><span id="fLevel"></span></div><div class="txt" id="fFront"></div><div class="hint">Click to flip</div></div>
+      <div class="face back"><div class="meta"><span>Answer</span><span></span></div><div class="txt" id="fBack"></div><div class="hint">Click to flip back</div></div>
+    </button>
+  </div>
+  <div class="cardnav">
+    <button class="btn" id="fPrev" type="button">&larr; Previous</button>
+    <button class="btn" id="fFlip" type="button">Flip</button>
+    <button class="btn primary" id="fKnow" type="button">I know this &#10003;</button>
+    <button class="btn" id="fNext" type="button">Next &rarr;</button>
+  </div>
+  <p class="progress" id="fProg" aria-live="polite"></p>
+  <div class="bar" aria-hidden="true"><span id="fBar"></span></div>
+</section>
+
+<!-- ================= STUDY PATH ================= -->
+<section class="panel" id="tab-path" role="tabpanel" aria-labelledby="t-path">
+  <h2>Study Path</h2>
+  <p class="lead">Work through the five units in order. Each unit builds on the one before and ends with a short self-check. Lower-tier tasks are tagged <span class="tag">Remember / Understand / Apply</span>; higher-tier tasks are tagged <span class="tag hi">Analyze / Evaluate / Create</span>.</p>
+
+  <!-- Unit 1 -->
+  <div class="unit">
+    <h2><span class="num">1</span> STL basics: containers, iterators and algorithms</h2>
+    <p>Linked lists, queues, priority queues and search trees are used everywhere in real programs. Instead of writing them yourself, C++ gives you the <b>Standard Template Library (STL)</b>, developed by Alexander Stepanov and Meng Lee at Hewlett-Packard. Its classes and functions are <b>templates</b>, so they work with any element type: <code>vector&lt;int&gt;</code>, <code>vector&lt;string&gt;</code>, and so on.</p>
+    <p>The STL has three components that work together:</p>
+    <ul>
+      <li><b>Containers</b> store a collection of elements (for example, a <code>vector</code>).</li>
+      <li><b>Iterators</b> are pointer-like objects for moving through a container&rsquo;s elements.</li>
+      <li><b>Algorithms</b> (about 80 of them, such as <code>sort</code> and <code>find</code>) manipulate data, and most reach the elements through iterators.</li>
+    </ul>
+    <p>The containers fall into three categories:</p>
+    <div class="cats">
+      <div><b>Sequence (linear)</b><code>vector</code> &middot; <code>deque</code> &middot; <code>list</code><br><small>Elements kept in the order you put them.</small></div>
+      <div><b>Associative (non-linear)</b><code>set</code> &middot; <code>multiset</code> &middot; <code>map</code> &middot; <code>multimap</code><br><small>Sorted by key for fast lookup.</small></div>
+      <div><b>Container adapters</b><code>stack</code> &middot; <code>queue</code> &middot; <code>priority_queue</code><br><small>Restricted versions of sequence containers.</small></div>
+    </div>
+    <p>Sequence and associative containers are called <b>first-class containers</b>. All containers share functions such as <code>empty()</code>, <code>size()</code>, <code>operator=</code> and the relational operators; first-class containers also have <code>begin()</code>, <code>end()</code>, <code>rbegin()</code>, <code>rend()</code>, <code>clear()</code>, <code>erase()</code>, <code>swap()</code> and <code>max_size()</code>.</p>
+    <div class="tblwrap"><table>
+      <tr><th>Container</th><th>Header</th><th>Best for</th></tr>
+      <tr><td>vector</td><td>&lt;vector&gt;</td><td>Direct access to any element; quick insert/delete at the end</td></tr>
+      <tr><td>deque</td><td>&lt;deque&gt;</td><td>Direct access; quick insert/delete at the front and the end</td></tr>
+      <tr><td>list</td><td>&lt;list&gt;</td><td>Rapid insert/delete anywhere</td></tr>
+      <tr><td>set / multiset</td><td>&lt;set&gt;</td><td>Direct lookup; set has no duplicates, multiset allows them</td></tr>
+      <tr><td>map / multimap</td><td>&lt;map&gt;</td><td>Key/value pairs; map has unique keys, multimap allows duplicate keys</td></tr>
+      <tr><td>stack</td><td>&lt;stack&gt;</td><td>Last-in, first-out (LIFO)</td></tr>
+      <tr><td>queue / priority_queue</td><td>&lt;queue&gt;</td><td>First-in, first-out (FIFO) / highest priority removed first</td></tr>
+    </table></div>
+    <div class="callout">
+      <strong>Misconception: &ldquo;All STL containers inherit from one base class, like <code>Container</code>.&rdquo;</strong>
+      Wrong. C++ does <em>not</em> define a base class for containers. They share common functions by <b>convention</b>: each class was designed with the same function names (<code>size()</code>, <code>empty()</code>, <code>begin()</code>&hellip;). That&rsquo;s why algorithms are written to work with <b>iterators</b> instead of a common base type.
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 1 <span class="tag">Remember / Understand</span></h3>
+      <div class="mcq" data-ans="1" data-why="map is associative: it stores sorted key/value pairs for fast lookup.">
+        <p class="q">1. Which container is an <b>associative</b> container?</p>
+        <div class="opts"><button type="button">deque</button><button type="button">map</button><button type="button">stack</button><button type="button">list</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="3" data-why="First-class containers are the sequence and associative containers; adapters like stack are not first-class.">
+        <p class="q">2. Which set lists only <b>first-class</b> containers?</p>
+        <div class="opts"><button type="button">stack, queue, priority_queue</button><button type="button">vector, stack, map</button><button type="button">queue, set, list</button><button type="button">vector, list, multimap</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 2 -->
+  <div class="unit">
+    <h2><span class="num">2</span> Iterators: moving through a container</h2>
+    <p><code>c.begin()</code> returns an iterator to the <b>first</b> element. <code>c.end()</code> returns an iterator to the position <b>one past the last</b> element; it is a stop marker, not an element. The standard loop:</p>
+<pre><code>vector&lt;int&gt; v = {10, 20, 30};
+for (vector&lt;int&gt;::iterator p = v.begin(); p != v.end(); p++)
+    cout &lt;&lt; *p &lt;&lt; " ";            // 10 20 30
+
+for (auto p = v.rbegin(); p != v.rend(); p++)   // C++11 auto, reverse order
+    cout &lt;&lt; *p &lt;&lt; " ";            // 30 20 10</code></pre>
+    <h3>Five iterator categories</h3>
+    <div class="tblwrap"><table>
+      <tr><th>Category</th><th>Can do</th><th>Extra operators</th></tr>
+      <tr><td>Input</td><td>Read elements, move forward one at a time</td><td><code>*p</code> (read), <code>==</code>, <code>!=</code>, <code>++</code></td></tr>
+      <tr><td>Output</td><td>Write elements, move forward one at a time</td><td><code>*p</code> (write), <code>++</code></td></tr>
+      <tr><td>Forward</td><td>Read and write, move forward</td><td>input + output</td></tr>
+      <tr><td>Bidirectional</td><td>Forward, plus move backward</td><td><code>--p</code>, <code>p--</code></td></tr>
+      <tr><td>Random-access</td><td>Bidirectional, plus jump any number of elements</td><td><code>p += i</code>, <code>p + i</code>, <code>p[i]</code>, <code>&lt;</code>, <code>&gt;</code></td></tr>
+    </table></div>
+    <p><b>Which containers support which?</b> vector and deque: random-access. list, set, multiset, map, multimap: bidirectional. stack, queue, priority_queue: <b>no iterators</b>.</p>
+    <p>Related tools: a <code>const_iterator</code> can read but not change elements; a <code>reverse_iterator</code> (<code>rbegin()</code>/<code>rend()</code>) walks backward; <code>typedef</code> creates type synonyms (<code>typedef int integer;</code>), and C++11 <code>auto</code> lets the compiler infer long iterator types. <code>ostream_iterator&lt;int&gt; out(cout, " ");</code> with <code>copy(v.begin(), v.end(), out);</code> prints a container, and <code>istream_iterator</code> reads input.</p>
+    <div class="callout example">
+      <strong>Worked example: tracing a random-access iterator <span class="tag">Apply</span></strong>
+<pre><code>vector&lt;int&gt; v = {10, 20, 30, 40, 50};
+auto p = v.begin();
+p += 2;
+cout &lt;&lt; *p &lt;&lt; " " &lt;&lt; p[1] &lt;&lt; " ";
+--p;
+cout &lt;&lt; *(p + 3) &lt;&lt; " " &lt;&lt; (v.end() - v.begin());</code></pre>
+      <ol class="steps">
+        <li><code>p = v.begin()</code>: p is at index 0 (value 10).</li>
+        <li><code>p += 2</code>: jump two places to index 2. <code>*p</code> is <b>30</b>.</li>
+        <li><code>p[1]</code> means &ldquo;one past p&rdquo; without moving p: index 3, <b>40</b>.</li>
+        <li><code>--p</code>: back one to index 1 (value 20). <code>*(p + 3)</code> is index 4, <b>50</b>.</li>
+        <li><code>v.end() - v.begin()</code>: the distance from the first element to one-past-the-last is the size, <b>5</b>.</li>
+      </ol>
+      <div class="cells" aria-label="Final position of p"><span>10</span><span class="it">20 &larr;p</span><span>30</span><span>40</span><span>50</span><span class="ghost">end()</span></div>
+      Output: <code>30 40 50 5</code>. Reasoning rule: <code>+=</code>, <code>--</code> and <code>++</code> move p; <code>p + i</code> and <code>p[i]</code> only look.
+    </div>
+    <div class="fill" data-ans="15;35" data-why="end() is one past index 3, so p -= 3 lands on index 1 (15). p++ moves to index 2, and p[1] looks at index 3 (35).">
+      <p class="q">Your turn <span class="tag">Apply</span>: <code>vector&lt;int&gt; v = {5, 15, 25, 35}; auto p = v.end(); p -= 3; cout &lt;&lt; *p; p++; cout &lt;&lt; p[1];</code></p>
+      <label>First value printed: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <label>Second value printed: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+    <div class="callout">
+      <strong>Misconception: &ldquo;<code>end()</code> points to the last element, so <code>*v.end()</code> gives the last value.&rdquo;</strong>
+      Wrong. <code>end()</code> refers to the position <em>after</em> the last element. Dereferencing it is undefined behavior: it may print garbage or crash. Use <code>v.back()</code>, <code>*(v.end() - 1)</code> or <code>*v.rbegin()</code> for the last element. That&rsquo;s also why loops test <code>p != v.end()</code>.
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 2 <span class="tag">Understand / Apply</span></h3>
+      <div class="mcq" data-ans="2" data-why="list has bidirectional iterators: ++ and -- work, but jumping (p + 2, p[i]) needs random access.">
+        <p class="q">1. <code>list&lt;int&gt;::iterator p = lst.begin();</code> Which statement does NOT compile?</p>
+        <div class="opts"><button type="button"><code>p++;</code></button><button type="button"><code>--p;</code></button><button type="button"><code>p = p + 2;</code></button><button type="button"><code>cout &lt;&lt; *p;</code></button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="0" data-why="Adapters restrict access to one end, so they provide no iterators at all.">
+        <p class="q">2. Which container provides <b>no</b> iterators?</p>
+        <div class="opts"><button type="button">queue</button><button type="button">set</button><button type="button">deque</button><button type="button">multimap</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 3 -->
+  <div class="unit">
+    <h2><span class="num">3</span> Sequence containers: vector, deque and list</h2>
+    <p><b>vector</b> and <b>deque</b> are implemented with arrays; <b>list</b> is a (doubly) linked list. All three share <code>push_back</code>, <code>pop_back</code>, <code>front()</code>, <code>back()</code>, <code>insert(position, elem)</code>, <code>assign(n, elem)</code> and <code>assign(beg, end)</code>.</p>
+    <div class="tblwrap"><table>
+      <tr><th></th><th>vector</th><th>deque</th><th>list</th></tr>
+      <tr><td>Storage</td><td>Array</td><td>Array (blocks)</td><td>Linked list</td></tr>
+      <tr><td><code>v[i]</code> / <code>at(i)</code></td><td>Yes</td><td>Yes</td><td>No</td></tr>
+      <tr><td><code>push_front</code> / <code>pop_front</code></td><td>No</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>Fast insert/delete</td><td>At the end</td><td>At both ends</td><td>Anywhere</td></tr>
+      <tr><td>Iterators</td><td>Random-access</td><td>Random-access</td><td>Bidirectional</td></tr>
+      <tr><td>Extras</td><td><code>capacity()</code></td><td>&ndash;</td><td><code>sort()</code>, <code>remove()</code>, <code>reverse()</code>, <code>merge()</code>, <code>splice()</code></td></tr>
+    </table></div>
+    <div class="callout example">
+      <strong>Worked example: tracing a deque <span class="tag">Apply</span></strong>
+<pre><code>deque&lt;int&gt; d;
+d.push_back(4);
+d.push_front(2);
+d.push_back(6);
+d.push_front(0);
+d.pop_back();
+d.insert(d.begin() + 1, 9);
+cout &lt;&lt; d.front() &lt;&lt; " " &lt;&lt; d.back() &lt;&lt; " " &lt;&lt; d.size();</code></pre>
+      <div class="tblwrap"><table>
+        <tr><th>Statement</th><th>Contents</th><th>Reasoning</th></tr>
+        <tr><td><code>push_back(4)</code></td><td>4</td><td>Empty deque, so 4 is the only element.</td></tr>
+        <tr><td><code>push_front(2)</code></td><td>2 4</td><td>Added at the <b>front</b>.</td></tr>
+        <tr><td><code>push_back(6)</code></td><td>2 4 6</td><td>Added at the back.</td></tr>
+        <tr><td><code>push_front(0)</code></td><td>0 2 4 6</td><td>Added at the front.</td></tr>
+        <tr><td><code>pop_back()</code></td><td>0 2 4</td><td>Removes the last element, 6.</td></tr>
+        <tr><td><code>insert(d.begin() + 1, 9)</code></td><td>0 9 2 4</td><td>Inserts <b>before</b> the position: begin() + 1 is the 2, so 9 goes in front of it.</td></tr>
+      </table></div>
+      Output: <code>0 4 4</code> (front 0, back 4, size 4).
+    </div>
+    <div class="fill" data-ans="3 7 9|3,7,9;3" data-why="{7,3} → push_front(1): 1 7 3 → push_back(9): 1 7 3 9 → sort(): 1 3 7 9 → pop_front(): 3 7 9. Size 3.">
+      <p class="q">Your turn <span class="tag">Apply</span>: <code>list&lt;int&gt; lst = {7, 3}; lst.push_front(1); lst.push_back(9); lst.sort(); lst.pop_front();</code></p>
+      <label>Contents (separate with spaces): <input type="text" autocomplete="off"></label>
+      <label><code>lst.size()</code>: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+    <div class="callout">
+      <strong>Misconception: &ldquo;Every container works with <code>sort(c.begin(), c.end())</code>.&rdquo;</strong>
+      Wrong. The <code>sort</code> algorithm needs <b>random-access</b> iterators so it can jump around. A list only has bidirectional iterators, so <code>sort(lst.begin(), lst.end())</code> does not compile. Use the member function <code>lst.sort()</code> instead. The iterator category decides which algorithms a container can use.
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 3 <span class="tag">Apply / Analyze</span></h3>
+      <div class="mcq" data-ans="3" data-why="A vector stores elements in one array; adding at the front would shift every element, so vector doesn't offer push_front.">
+        <p class="q">1. Which statement does NOT compile for <code>vector&lt;int&gt; v;</code>?</p>
+        <div class="opts"><button type="button"><code>v.push_back(5);</code></button><button type="button"><code>v.insert(v.begin(), 5);</code></button><button type="button"><code>v.assign(3, 5);</code></button><button type="button"><code>v.push_front(5);</code></button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="1" data-why="A list links nodes, so inserting in the middle only changes a few pointers; a vector must shift all later elements.">
+        <p class="q">2. A program inserts thousands of items in the <b>middle</b> of a sequence but never uses an index. The best container is&hellip;</p>
+        <div class="opts"><button type="button">vector</button><button type="button">list</button><button type="button">deque</button><button type="button">stack</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 4 -->
+  <div class="unit">
+    <h2><span class="num">4</span> Associative containers: set, multiset, map and multimap</h2>
+    <p>Associative containers store elements <b>sorted by key</b> (using <code>&lt;</code> by default) for fast storage and lookup. Common functions:</p>
+    <ul>
+      <li><code>find(key)</code>: iterator to the element with that key (or <code>end()</code> if none).</li>
+      <li><code>count(key)</code>: how many elements have that key.</li>
+      <li><code>lower_bound(key)</code>: iterator to the first element with that key (first element &ge; key).</li>
+      <li><code>upper_bound(key)</code>: iterator to the element just after the last one with that key.</li>
+    </ul>
+    <p><b>set</b> stores unique values; <b>multiset</b> allows duplicates. <b>map</b> stores unique keys with values (<code>pair&lt;key, value&gt;</code>, accessed by <code>first</code> and <code>second</code>); <b>multimap</b> allows duplicate keys.</p>
+    <div class="callout example">
+      <strong>Worked example: set vs. multiset <span class="tag">Apply</span></strong>
+<pre><code>int values[] = {5, 3, 5, 1, 5};
+set&lt;int&gt; s(values, values + 5);
+multiset&lt;int&gt; ms(values, values + 5);</code></pre>
+      <ol class="steps">
+        <li><b>set:</b> each value is inserted in sorted position; the 2nd and 3rd 5 are rejected as duplicates. Contents: <b>1 3 5</b>, size 3.</li>
+        <li><b>multiset:</b> duplicates are kept, still sorted. Contents: <b>1 3 5 5 5</b>, size 5.</li>
+        <li><code>ms.count(5)</code> is <b>3</b>; <code>s.count(5)</code> is <b>1</b> (a set&rsquo;s count is always 0 or 1).</li>
+        <li><code>*ms.lower_bound(4)</code>: the first element &ge; 4 is <b>5</b>. <code>ms.upper_bound(5)</code> is <code>end()</code>, because nothing comes after the last 5.</li>
+      </ol>
+      Reasoning rule: associative containers ignore insertion order; they always keep elements sorted.
+    </div>
+    <h3>map and the subscript operator</h3>
+<pre><code>map&lt;string, int&gt; grades;
+grades["Ana"] = 90;
+grades.insert(pair&lt;string, int&gt;("Ben", 85));
+for (auto p = grades.begin(); p != grades.end(); p++)
+    cout &lt;&lt; p-&gt;first &lt;&lt; ": " &lt;&lt; p-&gt;second &lt;&lt; endl;</code></pre>
+    <div class="fill" data-ans="3;95" data-why="Ana is updated to 95 (keys are unique). grades[&quot;Cal&quot;] inserts Cal with value 0, so the size is 3.">
+      <p class="q">Your turn <span class="tag">Apply</span>: <code>map&lt;string, int&gt; grades; grades["Ana"] = 90; grades["Ben"] = 85; grades["Ana"] = 95; cout &lt;&lt; grades["Cal"];</code></p>
+      <label><code>grades.size()</code> afterward: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <label><code>grades["Ana"]</code>: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+    <div class="callout">
+      <strong>Misconception: &ldquo;<code>grades["Cal"]</code> just looks up Cal, so it can&rsquo;t change the map.&rdquo;</strong>
+      Wrong. If the key isn&rsquo;t there, <code>operator[]</code> <b>inserts</b> it with a default value (0 for <code>int</code>, &quot;&quot; for <code>string</code>). To check whether a key exists without adding it, use <code>grades.find("Cal") != grades.end()</code> or <code>grades.count("Cal")</code>.
+    </div>
+    <div class="callout world">
+      <strong>Real-world application: counting words in a discussion post</strong>
+      Canvas-style plagiarism and readability tools count how often each word appears. A <code>map&lt;string, int&gt;</code> does it in one line per word, and prints the words in alphabetical order for free:
+<pre><code>map&lt;string, int&gt; freq;
+string word;
+while (cin &gt;&gt; word)
+    freq[word]++;            // a new word starts at 0, then becomes 1
+for (auto p = freq.begin(); p != freq.end(); p++)
+    cout &lt;&lt; p-&gt;first &lt;&lt; " " &lt;&lt; p-&gt;second &lt;&lt; endl;</code></pre>
+      Here, <code>operator[]</code>&rsquo;s automatic insert is exactly what we want.
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 4 <span class="tag">Apply / Analyze</span></h3>
+      <div class="mcq" data-ans="0" data-why="A set keeps values sorted and drops duplicates: 2 4 8.">
+        <p class="q">1. Insert 8, 2, 8, 4 into a <code>set&lt;int&gt;</code>. Printing it from <code>begin()</code> to <code>end()</code> shows&hellip;</p>
+        <div class="opts"><button type="button">2 4 8</button><button type="button">8 2 8 4</button><button type="button">8 2 4</button><button type="button">2 4 8 8</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="2" data-why="A multimap allows duplicate keys, so one student can have many course entries.">
+        <p class="q">2. You need to store every course each student takes, keyed by student ID. Which container fits best?</p>
+        <div class="opts"><button type="button">map&lt;int, string&gt;</button><button type="button">set&lt;int&gt;</button><button type="button">multimap&lt;int, string&gt;</button><button type="button">stack&lt;int&gt;</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 5 -->
+  <div class="unit">
+    <h2><span class="num">5</span> Container adapters: stack, queue and priority_queue</h2>
+    <p>Adapters are built <b>on top of</b> a sequence container and allow access at only one end, for special cases. You can choose the underlying container, for example <code>stack&lt;int, vector&lt;int&gt;&gt;</code>; stack and queue use a deque by default, and priority_queue uses a vector by default (a deque also works).</p>
+    <div class="tblwrap"><table>
+      <tr><th>Adapter</th><th>Rule</th><th>Add</th><th>Look</th><th>Remove</th></tr>
+      <tr><td>stack</td><td>Last in, first out</td><td><code>push(x)</code></td><td><code>top()</code></td><td><code>pop()</code></td></tr>
+      <tr><td>queue</td><td>First in, first out</td><td><code>push(x)</code> (at the back)</td><td><code>front()</code>, <code>back()</code></td><td><code>pop()</code> (from the front)</td></tr>
+      <tr><td>priority_queue</td><td>Largest (highest priority) first</td><td><code>push(x)</code></td><td><code>top()</code></td><td><code>pop()</code></td></tr>
+    </table></div>
+    <div class="callout example">
+      <strong>Worked example: the same pushes, three adapters <span class="tag">Apply</span></strong>
+      <p style="margin:4px 0">Push 3, 1, 4, 1, 5 into each, then repeatedly print the next element and <code>pop()</code> until empty:</p>
+<pre><code>while (!s.empty()) { cout &lt;&lt; s.top() &lt;&lt; " "; s.pop(); }</code></pre>
+      <ol class="steps">
+        <li><b>stack:</b> the last item pushed is on top, so they come out in reverse: <b>5 1 4 1 3</b>.</li>
+        <li><b>queue:</b> the first item pushed is at the front, so they come out in the same order: <b>3 1 4 1 5</b>.</li>
+        <li><b>priority_queue:</b> the largest value is always on top, regardless of order: <b>5 4 3 1 1</b>.</li>
+      </ol>
+      Reasoning rule: ask &ldquo;which element does this adapter consider <em>next</em>?&rdquo; Newest (stack), oldest (queue) or largest (priority_queue).
+    </div>
+    <div class="fill" data-ans="6;8;8" data-why="Stack: last pushed is 6. Queue: first pushed is 8. Priority queue: largest is 8.">
+      <p class="q">Your turn <span class="tag">Apply</span>: push 8, 2, 6 into a stack, a queue and a priority_queue.</p>
+      <label><code>stack.top()</code> = <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <label><code>queue.front()</code> = <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <label><code>priority_queue.top()</code> = <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+    <div class="callout">
+      <strong>Misconception: &ldquo;<code>int x = s.pop();</code> removes the top and gives it to me.&rdquo;</strong>
+      Wrong. <code>pop()</code> returns <code>void</code>; it only removes. Read the element first with <code>top()</code> (or <code>front()</code> for a queue), then call <code>pop()</code>. Also check <code>empty()</code> first: calling <code>top()</code> or <code>pop()</code> on an empty adapter is undefined behavior.
+    </div>
+    <div class="callout world">
+      <strong>Real-world application: the Delta IT help desk</strong>
+      Walk-in tickets are served in arrival order (<b>queue</b>). Urgent issues such as &ldquo;Canvas is down for a class&rdquo; jump ahead (<b>priority_queue</b> ordered by urgency). The ticket editor&rsquo;s <b>Undo</b> button reverses the most recent change first (<b>stack</b>). Each staff member is mapped to their open tickets (<b>multimap</b>).
+    </div>
+
+    <h3>Higher-order challenges</h3>
+    <div class="open">
+      <p class="q">Analyze <span class="tag hi">Analyze</span>: Explain why <code>stack</code>, <code>queue</code> and <code>priority_queue</code> provide no iterators, while <code>vector</code> provides random-access iterators. Connect your answer to each container&rsquo;s purpose.</p>
+      <textarea aria-label="Your explanation"></textarea>
+      <button class="btn" type="button">Show model answer</button>
+      <div class="model" hidden>
+        <p><b>Model answer:</b> An adapter&rsquo;s whole purpose is to <b>restrict</b> access to one element: the top of a stack, the front of a queue, the highest priority item. Iterators would let code walk through and change any element, which would break the LIFO, FIFO or priority rule the adapter guarantees. A vector is meant for general storage with direct access to any element, and it&rsquo;s stored in an array, so jumping to any position is cheap; random-access iterators expose exactly that ability.</p>
+        <p><b>Check your answer:</b></p>
+        <ul><li>Did you say adapters deliberately limit access?</li><li>Did you explain that iterators would break the adapter&rsquo;s rule?</li><li>Did you connect vector&rsquo;s array storage to random access?</li></ul>
+      </div>
+    </div>
+    <div class="open">
+      <p class="q">Evaluate <span class="tag hi">Evaluate</span>: Choose the best container for each task and justify each choice: (a) a browser&rsquo;s Back button, (b) a phone contact list looked up by name, (c) print jobs served in order, (d) the list of unique students who attended office hours this week.</p>
+      <textarea aria-label="Your choices"></textarea>
+      <button class="btn" type="button">Show model answer</button>
+      <div class="model" hidden>
+        <ul>
+          <li><b>(a) stack:</b> the most recently visited page is the first one you go back to (LIFO).</li>
+          <li><b>(b) map&lt;string, string&gt;:</b> fast lookup by a unique key (name), kept in alphabetical order. A multimap is also defensible if two contacts can share a name.</li>
+          <li><b>(c) queue:</b> first job sent is first printed (FIFO). A priority_queue fits if some jobs are urgent.</li>
+          <li><b>(d) set&lt;string&gt;:</b> duplicates are dropped automatically, and names print sorted.</li>
+        </ul>
+        <p><b>Check your answer:</b> each choice names a specific container &middot; the justification uses its rule (LIFO, FIFO, unique, sorted, key lookup) &middot; you considered at least one alternative.</p>
+      </div>
+    </div>
+    <div class="open">
+      <p class="q">Create <span class="tag hi">Create</span>: Write a C++ program that reads exam scores until the user enters -1, then prints (1) the scores in descending order, (2) how many times the most common score appears and (3) the top three scores. Use at least two different STL containers and explain why you chose each.</p>
+      <textarea aria-label="Your program"></textarea>
+      <button class="btn" type="button">Show model answer</button>
+      <div class="model" hidden>
+<pre><code>#include &lt;iostream&gt;
+#include &lt;set&gt;
+#include &lt;queue&gt;
+using namespace std;
+
+int main() {
+    multiset&lt;int&gt; scores;          // sorted, keeps duplicate scores
+    priority_queue&lt;int&gt; top;       // largest score always on top
+    int s;
+    while (cin &gt;&gt; s &amp;&amp; s != -1) {
+        scores.insert(s);
+        top.push(s);
+    }
+
+    cout &lt;&lt; "Descending: ";
+    for (auto p = scores.rbegin(); p != scores.rend(); p++)
+        cout &lt;&lt; *p &lt;&lt; " ";
+
+    int best = 0;
+    for (auto p = scores.begin(); p != scores.end(); p = scores.upper_bound(*p))
+        if ((int)scores.count(*p) &gt; best) best = scores.count(*p);
+    cout &lt;&lt; "\nMost common score appears " &lt;&lt; best &lt;&lt; " time(s)\n";
+
+    cout &lt;&lt; "Top three: ";
+    for (int i = 0; i &lt; 3 &amp;&amp; !top.empty(); i++) {
+        cout &lt;&lt; top.top() &lt;&lt; " ";  // read first...
+        top.pop();                  // ...then remove
+    }
+    cout &lt;&lt; endl;
+    return 0;
+}</code></pre>
+        <p><b>Why these containers:</b> a <b>multiset</b> sorts automatically and keeps duplicates, so a reverse iterator prints descending order and <code>count()</code> finds repeats; <code>upper_bound(*p)</code> skips to the next distinct score. A <b>priority_queue</b> hands back the largest score each time. (A <code>map&lt;int, int&gt;</code> of score &rarr; count is another good design.)</p>
+        <p><b>Check your answer:</b> stops at -1 &middot; correct descending output &middot; duplicates counted &middot; reads with <code>top()</code> before <code>pop()</code> and checks <code>empty()</code> &middot; container choices justified.</p>
+      </div>
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 5 <span class="tag">Analyze</span></h3>
+      <div class="mcq" data-ans="1" data-why="pop() returns void, so it can't be assigned to x. Read q.front() first, then call q.pop().">
+        <p class="q">1. Why does <code>int x = q.pop();</code> fail for <code>queue&lt;int&gt; q;</code>?</p>
+        <div class="opts"><button type="button">Queues can&rsquo;t hold int</button><button type="button"><code>pop()</code> returns void; use <code>front()</code>, then <code>pop()</code></button><button type="button">Queues remove from the back</button><button type="button">You must use <code>q.top()</code></button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="3" data-why="Stack reverses order: the last one pushed (9) is printed first.">
+        <p class="q">2. After pushing 2, 7, 9 onto a <code>stack&lt;int&gt;</code> and printing/popping until empty, the output is&hellip;</p>
+        <div class="opts"><button type="button">2 7 9</button><button type="button">9 2 7</button><button type="button">2 9 7</button><button type="button">9 7 2</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section class="panel" id="tab-quiz" role="tabpanel" aria-labelledby="t-quiz">
+  <h2>Interactive Quiz</h2>
+  <p class="lead">12 questions that grow more challenging, from Remember to Evaluate. Your score counts <b>first attempts</b> only; keep trying until you find each answer and read the explanation.</p>
+  <p class="score" id="qScore" aria-live="polite"></p>
+  <div id="quiz"></div>
+  <button class="btn accent" id="qReset" type="button">Retake quiz</button>
+</section>
+
+<!-- ================= MATCHING ================= -->
+<section class="panel" id="tab-match" role="tabpanel" aria-labelledby="t-match">
+  <h2>Matching Activity</h2>
+  <p class="lead">Select a container on the left, then select the description that matches it. Matched pairs turn green.</p>
+  <p class="score" id="mScore" aria-live="polite"></p>
+  <div class="match">
+    <div class="col" id="mTerms" aria-label="Containers"></div>
+    <div class="col" id="mDefs" aria-label="Descriptions"></div>
+  </div>
+  <p><button class="btn accent" id="mReset" type="button">Shuffle and restart</button></p>
+</section>
+
+</main>
+<footer><div class="wrap">CSP31B &ndash; C++ Programming II &middot; San Joaquin Delta College &middot; Based on the &ldquo;Chapter 22: STL Containers&rdquo; slides.</div></footer>
+
+<script>
+(function(){
+"use strict";
+var $ = function(s, r){ return (r || document).querySelector(s); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+// `x` in data strings becomes <code>x</code>
+function fmt(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>"); }
+var store = {
+  get: function(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- Tabs ---------- */
+var tabs = $$("nav [role=tab]");
+function showTab(name){
+  tabs.forEach(function(t){ var on = t.dataset.tab === name; t.setAttribute("aria-selected", on); });
+  $$("section.panel").forEach(function(p){ p.classList.toggle("active", p.id === "tab-" + name); });
+}
+tabs.forEach(function(t){ t.addEventListener("click", function(){ showTab(t.dataset.tab); }); });
+
+/* ---------- Flashcards ---------- */
+var TOPICS = ["", "STL basics", "Iterators", "Sequence containers", "Associative containers", "Container adapters"];
+var CARDS = [
+ {s:1,l:"Remember",f:"What are the three components of the STL?",b:"Containers (store elements), iterators (traverse elements) and algorithms (manipulate elements, such as sort and find)."},
+ {s:1,l:"Remember",f:"Name the three categories of STL containers and their members.",b:"Sequence: vector, deque, list. Associative: set, multiset, map, multimap. Adapters: stack, queue, priority_queue."},
+ {s:1,l:"Understand",f:"What is a first-class container?",b:"A sequence or associative container. They support iterators and functions such as `begin()`, `end()`, `erase()` and `clear()`; adapters don't."},
+ {s:1,l:"Understand",f:"Why are STL classes written as templates?",b:"So one container works with any element type: `vector<int>`, `vector<string>`, `set<double>` and so on."},
+ {s:1,l:"Remember",f:"Name four functions common to ALL containers.",b:"`empty()`, `size()`, `operator=` and the relational operators (`==`, `<`, …), plus constructors and a destructor."},
+ {s:2,l:"Remember",f:"What do `c.begin()` and `c.end()` return?",b:"`begin()`: an iterator to the first element. `end()`: an iterator to the position one past the last element."},
+ {s:2,l:"Remember",f:"List the five iterator categories, weakest to strongest.",b:"Input, output, forward, bidirectional, random-access."},
+ {s:2,l:"Understand",f:"Which iterator type does each container support?",b:"vector, deque: random-access. list, set, multiset, map, multimap: bidirectional. stack, queue, priority_queue: none."},
+ {s:2,l:"Apply",f:"`vector<int> v = {10, 20, 30, 40}; auto p = v.begin() + 1;` What are `*p` and `p[2]`?",b:"`*p` is 20 (index 1). `p[2]` is two past p, index 3: 40."},
+ {s:2,l:"Apply",f:"Replace `vector<int>::reverse_iterator p1 = intVector.rbegin();` using C++11.",b:"`auto p1 = intVector.rbegin();` The compiler infers the type (auto-type inference)."},
+ {s:2,l:"Understand",f:"What is the difference between `iterator`, `const_iterator` and `reverse_iterator`?",b:"`iterator` reads and writes moving forward. `const_iterator` can only read. `reverse_iterator` moves from the last element toward the first (`rbegin()` to `rend()`)."},
+ {s:2,l:"Apply",f:"Print a whole vector with one statement using an `ostream_iterator`.",b:"`ostream_iterator<int> out(cout, \" \"); copy(v.begin(), v.end(), out);`"},
+ {s:3,l:"Remember",f:"How are vector, deque and list implemented?",b:"vector and deque use arrays; list uses a linked list."},
+ {s:3,l:"Understand",f:"What can a deque do that a vector can't?",b:"Quick insert and delete at the front: `push_front()` and `pop_front()`. Both allow direct access with `[]`."},
+ {s:3,l:"Apply",f:"Where does `v.insert(v.begin() + 2, 99)` put 99 in {1, 2, 3, 4}?",b:"Before the element at index 2: {1, 2, 99, 3, 4}."},
+ {s:3,l:"Analyze",f:"Why does `sort(lst.begin(), lst.end())` fail for a `list<int>`, and what's the fix?",b:"The sort algorithm needs random-access iterators, and list only has bidirectional ones. Use the member function `lst.sort()`."},
+ {s:3,l:"Remember",f:"What do `assign(n, elem)` and `assign(beg, end)` do?",b:"Replace the contents with n copies of elem, or with copies of the elements in the iterator range [beg, end)."},
+ {s:4,l:"Remember",f:"How are elements ordered in an associative container?",b:"Sorted by key using the `<` operator by default, no matter what order they were inserted in."},
+ {s:4,l:"Understand",f:"set vs. multiset, and map vs. multimap?",b:"set and map require unique values/keys; multiset and multimap allow duplicates."},
+ {s:4,l:"Apply",f:"Insert 4, 1, 4, 9 into a multiset. What are the contents and `count(4)`?",b:"1 4 4 9; `count(4)` is 2."},
+ {s:4,l:"Understand",f:"What do `lower_bound(key)` and `upper_bound(key)` return?",b:"`lower_bound`: iterator to the first element with the key. `upper_bound`: iterator to the element just after the last one with the key."},
+ {s:4,l:"Analyze",f:"`map<string,int> m;` What happens with `cout << m[\"Zoe\"];` if Zoe isn't in the map?",b:"`operator[]` inserts Zoe with the default value 0 and prints 0; the map's size grows by 1. Use `find()` or `count()` to check without inserting."},
+ {s:4,l:"Apply",f:"How do you read the key and value inside a map loop?",b:"Each element is a `pair`: `p->first` is the key, `p->second` is the value."},
+ {s:5,l:"Remember",f:"Why are stack, queue and priority_queue called adapters?",b:"They are adapted from sequence containers for special cases, restricting access to one end. You can choose the underlying container."},
+ {s:5,l:"Remember",f:"What do stack, queue and priority_queue use by default underneath?",b:"stack and queue: deque. priority_queue: vector (deque also allowed)."},
+ {s:5,l:"Apply",f:"Push 3, 1, 4 into a stack, a queue and a priority_queue. What is next out of each?",b:"stack `top()`: 4. queue `front()`: 3. priority_queue `top()`: 4."},
+ {s:5,l:"Analyze",f:"Why doesn't `int x = s.pop();` compile?",b:"`pop()` returns void. Read with `s.top()` first, then call `s.pop()`."},
+ {s:5,l:"Evaluate",f:"An ER triage system must always treat the most critical patient next. Which container, and why not a queue?",b:"A `priority_queue`: it always returns the highest priority. A queue serves by arrival order, which would make critical patients wait."}
+];
+var known = store.get("stl22-known", []);
+var order = CARDS.map(function(_, i){ return i; });
+var deck = [], pos = 0;
+var card = $("#card");
+function buildDeck(keepCurrent){
+  var cur = deck[pos];
+  var topic = +$("#fTopic").value, hide = $("#fHide").checked;
+  deck = order.filter(function(i){ return (!topic || CARDS[i].s === topic) && (!hide || known.indexOf(i) < 0); });
+  pos = keepCurrent && deck.indexOf(cur) >= 0 ? deck.indexOf(cur) : 0;
+  renderCard();
+}
+function renderCard(){
+  card.classList.remove("flipped");
+  var topic = +$("#fTopic").value;
+  var total = CARDS.filter(function(c){ return !topic || c.s === topic; }).length;
+  var knownHere = known.filter(function(i){ return CARDS[i] && (!topic || CARDS[i].s === topic); }).length;
+  if (!deck.length){
+    $("#fFront").innerHTML = "You know every card in this set. Uncheck <b>Hide cards I know</b> or press <b>Reset known</b> to review again.";
+    $("#fBack").textContent = ""; $("#fTopicLbl").textContent = ""; $("#fLevel").textContent = "";
+  } else {
+    var c = CARDS[deck[pos]];
+    $("#fFront").innerHTML = fmt(c.f);
+    $("#fBack").innerHTML = fmt(c.b);
+    $("#fTopicLbl").textContent = c.s + ". " + TOPICS[c.s];
+    $("#fLevel").textContent = c.l;
+    $("#fKnow").textContent = known.indexOf(deck[pos]) >= 0 ? "Known ✓ (undo)" : "I know this ✓";
+  }
+  $("#fProg").textContent = (deck.length ? "Card " + (pos + 1) + " of " + deck.length + " · " : "") + "Known: " + knownHere + " of " + total;
+  $("#fBar").style.width = (total ? knownHere / total * 100 : 0) + "%";
+}
+function flip(){ if (deck.length) card.classList.toggle("flipped"); }
+function move(d){ if (!deck.length) return; pos = (pos + d + deck.length) % deck.length; renderCard(); }
+card.addEventListener("click", flip);
+$("#fFlip").addEventListener("click", flip);
+$("#fPrev").addEventListener("click", function(){ move(-1); });
+$("#fNext").addEventListener("click", function(){ move(1); });
+$("#fKnow").addEventListener("click", function(){
+  if (!deck.length) return;
+  var i = deck[pos], k = known.indexOf(i);
+  if (k >= 0) known.splice(k, 1); else known.push(i);
+  store.set("stl22-known", known);
+  if ($("#fHide").checked && k < 0){ deck.splice(pos, 1); if (pos >= deck.length) pos = 0; renderCard(); }
+  else if (k < 0) move(1); else renderCard();
+});
+$("#fShuffle").addEventListener("click", function(){ shuffle(order); buildDeck(false); });
+$("#fReset").addEventListener("click", function(){ known = []; store.set("stl22-known", known); buildDeck(false); });
+$("#fTopic").addEventListener("change", function(){ buildDeck(false); });
+$("#fHide").addEventListener("change", function(){ buildDeck(true); });
+document.addEventListener("keydown", function(e){
+  if (!$("#tab-flash").classList.contains("active")) return;
+  var tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "textarea" || tag === "select") return;
+  if (e.key === "ArrowRight"){ move(1); e.preventDefault(); }
+  else if (e.key === "ArrowLeft"){ move(-1); e.preventDefault(); }
+  else if ((e.key === " " || e.key === "Enter") && e.target !== card && tag !== "button"){ flip(); e.preventDefault(); }
+});
+buildDeck(false);
+
+/* ---------- Multiple-choice checks (study path + quiz) ---------- */
+function wireMcq(box, onFirst){
+  var btns = $$(".opts button", box), fb = $(".fb", box), ans = +box.dataset.ans, tried = false;
+  btns.forEach(function(b, i){
+    b.addEventListener("click", function(){
+      var right = i === ans;
+      if (!tried){ tried = true; if (onFirst) onFirst(right); }
+      b.classList.add(right ? "right" : "wrong");
+      fb.className = "fb " + (right ? "good" : "bad");
+      fb.textContent = (right ? "Correct. " + box.dataset.why : "Not quite. Try again.");
+      if (right) btns.forEach(function(x){ x.disabled = true; });
+      else b.disabled = true;
+    });
+  });
+}
+$$("#tab-path .mcq").forEach(function(b){ wireMcq(b); });
+
+/* ---------- Fill-in checks (alternatives separated by |, boxes by ;) ---------- */
+function norm(s){ return s.toLowerCase().replace(/[\s,{}]+/g, ""); }
+$$(".fill").forEach(function(box){
+  var inputs = $$("input", box), answers = box.dataset.ans.split(";"), fb = $(".fb", box);
+  function check(){
+    var ok = inputs.every(function(inp, i){
+      return answers[i].split("|").some(function(a){ return norm(inp.value) === norm(a); });
+    });
+    var blank = inputs.some(function(inp){ return !inp.value.trim(); });
+    fb.className = "fb " + (ok ? "good" : "bad");
+    fb.textContent = blank ? "Fill in every box first." : ok ? "Correct. " + box.dataset.why : "Not yet. Re-read the worked example above and trace it step by step, then try again.";
+  }
+  $("button", box).addEventListener("click", check);
+  inputs.forEach(function(inp){ inp.addEventListener("keydown", function(e){ if (e.key === "Enter") check(); }); });
+});
+
+/* ---------- Open responses ---------- */
+$$(".open").forEach(function(box){
+  var btn = $("button", box), model = $(".model", box);
+  btn.addEventListener("click", function(){
+    if (model.hidden && !$("textarea", box).value.trim()){
+      if (!confirm("Try writing your own answer first. Show the model answer anyway?")) return;
+    }
+    model.hidden = !model.hidden;
+    btn.textContent = model.hidden ? "Show model answer" : "Hide model answer";
+  });
+});
+
+/* ---------- Quiz ---------- */
+var QUIZ = [
+ {l:"Remember",q:"Which is NOT one of the three components of the STL?",o:["Containers","Base classes","Iterators","Algorithms"],a:1,w:"The STL's components are containers, iterators and algorithms; there is no common base class."},
+ {l:"Remember",q:"Which header do you include for `multiset`?",o:["<multiset>","<map>","<list>","<set>"],a:3,w:"set and multiset both live in <set>; map and multimap live in <map>."},
+ {l:"Understand",q:"What does `c.end()` refer to?",o:["The position one past the last element","The last element","The first element","A null pointer"],a:0,w:"end() is a stop marker after the last element; don't dereference it."},
+ {l:"Understand",q:"Which containers support random-access iterators?",o:["list and set","map and multimap","vector and deque","stack and queue"],a:2,w:"vector and deque are array-based, so they can jump to any position."},
+ {l:"Apply",q:"`deque<int> d = {5}; d.push_front(3); d.push_back(8); d.pop_front();` What is in d?",o:["3 5 8","5 8","3 5","8 5"],a:1,w:"{5} → 3 5 → 3 5 8, then pop_front() removes 3, leaving 5 8."},
+ {l:"Apply",q:"`vector<int> v = {2, 4, 6, 8}; auto p = v.begin() + 3; --p;` What is `*p`?",o:["4","8","2","6"],a:3,w:"begin() + 3 is index 3 (8); --p moves back to index 2 (6)."},
+ {l:"Apply",q:"Insert 7, 3, 7, 1 into a `set<int>`. What is `s.size()`?",o:["3","4","2","1"],a:0,w:"The duplicate 7 is rejected, leaving 1 3 7."},
+ {l:"Apply",q:"Push 5, 9, 2 into a `priority_queue<int>`. What does `top()` return?",o:["5","2","9","16"],a:2,w:"A priority_queue always keeps the largest value on top."},
+ {l:"Analyze",q:"`map<string,int> m; if (m[\"Kim\"] == 0) cout << m.size();` prints…",o:["1","0","Nothing; it doesn't compile","It crashes"],a:0,w:"m[\"Kim\"] inserts Kim with value 0, so the test is true and the size is now 1."},
+ {l:"Analyze",q:"Why does `sort(lst.begin(), lst.end());` fail for a `list<int> lst`?",o:["Lists can't be sorted","sort only works on arrays","Lists can't hold int","sort needs random-access iterators; list's are bidirectional"],a:3,w:"Use the member function lst.sort() instead."},
+ {l:"Analyze",q:"After pushing 1, 2, 3 into a queue and calling `pop()` once, what are `front()` and `back()`?",o:["1 and 3","2 and 3","1 and 2","3 and 2"],a:1,w:"pop() removes the oldest element (1) from the front, leaving 2 3."},
+ {l:"Evaluate",q:"A registrar needs to store each student's ID and name, with quick lookup by ID and IDs that are never repeated. Which is the BEST choice?",o:["vector<string>","multimap<int, string>","map<int, string>","stack<int>"],a:2,w:"map gives fast lookup by a unique key; multimap would allow duplicate IDs."}
+];
+var qScore = 0, qDone = 0;
+function renderQuiz(){
+  qScore = 0; qDone = 0;
+  var host = $("#quiz"); host.innerHTML = "";
+  QUIZ.forEach(function(item, n){
+    var box = document.createElement("div");
+    box.className = "mcq"; box.dataset.ans = item.a; box.dataset.why = item.w.replace(/`/g, "");
+    var tag = /Analyze|Evaluate|Create/.test(item.l) ? "tag hi" : "tag";
+    box.innerHTML = '<p class="q">' + (n + 1) + ". " + fmt(item.q) + ' <span class="' + tag + '">' + item.l + "</span></p>" +
+      '<div class="opts">' + item.o.map(function(o){ return '<button type="button">' + fmt(o) + "</button>"; }).join("") + "</div>" +
+      '<p class="fb" aria-live="polite"></p>';
+    host.appendChild(box);
+    wireMcq(box, function(right){ qDone++; if (right) qScore++; updateQ(); });
+  });
+  updateQ();
+}
+function updateQ(){
+  var msg = "Score (first attempts): " + qScore + " / " + QUIZ.length;
+  if (qDone === QUIZ.length) msg += qScore >= 10 ? " · Excellent work!" : qScore >= 7 ? " · Good. Review the flashcards for the ones you missed." : " · Revisit the Study Path, then retake the quiz.";
+  $("#qScore").textContent = msg;
+}
+$("#qReset").addEventListener("click", function(){ renderQuiz(); window.scrollTo(0, $("#tab-quiz").offsetTop); });
+renderQuiz();
+
+/* ---------- Matching ---------- */
+var PAIRS = [
+ ["vector","Array-based; direct access to any element; quick insert/delete at the end"],
+ ["deque","Array-based; direct access; quick insert/delete at both the front and the end"],
+ ["list","Linked list; rapid insert/delete anywhere; bidirectional iterators"],
+ ["set","Sorted values for direct lookup; no duplicates"],
+ ["multiset","Sorted values; duplicates allowed"],
+ ["map","Key/value pairs with unique keys and quick lookup by key"],
+ ["multimap","Key/value pairs where keys may be duplicated"],
+ ["stack","Last-in, first-out adapter: push, top, pop"],
+ ["queue","First-in, first-out adapter: push at the back, front, pop from the front"],
+ ["priority_queue","Adapter that always removes the highest-priority (largest) element first"]
+];
+var selTerm = null, matched = 0, misses = 0;
+function renderMatch(){
+  selTerm = null; matched = 0; misses = 0;
+  var T = $("#mTerms"), D = $("#mDefs"); T.innerHTML = ""; D.innerHTML = "";
+  shuffle(PAIRS.map(function(_, i){ return i; })).forEach(function(i){
+    var b = document.createElement("button"); b.type = "button"; b.innerHTML = "<code>" + esc(PAIRS[i][0]) + "</code>"; b.dataset.i = i; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function(){
+      if (b.classList.contains("done")) return;
+      $$("#mTerms button").forEach(function(x){ x.classList.remove("sel"); x.setAttribute("aria-pressed", "false"); });
+      selTerm = b; b.classList.add("sel"); b.setAttribute("aria-pressed", "true");
+    });
+    T.appendChild(b);
+  });
+  shuffle(PAIRS.map(function(_, i){ return i; })).forEach(function(i){
+    var b = document.createElement("button"); b.type = "button"; b.textContent = PAIRS[i][1]; b.dataset.i = i;
+    b.addEventListener("click", function(){
+      if (b.classList.contains("done")) return;
+      if (!selTerm){ $("#mScore").textContent = "Select a container on the left first."; return; }
+      if (selTerm.dataset.i === b.dataset.i){
+        [selTerm, b].forEach(function(x){ x.classList.remove("sel"); x.classList.add("done"); x.disabled = true; });
+        selTerm = null; matched++;
+      } else {
+        misses++; b.classList.add("shake");
+        setTimeout(function(){ b.classList.remove("shake"); }, 600);
+      }
+      updateM();
+    });
+    D.appendChild(b);
+  });
+  updateM();
+}
+function updateM(){
+  $("#mScore").textContent = matched === PAIRS.length
+    ? "All " + PAIRS.length + " pairs matched with " + misses + (misses === 1 ? " miss." : " misses.") + (misses === 0 ? " Perfect!" : "")
+    : "Matched " + matched + " of " + PAIRS.length + " · Misses: " + misses;
+}
+$("#mReset").addEventListener("click", renderMatch);
+renderMatch();
+})();
+</script>
+</body>
+</html>
