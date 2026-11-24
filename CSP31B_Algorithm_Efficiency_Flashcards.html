@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algorithm Efficiency Flashcards</title>
+<style>
+:root{
+  --user-primary:#1a4480;
+  --user-accent:#c8102e;
+  --user-background:#ffffff;
+  --ink:#1b1f24;
+  --muted:#5a6270;
+  --line:#d6dce6;
+  --soft:#eef3fa;
+  --ok:#1e7b34;
+  --ok-soft:#e7f4ea;
+  --bad-soft:#fbe9ec;
+  --warn-soft:#fff6dc;
+  --code:#f4f6f9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--user-background);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:var(--user-primary);color:#fff;padding:20px 16px 0}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+header .wrap{padding:0}
+header p{margin:0;opacity:.9;font-size:.95rem}
+header h1{margin:4px 0 14px;font-size:1.6rem;line-height:1.25}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:transparent;color:#fff;border:0;border-bottom:4px solid transparent;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
+nav button[aria-selected="true"]{border-bottom-color:var(--user-accent);background:rgba(255,255,255,.12)}
+nav button:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+main{padding:24px 0 48px}
+section.panel{display:none}
+section.panel.active{display:block}
+h2{color:var(--user-primary);font-size:1.4rem;margin:0 0 8px}
+h3{color:var(--user-primary);font-size:1.15rem;margin:24px 0 8px}
+.lead{color:var(--muted);margin-top:0}
+.unit{border:1px solid var(--line);border-radius:10px;padding:18px 18px 8px;margin:0 0 22px}
+.unit>h2{line-height:1.4;overflow-wrap:anywhere}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--user-primary);color:#fff;font-size:.95rem;vertical-align:middle;margin-right:8px}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--user-primary);vertical-align:middle}
+.tag.hi{background:var(--bad-soft);color:var(--user-accent)}
+pre,code{font-family:Consolas,"Cascadia Mono",Menlo,monospace}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-size:.88rem;line-height:1.45;margin:8px 0 12px}
+code{background:var(--code);padding:1px 4px;border-radius:4px;font-size:.92em}
+pre code{background:none;padding:0}
+.callout{border-left:5px solid var(--user-accent);background:var(--bad-soft);padding:10px 14px;border-radius:6px;margin:12px 0}
+.callout.example{border-color:var(--user-primary);background:var(--soft)}
+.callout.world{border-color:#b7791f;background:var(--warn-soft)}
+.callout strong:first-child{display:block;margin-bottom:2px}
+ol.steps{padding-left:22px}
+ol.steps li{margin-bottom:6px}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:8px 0 12px;font-size:.92rem}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+.selfcheck{background:#fafbfd;border:1px dashed var(--user-primary);border-radius:10px;padding:12px 14px;margin:20px 0 12px}
+.selfcheck>h3{margin-top:0}
+.mcq,.fill,.open{margin:12px 0 16px}
+.mcq .q,.fill .q,.open .q{font-weight:600;margin:0 0 6px}
+.opts{display:grid;gap:6px}
+.opts button,.btn{font:inherit;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+.opts button:hover:not(:disabled),.btn:hover{border-color:var(--user-primary)}
+.opts button:focus-visible,.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--user-primary);outline-offset:2px}
+.opts button.right{background:var(--ok-soft);border-color:var(--ok)}
+.opts button.wrong{background:var(--bad-soft);border-color:var(--user-accent)}
+.opts button:disabled{cursor:default;color:var(--ink)}
+.btn{text-align:center;display:inline-block}
+.btn.primary{background:var(--user-primary);color:#fff;border-color:var(--user-primary)}
+.btn.accent{background:var(--user-accent);color:#fff;border-color:var(--user-accent)}
+.fb{margin:6px 0 0;min-height:1em}
+.fb.good{color:var(--ok)}
+.fb.bad{color:var(--user-accent)}
+.fill input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;width:160px;max-width:100%;margin-right:6px}
+.fill label{display:block;margin:6px 0}
+textarea{width:100%;min-height:120px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.model{border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-top:8px;background:var(--soft)}
+.model ul{margin:6px 0}
+.ladder{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0}
+.ladder span{border:2px solid var(--user-primary);border-radius:8px;padding:4px 10px;font:14px/1.4 Consolas,monospace;background:#fff}
+.ladder span.hot{border-color:var(--user-accent);color:var(--user-accent);font-weight:700}
+.ladder i{color:var(--muted);font-style:normal}
+/* flashcards */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 14px}
+.toolbar select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.cardwrap{perspective:1200px;max-width:680px;margin:0 auto}
+.card{position:relative;width:100%;min-height:260px;cursor:pointer;transform-style:preserve-3d;transition:transform .5s;border:0;background:none;padding:0;font:inherit;color:inherit;display:block}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:22px;display:flex;flex-direction:column;justify-content:center;border:2px solid var(--user-primary);background:#fff;box-shadow:0 4px 14px rgba(26,68,128,.12);text-align:left}
+.face.back{transform:rotateY(180deg);background:var(--soft);border-color:var(--user-accent)}
+.face .meta{position:absolute;top:12px;left:18px;right:18px;display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+.face .txt{font-size:1.1rem}
+.face .hint{position:absolute;bottom:10px;right:18px;font-size:.78rem;color:var(--muted)}
+.cardnav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:14px 0}
+.progress{text-align:center;color:var(--muted);font-size:.92rem}
+.bar{height:8px;background:var(--soft);border-radius:999px;overflow:hidden;max-width:680px;margin:6px auto 0}
+.bar span{display:block;height:100%;background:var(--user-accent);width:0;transition:width .3s}
+/* matching */
+.match{display:grid;grid-template-columns:1fr 1.6fr;gap:12px}
+.match .col{display:grid;gap:8px;align-content:start}
+.match button{font:inherit;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;color:var(--ink)}
+.match button.sel{border-color:var(--user-primary);box-shadow:0 0 0 3px rgba(26,68,128,.25)}
+.match button.done{background:var(--ok-soft);border-color:var(--ok);cursor:default}
+.match button.shake{background:var(--bad-soft);border-color:var(--user-accent)}
+.score{font-weight:700;color:var(--user-primary)}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;padding:14px 0 24px}
+@media (max-width:640px){
+  header h1{font-size:1.3rem}
+  .match{grid-template-columns:1fr}
+  .card{min-height:320px}
+  .face .txt{font-size:1rem}
+}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p>CSP31B &ndash; C++ Programming II &middot; San Joaquin Delta College</p>
+    <h1>Developing Efficient Algorithms (Chapter 18)</h1>
+    <nav role="tablist" aria-label="Study modes">
+      <button role="tab" aria-selected="true" aria-controls="tab-flash" id="t-flash" data-tab="flash">Flashcards</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-path" id="t-path" data-tab="path">Study Path</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-quiz" id="t-quiz" data-tab="quiz">Quiz</button>
+      <button role="tab" aria-selected="false" aria-controls="tab-match" id="t-match" data-tab="match">Matching</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ================= FLASHCARDS ================= -->
+<section class="panel active" id="tab-flash" role="tabpanel" aria-labelledby="t-flash">
+  <h2>Flashcards</h2>
+  <p class="lead">Cards go from <b>Remember</b> to <b>Analyze/Evaluate</b> within each topic. Click a card (or press <b>Space</b>) to flip it; use <b>&larr; &rarr;</b> to move. Mark cards you know so you can focus on the rest.</p>
+  <div class="toolbar">
+    <label>Topic
+      <select id="fTopic">
+        <option value="0">All topics</option>
+        <option value="1">1. Measuring efficiency</option>
+        <option value="2">2. Simplifying Big O</option>
+        <option value="3">3. Counting loops</option>
+        <option value="4">4. Logs, sorts &amp; recurrences</option>
+        <option value="5">5. Designing better algorithms</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="fHide"> Hide cards I know</label>
+    <button class="btn" id="fShuffle" type="button">Shuffle</button>
+    <button class="btn" id="fReset" type="button">Reset known</button>
+  </div>
+  <div class="cardwrap">
+    <button class="card" id="card" type="button" aria-label="Flashcard, press to flip">
+      <div class="face front"><div class="meta"><span id="fTopicLbl"></span><span id="fLevel"></span></div><div class="txt" id="fFront"></div><div class="hint">Click to flip</div></div>
+      <div class="face back"><div class="meta"><span>Answer</span><span></span></div><div class="txt" id="fBack"></div><div class="hint">Click to flip back</div></div>
+    </button>
+  </div>
+  <div class="cardnav">
+    <button class="btn" id="fPrev" type="button">&larr; Previous</button>
+    <button class="btn" id="fFlip" type="button">Flip</button>
+    <button class="btn primary" id="fKnow" type="button">I know this &#10003;</button>
+    <button class="btn" id="fNext" type="button">Next &rarr;</button>
+  </div>
+  <p class="progress" id="fProg" aria-live="polite"></p>
+  <div class="bar" aria-hidden="true"><span id="fBar"></span></div>
+</section>
+
+<!-- ================= STUDY PATH ================= -->
+<section class="panel" id="tab-path" role="tabpanel" aria-labelledby="t-path">
+  <h2>Study Path</h2>
+  <p class="lead">Work through the five units in order. Each unit builds on the one before and ends with a short self-check. Lower-tier tasks are tagged <span class="tag">Remember / Understand / Apply</span>; higher-tier tasks are tagged <span class="tag hi">Analyze / Evaluate / Create</span>.</p>
+
+  <!-- Unit 1 -->
+  <div class="unit">
+    <h2><span class="num">1</span> Measuring efficiency: growth rate and Big O</h2>
+    <p>Which is better, linear search or binary search? You could run both and time them, but there are two problems:</p>
+    <ul>
+      <li><b>System load:</b> many tasks run on a computer at once, so the same program can take different times on different runs.</li>
+      <li><b>Specific input:</b> if the key happens to be the first element, linear search beats binary search, even though binary search is better overall.</li>
+    </ul>
+    <p>Instead, we analyze the <b>growth rate</b>: how fast the work grows as the input size <i>n</i> grows. This is independent of the computer and of any one input. <b>Big O notation</b> (&ldquo;order of magnitude&rdquo;) names that growth rate.</p>
+<pre><code>int linearSearch(const int list[], int n, int key) {
+    for (int i = 0; i &lt; n; i++)
+        if (list[i] == key)
+            return i;
+    return -1;
+}</code></pre>
+    <p>If the key isn&rsquo;t in the array, linear search makes <b>n</b> comparisons; if it is, it makes <b>n/2</b> on average. Double the array and you double the comparisons, so it grows at a linear rate: <b>O(n)</b>, &ldquo;order of n.&rdquo;</p>
+    <div class="tblwrap"><table>
+      <tr><th>Case</th><th>Meaning</th><th>Linear search</th></tr>
+      <tr><td>Best case</td><td>Input that gives the shortest time</td><td>Key is first: 1 comparison</td></tr>
+      <tr><td>Worst case</td><td>Input that gives the longest time; the algorithm is never slower than this</td><td>Key is absent: n comparisons</td></tr>
+      <tr><td>Average case</td><td>Average over all inputs of size n; ideal but hard to compute</td><td>About n/2 comparisons</td></tr>
+    </table></div>
+    <p>Worst-case analysis is easier to obtain and guarantees an upper limit, so it is the one we usually do.</p>
+    <div class="callout">
+      <strong>Misconception: &ldquo;Big O tells you how many seconds a program takes.&rdquo;</strong>
+      Wrong. Big O describes how the work <em>grows</em> as n grows, not the actual time on a particular machine. An O(n) program may take 2 ms on a fast laptop and 9 ms on a slow one. What Big O promises is that doubling n roughly doubles the time on <em>both</em> machines.
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 1 <span class="tag">Remember / Understand</span></h3>
+      <div class="mcq" data-ans="2" data-why="Timing depends on the machine's load and on the particular input, so it can't fairly compare algorithms.">
+        <p class="q">1. Why don&rsquo;t we compare algorithms just by timing them?</p>
+        <div class="opts"><button type="button">C++ can&rsquo;t measure time</button><button type="button">Timing is always too slow</button><button type="button">Results depend on system load and on the specific input</button><button type="button">Big O is more accurate than a clock</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="0" data-why="The worst case is an upper limit: the algorithm will never be slower than that.">
+        <p class="q">2. Why is worst-case analysis the most common?</p>
+        <div class="opts"><button type="button">It is easier to obtain and guarantees the algorithm is never slower</button><button type="button">It is the input that happens most often</button><button type="button">It always equals the best case</button><button type="button">Average-case analysis is impossible</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 2 -->
+  <div class="unit">
+    <h2><span class="num">2</span> Simplifying: ignore constants and non-dominating terms</h2>
+    <p>Algorithm analysis is about <b>large</b> inputs. Two rules let us reduce any time function T(n) to its Big O:</p>
+    <ol class="steps">
+      <li><b>Ignore multiplicative constants.</b> n/2, n and 100n all grow at the same rate: O(n/2) = O(n) = O(100n) = O(n).</li>
+      <li><b>Ignore non-dominating terms.</b> Finding the maximum of n elements takes n &minus; 1 comparisons. As n grows, the n part dominates, so the &minus;1 is dropped: O(n).</li>
+    </ol>
+    <div class="callout example">
+      <strong>Worked example: simplify T(n) = 3n&sup2; + 5n + 100 <span class="tag">Apply</span></strong>
+      <ol class="steps">
+        <li>List the terms: 3n&sup2;, 5n and 100.</li>
+        <li>Check which term dominates for a large n, such as n = 1,000: 3n&sup2; = 3,000,000, while 5n + 100 = 5,100. The n&sup2; term is more than 99.8% of the total.</li>
+        <li>Drop the non-dominating terms: T(n) &asymp; 3n&sup2;.</li>
+        <li>Drop the multiplicative constant 3: <b>T(n) = O(n&sup2;)</b>.</li>
+      </ol>
+      Reasoning rule: keep only the fastest-growing term, then remove its coefficient.
+    </div>
+    <div class="fill" data-ans="O(n^3)|O(n³)|n^3|n³" data-why="n³/2 dominates 1000n² for large n; drop the 1/2 and you get O(n³).">
+      <p class="q">Your turn <span class="tag">Apply</span>: Simplify T(n) = n&sup3;/2 + 1000n&sup2; + 7.</p>
+      <label>Big O (type it as O(n^3), for example): <input type="text" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+    <h3>Useful summations</h3>
+    <ul>
+      <li>1 + 2 + 3 + &hellip; + n = n(n + 1)/2 &rarr; O(n&sup2;)</li>
+      <li>1 + 2 + 4 + &hellip; + 2<sup>n</sup> = 2<sup>n+1</sup> &minus; 1 &rarr; O(2<sup>n</sup>)</li>
+    </ul>
+    <div class="callout">
+      <strong>Misconception: &ldquo;An algorithm that takes 100n steps is O(100n), so it&rsquo;s worse than an O(n&sup2;) algorithm.&rdquo;</strong>
+      Two mistakes. First, 100n is simply O(n); constants are dropped. Second, for large n, linear growth always wins: at n = 1,000,000, 100n = 10<sup>8</sup> while n&sup2; = 10<sup>12</sup>. The constant only matters for small n (here, below n = 100), and analysis is about large n.
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 2 <span class="tag">Understand / Apply</span></h3>
+      <div class="mcq" data-ans="3" data-why="Drop 4n and 20, then drop the constant 2: O(n²).">
+        <p class="q">1. T(n) = 2n&sup2; + 4n + 20 is&hellip;</p>
+        <div class="opts"><button type="button">O(2n&sup2;)</button><button type="button">O(n)</button><button type="button">O(n&sup2; + n)</button><button type="button">O(n&sup2;)</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="1" data-why="1 + 2 + ... + n = n(n+1)/2 = n²/2 + n/2, which is O(n²).">
+        <p class="q">2. 1 + 2 + 3 + &hellip; + n equals n(n + 1)/2. What is its Big O?</p>
+        <div class="opts"><button type="button">O(n)</button><button type="button">O(n&sup2;)</button><button type="button">O(log n)</button><button type="button">O(2<sup>n</sup>)</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 3 -->
+  <div class="unit">
+    <h2><span class="num">3</span> Counting loops: repetition, sequence and selection</h2>
+    <p>Each loop body below takes a constant time <i>c</i>. Count how many times it runs, then simplify.</p>
+    <div class="tblwrap"><table>
+      <tr><th>Pattern</th><th>Code</th><th>T(n)</th><th>Big O</th></tr>
+      <tr><td>Simple loop</td><td><code>for (i = 1; i &lt;= n; i++) k = k + 5;</code></td><td>cn</td><td>O(n)</td></tr>
+      <tr><td>Nested, both to n</td><td><code>for (i = 1; i &lt;= n; i++)<br>&nbsp;&nbsp;for (j = 1; j &lt;= n; j++) ...</code></td><td>cn&sup2;</td><td>O(n&sup2;)</td></tr>
+      <tr><td>Nested, inner to i</td><td><code>for (i = 1; i &lt;= n; i++)<br>&nbsp;&nbsp;for (j = 1; j &lt;= i; j++) ...</code></td><td>c + 2c + &hellip; + nc = cn(n+1)/2</td><td>O(n&sup2;)</td></tr>
+      <tr><td>Nested, inner fixed at 20</td><td><code>for (i = 1; i &lt;= n; i++)<br>&nbsp;&nbsp;for (j = 1; j &lt;= 20; j++) ...</code></td><td>20cn</td><td>O(n)</td></tr>
+      <tr><td>Sequence</td><td>a 10-step loop, then the loop above</td><td>10c + 20cn</td><td>O(n)</td></tr>
+      <tr><td>Selection</td><td><code>if (contains(list, e)) cout &lt;&lt; e;<br>else for (int t : list) cout &lt;&lt; t;</code></td><td>test time + worst branch = O(n) + O(n)</td><td>O(n)</td></tr>
+      <tr><td>Constant</td><td><code>x = list[i];</code></td><td>c</td><td>O(1)</td></tr>
+    </table></div>
+    <div class="callout example">
+      <strong>Worked example: the &ldquo;inner to i&rdquo; loop with n = 4 <span class="tag">Apply</span></strong>
+<pre><code>for (int i = 1; i &lt;= n; i++)
+    for (int j = 1; j &lt;= i; j++)
+        k = k + i + j;</code></pre>
+      <ol class="steps">
+        <li>i = 1: j runs 1 time. i = 2: 2 times. i = 3: 3 times. i = 4: 4 times.</li>
+        <li>Total body runs = 1 + 2 + 3 + 4 = <b>10</b>. Check with the formula: n(n + 1)/2 = 4 &middot; 5 / 2 = 10. &#10003;</li>
+        <li>In general T(n) = cn(n + 1)/2 = (c/2)n&sup2; + (c/2)n.</li>
+        <li>Drop the non-dominating (c/2)n, then drop the constant c/2: <b>O(n&sup2;)</b>.</li>
+      </ol>
+      Reasoning rule: when the inner loop&rsquo;s limit depends on the outer variable, add up the inner counts with a summation.
+    </div>
+    <div class="fill" data-ans="55;O(n^2)|O(n²)|n^2|n²" data-why="1 + 2 + ... + 10 = 10 · 11 / 2 = 55. The formula n(n+1)/2 is O(n²).">
+      <p class="q">Your turn <span class="tag">Apply</span>: For the same loop with n = 10, how many times does the body run, and what is the Big O?</p>
+      <label>Body runs: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <label>Big O: <input type="text" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+    <div class="callout">
+      <strong>Misconception: &ldquo;Two nested loops always mean O(n&sup2;).&rdquo;</strong>
+      Wrong. What matters is how many times each loop runs <em>as a function of n</em>. If the inner loop always runs 20 times, the total is 20n, which is O(n). Nested loops are O(n&sup2;) only when <b>both</b> loop counts grow with n.
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 3 <span class="tag">Apply / Analyze</span></h3>
+      <div class="mcq" data-ans="0" data-why="The inner loop runs a constant 50 times per outer pass, so T(n) = 50cn = O(n).">
+        <p class="q">1. <code>for (i = 0; i &lt; n; i++) for (j = 0; j &lt; 50; j++) sum++;</code> is&hellip;</p>
+        <div class="opts"><button type="button">O(n)</button><button type="button">O(n&sup2;)</button><button type="button">O(50)</button><button type="button">O(1)</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="2" data-why="For a sequence, add the parts: O(n) + O(n²) = O(n²), because the n² part dominates.">
+        <p class="q">2. A function runs a simple O(n) loop, then an O(n&sup2;) nested loop. Its total time is&hellip;</p>
+        <div class="opts"><button type="button">O(n)</button><button type="button">O(n&sup3;)</button><button type="button">O(n&sup2;)</button><button type="button">O(n + 2)</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 4 -->
+  <div class="unit">
+    <h2><span class="num">4</span> Logarithms, sorting and recurrence relations</h2>
+    <p><b>Binary search</b> works on a <b>sorted</b> array. Each step does a constant amount of work <i>c</i> and throws away half of the remaining elements:</p>
+    <p style="text-align:center"><code>T(n) = T(n/2) + c</code></p>
+    <div class="callout example">
+      <strong>Worked example: unrolling the binary search recurrence <span class="tag">Apply</span></strong>
+      <ol class="steps">
+        <li>Assume n is a power of 2, n = 2<sup>k</sup>, so k = log n.</li>
+        <li>T(n) = T(n/2) + c = T(n/4) + 2c = T(n/8) + 3c = &hellip; = T(n/2<sup>k</sup>) + kc.</li>
+        <li>n/2<sup>k</sup> = 1, so T(n) = T(1) + c &middot; log n.</li>
+        <li>Drop the constants: <b>O(log n)</b>.</li>
+        <li>Concrete check, n = 1,024: 1024 &rarr; 512 &rarr; 256 &rarr; 128 &rarr; 64 &rarr; 32 &rarr; 16 &rarr; 8 &rarr; 4 &rarr; 2 &rarr; 1 is <b>10 halvings</b>, and log<sub>2</sub> 1024 = 10.</li>
+      </ol>
+      The base of the log doesn&rsquo;t change the growth rate, so it is left out. Squaring the input size only doubles the time: log(n&sup2;) = 2 log n.
+    </div>
+    <div class="fill" data-ans="20;1048576|1,048,576" data-why="2^20 = 1,048,576, so binary search needs about 20 halvings, while linear search may need all 1,048,576 comparisons.">
+      <p class="q">Your turn <span class="tag">Apply</span>: A sorted array has n = 1,048,576 (2<sup>20</sup>) elements and the key is absent.</p>
+      <label>Binary search halvings (about): <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <label>Linear search comparisons: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+    <div class="callout world">
+      <strong>Real-world application: looking up a student record</strong>
+      Delta&rsquo;s student system stores about 30,000 records sorted by student ID. A linear search for an ID that isn&rsquo;t there checks all 30,000 records. A binary search needs at most about 15 comparisons (2<sup>15</sup> = 32,768). If the college doubles in size, linear search doubles to 60,000 checks, while binary search adds just <b>one</b> more comparison. This is why databases keep data sorted or indexed.
+    </div>
+    <h3>Selection sort and Towers of Hanoi</h3>
+    <p><b>Selection sort</b> finds the largest number and places it last, then repeats on the rest: (n &minus; 1) + (n &minus; 2) + &hellip; + 1 comparisons, so T(n) = T(n &minus; 1) + O(n) = <b>O(n&sup2;)</b>. Doubling the input <b>quadruples</b> the time.</p>
+    <p><b>Towers of Hanoi</b> moves n &minus; 1 disks out of the way, moves disk n, then moves the n &minus; 1 disks back: T(n) = 2T(n &minus; 1) + c = <b>O(2<sup>n</sup>)</b>. It takes 2<sup>n</sup> &minus; 1 moves.</p>
+    <div class="tblwrap"><table>
+      <tr><th>Recurrence</th><th>Result</th><th>Example</th></tr>
+      <tr><td>T(n) = T(n/2) + O(1)</td><td>O(log n)</td><td>Binary search, Euclid&rsquo;s GCD</td></tr>
+      <tr><td>T(n) = T(n &minus; 1) + O(1)</td><td>O(n)</td><td>Linear search</td></tr>
+      <tr><td>T(n) = 2T(n/2) + O(n)</td><td>O(n log n)</td><td>Merge sort</td></tr>
+      <tr><td>T(n) = T(n &minus; 1) + O(n)</td><td>O(n&sup2;)</td><td>Selection sort, insertion sort</td></tr>
+      <tr><td>T(n) = 2T(n &minus; 1) + O(1)</td><td>O(2<sup>n</sup>)</td><td>Towers of Hanoi</td></tr>
+      <tr><td>T(n) = T(n &minus; 1) + T(n &minus; 2) + O(1)</td><td>O(2<sup>n</sup>)</td><td>Recursive Fibonacci</td></tr>
+    </table></div>
+    <p><b>Common growth functions, slowest-growing to fastest:</b></p>
+    <div class="ladder" aria-label="Growth ranking">
+      <span>O(1)</span><i>&lt;</i><span>O(log n)</span><i>&lt;</i><span>O(n)</span><i>&lt;</i><span>O(n log n)</span><i>&lt;</i><span>O(n&sup2;)</span><i>&lt;</i><span>O(n&sup3;)</span><i>&lt;</i><span class="hot">O(2<sup>n</sup>)</span>
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 4 <span class="tag">Apply / Analyze</span></h3>
+      <div class="mcq" data-ans="3" data-why="Selection sort is O(n²): (2n)² = 4n², so the time is about 4 × 2 s = 8 s.">
+        <p class="q">1. Selection sort takes 2 seconds for 10,000 numbers. About how long for 20,000?</p>
+        <div class="opts"><button type="button">2 seconds</button><button type="button">4 seconds</button><button type="button">3 seconds</button><button type="button">8 seconds</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="1" data-why="Each call makes two calls on n − 1, doubling the work at each level: O(2ⁿ).">
+        <p class="q">2. T(n) = 2T(n &minus; 1) + c (Towers of Hanoi) grows as&hellip;</p>
+        <div class="opts"><button type="button">O(n&sup2;)</button><button type="button">O(2<sup>n</sup>)</button><button type="button">O(n log n)</button><button type="button">O(log n)</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit 5 -->
+  <div class="unit">
+    <h2><span class="num">5</span> Designing better algorithms</h2>
+    <h3>Fibonacci: from O(2<sup>n</sup>) to O(n) with dynamic programming</h3>
+    <p>The series is 0 1 1 2 3 5 8 13 21 34 55 89&hellip; (indices 0, 1, 2, &hellip;). The recursive version is short but slow:</p>
+<pre><code>long fib(long index) {
+    if (index == 0) return 0;                 // base case
+    else if (index == 1) return 1;            // base case
+    else return fib(index - 1) + fib(index - 2);
+}</code></pre>
+    <p>fib(index &minus; 1) and fib(index &minus; 2) recompute the same values again and again (the subproblems <b>overlap</b>), so T(n) = T(n &minus; 1) + T(n &minus; 2) + c = <b>O(2<sup>n</sup>)</b>. For example, fib(5) makes 15 calls and fib(30) makes more than 2.6 million.</p>
+    <p><b>Dynamic programming</b> solves each subproblem <b>once</b> and stores the result. The iterative version keeps only the last values:</p>
+<pre><code>long fib(int n) {
+    long f0 = 0, f1 = 1, f2 = 1;
+    if (n == 0) return f0;
+    if (n == 1) return f1;
+    if (n == 2) return f2;
+    for (int i = 3; i &lt;= n; i++) {
+        f0 = f1;
+        f1 = f2;
+        f2 = f0 + f1;
+    }
+    return f2;
+}</code></pre>
+    <div class="callout example">
+      <strong>Worked example: trace <code>fib(6)</code> with the iterative version <span class="tag">Apply</span></strong>
+      <div class="tblwrap"><table>
+        <tr><th>Step</th><th>f0</th><th>f1</th><th>f2</th><th>Reasoning</th></tr>
+        <tr><td>start</td><td>0</td><td>1</td><td>1</td><td>fib(0), fib(1), fib(2)</td></tr>
+        <tr><td>i = 3</td><td>1</td><td>1</td><td>2</td><td>Slide the window right one place; f2 = 1 + 1</td></tr>
+        <tr><td>i = 4</td><td>1</td><td>2</td><td>3</td><td>f2 = 1 + 2</td></tr>
+        <tr><td>i = 5</td><td>2</td><td>3</td><td>5</td><td>f2 = 2 + 3</td></tr>
+        <tr><td>i = 6</td><td>3</td><td>5</td><td>8</td><td>f2 = 3 + 5. Return <b>8</b>.</td></tr>
+      </table></div>
+      The loop runs n &minus; 2 times with constant work each time, so this version is <b>O(n)</b>, a tremendous improvement over O(2<sup>n</sup>).
+    </div>
+    <div class="fill" data-ans="34;7" data-why="Continue the table: i=7 → 13, i=8 → 21, i=9 → 34. The loop runs for i = 3 through 9, which is 7 times.">
+      <p class="q">Your turn <span class="tag">Apply</span>: trace <code>fib(9)</code> with the iterative version.</p>
+      <label>Return value: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <label>Number of loop iterations: <input type="text" inputmode="numeric" autocomplete="off"></label>
+      <button class="btn" type="button">Check</button><p class="fb" aria-live="polite"></p>
+    </div>
+
+    <h3>GCD: from O(n) to O(log n) with Euclid&rsquo;s algorithm</h3>
+    <p>The brute-force versions try every candidate k from 2 up to n (or from n down), which is <b>O(n)</b>; starting at n/2 doesn&rsquo;t change that. Euclid&rsquo;s algorithm: if m % n is 0, gcd(m, n) is n; otherwise gcd(m, n) = gcd(n, m % n).</p>
+<pre><code>int gcd(int m, int n) {
+    if (m % n == 0)
+        return n;
+    else
+        return gcd(n, m % n);
+}</code></pre>
+    <p>The remainder shrinks quickly (it is less than half of m after two steps), so Euclid&rsquo;s algorithm is <b>O(log n)</b>. Example: gcd(48, 18) &rarr; 48 % 18 = 12 &rarr; gcd(18, 12) &rarr; 18 % 12 = 6 &rarr; gcd(12, 6) &rarr; 12 % 6 = 0 &rarr; <b>6</b>.</p>
+
+    <h3>Other strategies</h3>
+    <ul>
+      <li><b>Prime numbers:</b> brute force checks every possible divisor; checking divisors only up to &radic;n, then only <em>prime</em> divisors up to &radic;n, and finally the <b>Sieve of Eratosthenes</b> each cut the work further.</li>
+      <li><b>Divide-and-conquer:</b> split the problem into smaller subproblems that <b>don&rsquo;t overlap</b>, solve them (often recursively), and combine the answers. Example: closest pair of points in O(n log n).</li>
+      <li><b>Backtracking:</b> build a candidate step by step and <b>abandon it</b> as soon as it can&rsquo;t lead to a valid solution, then try the next one. Example: Eight Queens.</li>
+      <li><b>Convex hull</b> (the smallest convex polygon enclosing a set of points): gift-wrapping is O(hn), where h is the number of hull points, so O(n&sup2;) in the worst case; Graham&rsquo;s algorithm sorts the points by angle first and runs in O(n log n).</li>
+      <li><b>Practical considerations:</b> Big O is a theoretical estimate. Two algorithms with the same Big O are not necessarily equally fast in practice.</li>
+    </ul>
+    <div class="callout">
+      <strong>Misconception: &ldquo;Recursion is always the efficient choice, because the code is shorter.&rdquo;</strong>
+      Short code is not fast code. Recursive Fibonacci is 5 lines but O(2<sup>n</sup>), because overlapping subproblems are recomputed. The longer iterative (dynamic programming) version is O(n). Recursion is efficient when the subproblems <em>don&rsquo;t</em> overlap (divide-and-conquer) or when results are stored and reused.
+    </div>
+
+    <h3>Higher-order challenges</h3>
+    <div class="open">
+      <p class="q">Analyze <span class="tag hi">Analyze</span>: Dynamic programming and divide-and-conquer both break a problem into subproblems. Compare them, and explain why plain recursion suits divide-and-conquer but not Fibonacci.</p>
+      <textarea aria-label="Your comparison"></textarea>
+      <button class="btn" type="button">Show model answer</button>
+      <div class="model" hidden>
+        <p><b>Model answer:</b> Both split a problem into smaller ones and combine their solutions. In <b>divide-and-conquer</b>, the subproblems don&rsquo;t overlap (for example, the left and right halves in merge sort), so each piece is solved exactly once and recursion wastes nothing. In Fibonacci the subproblems <b>overlap</b>: fib(n &minus; 1) and fib(n &minus; 2) both need fib(n &minus; 3), and so on, so plain recursion recomputes the same values exponentially many times, giving O(2<sup>n</sup>). <b>Dynamic programming</b> fixes this by solving each subproblem once and storing the result, giving O(n).</p>
+        <p><b>Check your answer:</b></p>
+        <ul><li>Did you state what both approaches have in common?</li><li>Did you name overlapping vs. non-overlapping subproblems as the key difference?</li><li>Did you connect it to the Big O of each Fibonacci version?</li></ul>
+      </div>
+    </div>
+    <div class="open">
+      <p class="q">Evaluate <span class="tag hi">Evaluate</span>: A teammate says, &ldquo;Algorithm A is O(n log n) and B is O(n&sup2;), so A is always faster. We should always use A.&rdquo; Do you agree? Justify your answer using the ideas from this chapter.</p>
+      <textarea aria-label="Your evaluation"></textarea>
+      <button class="btn" type="button">Show model answer</button>
+      <div class="model" hidden>
+        <p><b>Model answer:</b> Partly. For <b>large</b> n, A will be faster, because n log n grows much more slowly than n&sup2;, and Big O is about large inputs. But &ldquo;always&rdquo; is too strong:</p>
+        <ul>
+          <li>Big O hides constants and smaller terms. If A does 1000 &middot; n log n steps and B does n&sup2;, B is faster until n is roughly 14,000.</li>
+          <li>Big O usually describes the worst case. On typical or nearly sorted input, B might do far less work.</li>
+          <li>The slides&rsquo; practical considerations: algorithms with the same (or better) complexity aren&rsquo;t necessarily better in practice; measure with realistic data sizes.</li>
+        </ul>
+        <p><b>Check your answer:</b> clear position &middot; uses growth rate for large n &middot; mentions hidden constants or input size &middot; mentions best/worst/average case or practical testing.</p>
+      </div>
+    </div>
+    <div class="open">
+      <p class="q">Create <span class="tag hi">Create</span>: This function checks an array for duplicates in O(n&sup2;). Design a faster C++ version and state its Big O. (Hint: what would sorting first let you do?)</p>
+<pre><code>bool hasDuplicate(const int a[], int n) {
+    for (int i = 0; i &lt; n; i++)
+        for (int j = i + 1; j &lt; n; j++)
+            if (a[i] == a[j]) return true;
+    return false;
+}</code></pre>
+      <textarea aria-label="Your design"></textarea>
+      <button class="btn" type="button">Show model answer</button>
+      <div class="model" hidden>
+<pre><code>#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+bool hasDuplicate(const int a[], int n) {
+    vector&lt;int&gt; v(a, a + n);           // copy: O(n), keeps the caller's array unchanged
+    sort(v.begin(), v.end());          // O(n log n)
+    for (int i = 1; i &lt; n; i++)        // O(n): duplicates are now neighbors
+        if (v[i] == v[i - 1]) return true;
+    return false;
+}</code></pre>
+        <p>Sequence: O(n) + O(n log n) + O(n) = <b>O(n log n)</b>, because the sort dominates.</p>
+        <p><b>Another valid design:</b> if the values are known to be in a small range (for example 0&ndash;999), use a <code>bool seen[1000]</code> array: one pass, O(n).</p>
+        <p><b>Check your answer:</b> correct result for every input &middot; doesn&rsquo;t compare every pair &middot; Big O stated and justified by adding the parts of the sequence.</p>
+      </div>
+    </div>
+    <div class="selfcheck">
+      <h3>Self-check 5 <span class="tag">Analyze</span></h3>
+      <div class="mcq" data-ans="2" data-why="The recursive version recomputes overlapping subproblems; the iterative version computes each value once.">
+        <p class="q">1. Why is the iterative Fibonacci O(n) while the recursive one is O(2<sup>n</sup>)?</p>
+        <div class="opts"><button type="button">Loops are always faster than function calls</button><button type="button">The iterative version uses <code>long</code></button><button type="button">The iterative version computes each value once instead of recomputing overlapping subproblems</button><button type="button">The recursive version has no base case</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+      <div class="mcq" data-ans="0" data-why="84 % 36 = 12 → gcd(36, 12); 36 % 12 = 0, so the answer is 12.">
+        <p class="q">2. Using Euclid&rsquo;s algorithm, gcd(84, 36) is&hellip;</p>
+        <div class="opts"><button type="button">12</button><button type="button">6</button><button type="button">4</button><button type="button">36</button></div><p class="fb" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section class="panel" id="tab-quiz" role="tabpanel" aria-labelledby="t-quiz">
+  <h2>Interactive Quiz</h2>
+  <p class="lead">12 questions that grow more challenging, from Remember to Evaluate. Your score counts <b>first attempts</b> only; keep trying until you find each answer and read the explanation.</p>
+  <p class="score" id="qScore" aria-live="polite"></p>
+  <div id="quiz"></div>
+  <button class="btn accent" id="qReset" type="button">Retake quiz</button>
+</section>
+
+<!-- ================= MATCHING ================= -->
+<section class="panel" id="tab-match" role="tabpanel" aria-labelledby="t-match">
+  <h2>Matching Activity</h2>
+  <p class="lead">Select a term, then select the description that matches it. Matched pairs turn green.</p>
+  <p class="score" id="mScore" aria-live="polite"></p>
+  <div class="match">
+    <div class="col" id="mTerms" aria-label="Terms"></div>
+    <div class="col" id="mDefs" aria-label="Descriptions"></div>
+  </div>
+  <p><button class="btn accent" id="mReset" type="button">Shuffle and restart</button></p>
+</section>
+
+</main>
+<footer><div class="wrap">CSP31B &ndash; C++ Programming II &middot; San Joaquin Delta College &middot; Based on the &ldquo;Chapter 18: Developing Efficient Algorithms&rdquo; slides.</div></footer>
+
+<script>
+(function(){
+"use strict";
+var $ = function(s, r){ return (r || document).querySelector(s); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+// `x` in data strings becomes <code>x</code>; ^n becomes a superscript
+function fmt(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\^\(([^)]+)\)/g, "<sup>$1</sup>").replace(/\^(\w+)/g, "<sup>$1</sup>"); }
+var store = {
+  get: function(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- Tabs ---------- */
+var tabs = $$("nav [role=tab]");
+function showTab(name){
+  tabs.forEach(function(t){ var on = t.dataset.tab === name; t.setAttribute("aria-selected", on); });
+  $$("section.panel").forEach(function(p){ p.classList.toggle("active", p.id === "tab-" + name); });
+}
+tabs.forEach(function(t){ t.addEventListener("click", function(){ showTab(t.dataset.tab); }); });
+
+/* ---------- Flashcards ---------- */
+var TOPICS = ["", "Measuring efficiency", "Simplifying Big O", "Counting loops", "Logs, sorts & recurrences", "Designing better algorithms"];
+var CARDS = [
+ {s:1,l:"Remember",f:"Give two reasons why timing programs is a poor way to compare algorithms.",b:"(1) System load: many tasks run at once, so times vary. (2) Specific input: one lucky input (like the key being first) can make a worse algorithm look faster."},
+ {s:1,l:"Remember",f:"What does Big O notation describe?",b:"The growth rate (order of magnitude) of an algorithm's running time as the input size n grows, independent of the computer and the specific input."},
+ {s:1,l:"Understand",f:"Define best-case, worst-case and average-case input.",b:"Best case: the input with the shortest time. Worst case: the input with the longest time. Average case: the average over all inputs of size n."},
+ {s:1,l:"Understand",f:"Why do we usually analyze the worst case?",b:"It is easier to obtain than the average case, and it guarantees the algorithm is never slower than that."},
+ {s:1,l:"Apply",f:"Linear search on n elements: how many comparisons if the key is absent? On average if it's present?",b:"Absent: n comparisons. Present: about n/2 on average. Both are O(n)."},
+ {s:2,l:"Remember",f:"Why are O(n/2), O(n) and O(100n) all the same?",b:"Multiplicative constants have no impact on the growth rate, so they're dropped: all three are O(n)."},
+ {s:2,l:"Remember",f:"What is a non-dominating term? Give an example.",b:"A term that becomes insignificant as n grows. In n − 1 (comparisons to find a maximum), the −1 is dropped, giving O(n)."},
+ {s:2,l:"Apply",f:"Simplify T(n) = 3n^2 + 5n + 100.",b:"Keep the dominating term 3n^2, drop its constant: O(n^2)."},
+ {s:2,l:"Remember",f:"What are 1 + 2 + … + n and 1 + 2 + 4 + … + 2^n?",b:"n(n + 1)/2, which is O(n^2); and 2^(n+1) − 1, which is O(2^n)."},
+ {s:2,l:"Analyze",f:"Why do we ignore constants and small terms only for large n?",b:"Algorithm analysis is about large input sizes. For small n every algorithm is fast, so estimating efficiency there has no significance."},
+ {s:3,l:"Apply",f:"Big O of `for (i = 1; i <= n; i++) k = k + 5;`?",b:"The body runs n times: T(n) = cn = O(n)."},
+ {s:3,l:"Apply",f:"Big O of a nested loop where both loops run from 1 to n?",b:"The body runs n × n times: T(n) = cn^2 = O(n^2)."},
+ {s:3,l:"Apply",f:"Big O when the inner loop runs `j = 1` to `i`?",b:"c + 2c + … + nc = cn(n + 1)/2 = (c/2)n^2 + (c/2)n, which is O(n^2)."},
+ {s:3,l:"Analyze",f:"An outer loop runs n times and the inner loop always runs 20 times. Big O?",b:"T(n) = 20cn = O(n). The inner count doesn't grow with n, so it's only a constant."},
+ {s:3,l:"Understand",f:"How do you find the time of a sequence and of an if/else selection?",b:"Sequence: add the parts and keep the dominant one. Selection: test time + the worse (worst-case) branch."},
+ {s:3,l:"Remember",f:"What is constant time, O(1)? Give an example.",b:"Time that doesn't depend on the input size, such as reading `list[i]` from an array at a given index."},
+ {s:4,l:"Remember",f:"What is the recurrence and Big O of binary search?",b:"T(n) = T(n/2) + c, which is O(log n). Each step throws away half of the remaining elements."},
+ {s:4,l:"Understand",f:"Why can the base of the logarithm be left out in O(log n)?",b:"Changing the base only multiplies by a constant, and constants don't affect the growth rate."},
+ {s:4,l:"Analyze",f:"What happens to the time when you double n for O(n^2)? When you square n for O(log n)?",b:"O(n^2): doubling n quadruples the time. O(log n): squaring n only doubles the time, since log(n^2) = 2 log n."},
+ {s:4,l:"Apply",f:"Why is selection sort O(n^2)?",b:"It makes (n − 1) + (n − 2) + … + 1 = n(n − 1)/2 comparisons. Recurrence: T(n) = T(n − 1) + O(n)."},
+ {s:4,l:"Apply",f:"Towers of Hanoi: recurrence, Big O and number of moves for n disks?",b:"T(n) = 2T(n − 1) + c, which is O(2^n). It takes 2^n − 1 moves (1,023 moves for 10 disks)."},
+ {s:4,l:"Remember",f:"Order these from slowest-growing to fastest: O(n^2), O(1), O(2^n), O(n log n), O(log n), O(n), O(n^3).",b:"O(1) < O(log n) < O(n) < O(n log n) < O(n^2) < O(n^3) < O(2^n)"},
+ {s:5,l:"Understand",f:"Why is recursive Fibonacci O(2^n)?",b:"T(n) = T(n − 1) + T(n − 2) + c. The subproblems overlap, so the same values are recomputed again and again."},
+ {s:5,l:"Remember",f:"What is dynamic programming?",b:"Solving each subproblem only once and storing its result for later use, to avoid redundant computation of overlapping subproblems."},
+ {s:5,l:"Apply",f:"State Euclid's GCD algorithm and its Big O.",b:"If m % n is 0, gcd(m, n) is n; otherwise gcd(m, n) = gcd(n, m % n). It is O(log n). The brute-force versions are O(n)."},
+ {s:5,l:"Understand",f:"How does divide-and-conquer differ from dynamic programming?",b:"Both use subproblems, but divide-and-conquer's subproblems don't overlap, so plain recursion works well. Dynamic programming handles overlapping subproblems by storing results."},
+ {s:5,l:"Remember",f:"What is backtracking?",b:"Building a candidate solution step by step and abandoning it as soon as it can't be valid, then exploring a new candidate (for example, Eight Queens)."},
+ {s:5,l:"Evaluate",f:"Gift-wrapping is O(hn); Graham's algorithm is O(n log n). When could gift-wrapping be the better choice?",b:"When the hull has very few points (small h, below about log n), O(hn) beats O(n log n). In the worst case h = n, so Graham's algorithm is safer."}
+];
+var known = store.get("algo18-known", []);
+var order = CARDS.map(function(_, i){ return i; });
+var deck = [], pos = 0;
+var card = $("#card");
+function buildDeck(keepCurrent){
+  var cur = deck[pos];
+  var topic = +$("#fTopic").value, hide = $("#fHide").checked;
+  deck = order.filter(function(i){ return (!topic || CARDS[i].s === topic) && (!hide || known.indexOf(i) < 0); });
+  pos = keepCurrent && deck.indexOf(cur) >= 0 ? deck.indexOf(cur) : 0;
+  renderCard();
+}
+function renderCard(){
+  card.classList.remove("flipped");
+  var topic = +$("#fTopic").value;
+  var total = CARDS.filter(function(c){ return !topic || c.s === topic; }).length;
+  var knownHere = known.filter(function(i){ return CARDS[i] && (!topic || CARDS[i].s === topic); }).length;
+  if (!deck.length){
+    $("#fFront").innerHTML = "You know every card in this set. Uncheck <b>Hide cards I know</b> or press <b>Reset known</b> to review again.";
+    $("#fBack").textContent = ""; $("#fTopicLbl").textContent = ""; $("#fLevel").textContent = "";
+  } else {
+    var c = CARDS[deck[pos]];
+    $("#fFront").innerHTML = fmt(c.f);
+    $("#fBack").innerHTML = fmt(c.b);
+    $("#fTopicLbl").textContent = c.s + ". " + TOPICS[c.s];
+    $("#fLevel").textContent = c.l;
+    $("#fKnow").textContent = known.indexOf(deck[pos]) >= 0 ? "Known ✓ (undo)" : "I know this ✓";
+  }
+  $("#fProg").textContent = (deck.length ? "Card " + (pos + 1) + " of " + deck.length + " · " : "") + "Known: " + knownHere + " of " + total;
+  $("#fBar").style.width = (total ? knownHere / total * 100 : 0) + "%";
+}
+function flip(){ if (deck.length) card.classList.toggle("flipped"); }
+function move(d){ if (!deck.length) return; pos = (pos + d + deck.length) % deck.length; renderCard(); }
+card.addEventListener("click", flip);
+$("#fFlip").addEventListener("click", flip);
+$("#fPrev").addEventListener("click", function(){ move(-1); });
+$("#fNext").addEventListener("click", function(){ move(1); });
+$("#fKnow").addEventListener("click", function(){
+  if (!deck.length) return;
+  var i = deck[pos], k = known.indexOf(i);
+  if (k >= 0) known.splice(k, 1); else known.push(i);
+  store.set("algo18-known", known);
+  if ($("#fHide").checked && k < 0){ deck.splice(pos, 1); if (pos >= deck.length) pos = 0; renderCard(); }
+  else if (k < 0) move(1); else renderCard();
+});
+$("#fShuffle").addEventListener("click", function(){ shuffle(order); buildDeck(false); });
+$("#fReset").addEventListener("click", function(){ known = []; store.set("algo18-known", known); buildDeck(false); });
+$("#fTopic").addEventListener("change", function(){ buildDeck(false); });
+$("#fHide").addEventListener("change", function(){ buildDeck(true); });
+document.addEventListener("keydown", function(e){
+  if (!$("#tab-flash").classList.contains("active")) return;
+  var tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "textarea" || tag === "select") return;
+  if (e.key === "ArrowRight"){ move(1); e.preventDefault(); }
+  else if (e.key === "ArrowLeft"){ move(-1); e.preventDefault(); }
+  else if ((e.key === " " || e.key === "Enter") && e.target !== card && tag !== "button"){ flip(); e.preventDefault(); }
+});
+buildDeck(false);
+
+/* ---------- Multiple-choice checks (study path + quiz) ---------- */
+function wireMcq(box, onFirst){
+  var btns = $$(".opts button", box), fb = $(".fb", box), ans = +box.dataset.ans, tried = false;
+  btns.forEach(function(b, i){
+    b.addEventListener("click", function(){
+      var right = i === ans;
+      if (!tried){ tried = true; if (onFirst) onFirst(right); }
+      b.classList.add(right ? "right" : "wrong");
+      fb.className = "fb " + (right ? "good" : "bad");
+      fb.textContent = (right ? "Correct. " + box.dataset.why : "Not quite. Try again.");
+      if (right) btns.forEach(function(x){ x.disabled = true; });
+      else b.disabled = true;
+    });
+  });
+}
+$$("#tab-path .mcq").forEach(function(b){ wireMcq(b); });
+
+/* ---------- Fill-in checks (alternatives separated by |, boxes by ;) ---------- */
+function norm(s){ return s.toLowerCase().replace(/[\s,]+/g, "").replace(/\*/g, "").replace(/\.0+$/, ""); }
+$$(".fill").forEach(function(box){
+  var inputs = $$("input", box), answers = box.dataset.ans.split(";"), fb = $(".fb", box);
+  function check(){
+    var ok = inputs.every(function(inp, i){
+      return answers[i].split("|").some(function(a){ return norm(inp.value) === norm(a); });
+    });
+    var blank = inputs.some(function(inp){ return !inp.value.trim(); });
+    fb.className = "fb " + (ok ? "good" : "bad");
+    fb.textContent = blank ? "Fill in every box first." : ok ? "Correct. " + box.dataset.why : "Not yet. Re-read the worked example above and trace it step by step, then try again.";
+  }
+  $("button", box).addEventListener("click", check);
+  inputs.forEach(function(inp){ inp.addEventListener("keydown", function(e){ if (e.key === "Enter") check(); }); });
+});
+
+/* ---------- Open responses ---------- */
+$$(".open").forEach(function(box){
+  var btn = $("button", box), model = $(".model", box);
+  btn.addEventListener("click", function(){
+    if (model.hidden && !$("textarea", box).value.trim()){
+      if (!confirm("Try writing your own answer first. Show the model answer anyway?")) return;
+    }
+    model.hidden = !model.hidden;
+    btn.textContent = model.hidden ? "Show model answer" : "Hide model answer";
+  });
+});
+
+/* ---------- Quiz ---------- */
+var QUIZ = [
+ {l:"Remember",q:"Big O notation is an abbreviation for…",o:["Order of magnitude","Overall operations","Optimal output","Object order"],a:0,w:"Computer scientists use Big O to abbreviate \"order of magnitude\" of the growth rate."},
+ {l:"Remember",q:"Which growth function grows the fastest?",o:["O(n^3)","O(n log n)","O(2^n)","O(n^2)"],a:2,w:"Exponential O(2^n) outgrows every polynomial."},
+ {l:"Understand",q:"Why is linear search O(n) in both the worst case (n comparisons) and the average case (n/2)?",o:["The average case is never used","n/2 rounds up to n","Linear search has no average case","Multiplicative constants like 1/2 are ignored"],a:3,w:"O(n/2) = O(n): constants don't change the growth rate."},
+ {l:"Understand",q:"Retrieving `list[i]` from an array of n elements takes…",o:["O(n)","O(1)","O(log n)","O(i)"],a:1,w:"Indexing doesn't depend on the array's size, so it is constant time."},
+ {l:"Apply",q:"Simplify T(n) = 4n^2 + 1000n + 50.",o:["O(4n^2)","O(1000n)","O(n^2)","O(n^2 + n)"],a:2,w:"Keep the dominating term 4n^2 and drop the constant 4."},
+ {l:"Apply",q:"For `for (i = 1; i <= n; i++) for (j = 1; j <= i; j++) k++;` with n = 6, how many times does `k++` run?",o:["21","36","6","12"],a:0,w:"1 + 2 + … + 6 = 6 · 7 / 2 = 21."},
+ {l:"Apply",q:"A loop of 10 steps is followed by a nested loop (outer n, inner 20). T(n) = 10c + 20cn is…",o:["O(n^2)","O(20n)","O(1)","O(n)"],a:3,w:"Add the parts of the sequence, keep the dominant 20cn, and drop the constants: O(n)."},
+ {l:"Apply",q:"Binary search on a sorted array of 4,096 (2^12) elements needs about how many halvings?",o:["2,048","12","64","4,096"],a:1,w:"log2 4096 = 12."},
+ {l:"Analyze",q:"An O(n^2) algorithm takes 3 seconds for n = 5,000. About how long for n = 10,000?",o:["6 seconds","9 seconds","12 seconds","30 seconds"],a:2,w:"Doubling n quadruples an O(n^2) time: 4 × 3 = 12 seconds."},
+ {l:"Analyze",q:"Which recurrence matches the Towers of Hanoi algorithm?",o:["T(n) = 2T(n − 1) + O(1)","T(n) = T(n/2) + O(1)","T(n) = T(n − 1) + O(n)","T(n) = 2T(n/2) + O(n)"],a:0,w:"Move n − 1 disks, move one disk, move n − 1 disks again: 2T(n − 1) + c, which is O(2^n)."},
+ {l:"Analyze",q:"GCD version 3 starts at k = n/2 instead of k = n. Why is it still O(n)?",o:["n/2 is a non-dominating term","It uses recursion","Euclid's algorithm is also O(n)","Halving the starting point only changes a constant factor"],a:3,w:"The worst case still tries about n/2 values; O(n/2) = O(n)."},
+ {l:"Evaluate",q:"Which is the BEST reason to replace recursive Fibonacci with the iterative (dynamic programming) version?",o:["Iterative code is shorter","It computes each subproblem once, cutting O(2^n) to O(n)","Recursion is not allowed in C++","The iterative version uses less memory for small n only"],a:1,w:"Overlapping subproblems make recursion exponential; storing results makes it linear."}
+];
+var qScore = 0, qDone = 0;
+function renderQuiz(){
+  qScore = 0; qDone = 0;
+  var host = $("#quiz"); host.innerHTML = "";
+  QUIZ.forEach(function(item, n){
+    var box = document.createElement("div");
+    box.className = "mcq"; box.dataset.ans = item.a; box.dataset.why = item.w.replace(/`/g, "");
+    var tag = /Analyze|Evaluate|Create/.test(item.l) ? "tag hi" : "tag";
+    box.innerHTML = '<p class="q">' + (n + 1) + ". " + fmt(item.q) + ' <span class="' + tag + '">' + item.l + "</span></p>" +
+      '<div class="opts">' + item.o.map(function(o){ return '<button type="button">' + fmt(o) + "</button>"; }).join("") + "</div>" +
+      '<p class="fb" aria-live="polite"></p>';
+    host.appendChild(box);
+    wireMcq(box, function(right){ qDone++; if (right) qScore++; updateQ(); });
+  });
+  updateQ();
+}
+function updateQ(){
+  var msg = "Score (first attempts): " + qScore + " / " + QUIZ.length;
+  if (qDone === QUIZ.length) msg += qScore >= 10 ? " · Excellent work!" : qScore >= 7 ? " · Good. Review the flashcards for the ones you missed." : " · Revisit the Study Path, then retake the quiz.";
+  $("#qScore").textContent = msg;
+}
+$("#qReset").addEventListener("click", function(){ renderQuiz(); window.scrollTo(0, $("#tab-quiz").offsetTop); });
+renderQuiz();
+
+/* ---------- Matching ---------- */
+var PAIRS = [
+ ["Big O notation","Describes how an algorithm's time grows as the input size n grows"],
+ ["Worst-case analysis","Finds an upper limit: the algorithm is never slower than this"],
+ ["O(1)","Time doesn't depend on n, like reading an array element by index"],
+ ["O(log n)","Squaring the input size only doubles the time, like binary search"],
+ ["O(n^2)","Doubling the input size quadruples the time, like selection sort"],
+ ["O(2^n)","Exponential growth, like Towers of Hanoi or recursive Fibonacci"],
+ ["Dynamic programming","Solves each overlapping subproblem once and stores the result"],
+ ["Divide-and-conquer","Splits a problem into non-overlapping subproblems and combines their solutions"],
+ ["Backtracking","Abandons a candidate as soon as it can't be valid, like Eight Queens"]
+];
+var selTerm = null, matched = 0, misses = 0;
+function renderMatch(){
+  selTerm = null; matched = 0; misses = 0;
+  var T = $("#mTerms"), D = $("#mDefs"); T.innerHTML = ""; D.innerHTML = "";
+  shuffle(PAIRS.map(function(_, i){ return i; })).forEach(function(i){
+    var b = document.createElement("button"); b.type = "button"; b.innerHTML = fmt(PAIRS[i][0]); b.dataset.i = i; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function(){
+      if (b.classList.contains("done")) return;
+      $$("#mTerms button").forEach(function(x){ x.classList.remove("sel"); x.setAttribute("aria-pressed", "false"); });
+      selTerm = b; b.classList.add("sel"); b.setAttribute("aria-pressed", "true");
+    });
+    T.appendChild(b);
+  });
+  shuffle(PAIRS.map(function(_, i){ return i; })).forEach(function(i){
+    var b = document.createElement("button"); b.type = "button"; b.textContent = PAIRS[i][1]; b.dataset.i = i;
+    b.addEventListener("click", function(){
+      if (b.classList.contains("done")) return;
+      if (!selTerm){ $("#mScore").textContent = "Select a term on the left first."; return; }
+      if (selTerm.dataset.i === b.dataset.i){
+        [selTerm, b].forEach(function(x){ x.classList.remove("sel"); x.classList.add("done"); x.disabled = true; });
+        selTerm = null; matched++;
+      } else {
+        misses++; b.classList.add("shake");
+        setTimeout(function(){ b.classList.remove("shake"); }, 600);
+      }
+      updateM();
+    });
+    D.appendChild(b);
+  });
+  updateM();
+}
+function updateM(){
+  $("#mScore").textContent = matched === PAIRS.length
+    ? "All " + PAIRS.length + " pairs matched with " + misses + (misses === 1 ? " miss." : " misses.") + (misses === 0 ? " Perfect!" : "")
+    : "Matched " + matched + " of " + PAIRS.length + " · Misses: " + misses;
+}
+$("#mReset").addEventListener("click", renderMatch);
+renderMatch();
+})();
+</script>
+</body>
+</html>
